@@ -93,10 +93,6 @@ export default function UserDashboard() {
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative p-2 hover:bg-slate-700/30 rounded-lg transition duration-200">
-              <Bell size={20} />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </button>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-slate-700/30 rounded-lg transition duration-200"
@@ -124,8 +120,8 @@ export default function UserDashboard() {
             {/* User Profile Section */}
             <div className="text-center">
               <div className="w-16 h-16 bg-linear-to-br from-blue-400 via-cyan-400 to-purple-400 rounded-full mx-auto mb-3"></div>
-              <h3 className="font-bold text-lg">John Doe</h3>
-              <p className="text-slate-400 text-sm">john@example.com</p>
+              <h3 className="font-bold text-lg">Anup Bhujel</h3>
+              <p className="text-slate-400 text-sm">mail@example.com</p>
             </div>
 
             {/* Navigation Links */}
@@ -465,7 +461,7 @@ export default function UserDashboard() {
                       <label className="block text-slate-400 text-sm mb-2 font-medium">Full Name</label>
                       <input
                         type="text"
-                        placeholder="John Doe"
+                        placeholder="Your name"
                         className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500/70 transition duration-200"
                       />
                     </div>
