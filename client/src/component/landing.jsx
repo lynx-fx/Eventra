@@ -67,7 +67,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           {/* Logo */}
-          <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Eventra
           </div>
 
@@ -81,7 +81,7 @@ export default function LandingPage() {
             </a>
             <Link
               to="/login"
-              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
+              className="px-6 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
             >
               Sign In
             </Link>
@@ -120,7 +120,7 @@ export default function LandingPage() {
               </a>
               <Link
                 to="/login"
-                className="block px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-center"
+                className="block px-6 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg text-center"
               >
                 Sign In
               </Link>

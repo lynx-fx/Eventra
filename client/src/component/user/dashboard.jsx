@@ -1,14 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { Calendar, Ticket, Heart, Share2, LogOut, User, CreditCard, Settings, Bell, MapPin, Clock } from "lucide-react"
+import {
+  Calendar,
+  Ticket,
+  Heart,
+  Share2,
+  LogOut,
+  User,
+  CreditCard,
+  Settings,
+  Bell,
+  MapPin,
+  Clock,
+  ChevronRight,
+  Download,
+  Copy,
+  ImageIcon,
+} from "lucide-react"
 import { Link } from "react-router-dom"
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("upcoming")
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  // Mock data for user tickets
   const userTickets = [
     {
       id: 1,
@@ -22,6 +37,7 @@ export default function UserDashboard() {
       ticketNumber: "EVT-2025-0001",
       image: "/summer-music-festival-stage-lights.jpg",
       quantity: 2,
+      gallery: ["/music-festival-crowd.jpg", "/concert-stage-lights.png", "/festival-performers.jpg"],
     },
     {
       id: 2,
@@ -33,8 +49,9 @@ export default function UserDashboard() {
       price: 5000,
       status: "Confirmed",
       ticketNumber: "EVT-2025-0002",
-      image: "/tech-conference-stage.png",
+      image: "/tech-conference-stage.jpg",
       quantity: 1,
+      gallery: ["/tech-conference-keynote.png", "/tech-talk-presentation.png", "/tech-expo-booths.jpg"],
     },
     {
       id: 3,
@@ -46,8 +63,9 @@ export default function UserDashboard() {
       price: 1800,
       status: "Pending",
       ticketNumber: "EVT-2025-0003",
-      image: "/food-wine-tasting-event-gourmet.jpg",
+      image: "/food-wine-tasting-gourmet.jpg",
       quantity: 3,
+      gallery: ["/gourmet-food-tasting.jpg", "/wine-showcase-event.jpg", "/chef-cooking-demonstration.png"],
     },
   ]
 
@@ -66,26 +84,29 @@ export default function UserDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Navigation Header */}
-      <nav className="fixed top-0 w-full z-40 bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50">
+      <nav className="fixed top-0 w-full z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
             Eventra
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative p-2 hover:bg-slate-700/50 rounded-lg transition">
+            <button className="relative p-2 hover:bg-slate-700/30 rounded-lg transition duration-200">
               <Bell size={20} />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             </button>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-slate-700/50 rounded-lg transition"
+              className="p-2 hover:bg-slate-700/30 rounded-lg transition duration-200"
             >
               <User size={20} />
             </button>
-            <Link to="/login" className="px-4 py-2 text-slate-300 hover:text-white transition flex items-center gap-2">
+            <Link
+              to="/login"
+              className="px-4 py-2 text-slate-300 hover:text-white transition flex items-center gap-2 rounded-lg hover:bg-slate-700/30"
+            >
               <LogOut size={18} />
               Logout
             </Link>
@@ -97,136 +118,119 @@ export default function UserDashboard() {
       <div className="pt-20 flex">
         {/* Sidebar */}
         <aside
-          className={`${sidebarOpen ? "w-64" : "w-0"} bg-slate-800/50 border-r border-slate-700/50 transition-all duration-300 overflow-hidden`}
+          className={`${sidebarOpen ? "w-64" : "w-0"} bg-slate-900/50 border-r border-slate-700/30 transition-all duration-300 overflow-hidden`}
         >
           <div className="p-6 space-y-8">
             {/* User Profile Section */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-linear-to-br from-blue-400 to-cyan-400 rounded-full mx-auto mb-3"></div>
+              <div className="w-16 h-16 bg-linear-to-br from-blue-400 via-cyan-400 to-purple-400 rounded-full mx-auto mb-3"></div>
               <h3 className="font-bold text-lg">John Doe</h3>
               <p className="text-slate-400 text-sm">john@example.com</p>
             </div>
 
             {/* Navigation Links */}
-            <nav className="space-y-3">
-              <button
-                onClick={() => setActiveTab("upcoming")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === "upcoming"
-                    ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
-                    : "text-slate-300 hover:bg-slate-700/50"
-                }`}
-              >
-                <Calendar size={18} />
-                <span>Upcoming Events</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("tickets")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === "tickets"
-                    ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
-                    : "text-slate-300 hover:bg-slate-700/50"
-                }`}
-              >
-                <Ticket size={18} />
-                <span>My Tickets</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("transactions")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === "transactions"
-                    ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
-                    : "text-slate-300 hover:bg-slate-700/50"
-                }`}
-              >
-                <CreditCard size={18} />
-                <span>Transactions</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("favorites")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === "favorites"
-                    ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
-                    : "text-slate-300 hover:bg-slate-700/50"
-                }`}
-              >
-                <Heart size={18} />
-                <span>Favorites</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("settings")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === "settings"
-                    ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
-                    : "text-slate-300 hover:bg-slate-700/50"
-                }`}
-              >
-                <Settings size={18} />
-                <span>Settings</span>
-              </button>
+            <nav className="space-y-2">
+              {[
+                { id: "upcoming", icon: Calendar, label: "Upcoming Events" },
+                { id: "tickets", icon: Ticket, label: "My Tickets" },
+                { id: "transactions", icon: CreditCard, label: "Transactions" },
+                { id: "favorites", icon: Heart, label: "Favorites" },
+                { id: "settings", icon: Settings, label: "Settings" },
+              ].map(({ id, icon: Icon, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition duration-200 ${
+                    activeTab === id
+                      ? "bg-linear-to-r from-blue-500/30 to-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                      : "text-slate-300 hover:bg-slate-700/30"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </button>
+              ))}
             </nav>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className={`flex-1 ${sidebarOpen ? "" : ""} p-8`}>
+        <main className={`flex-1 p-8`}>
           {/* Upcoming Events Tab */}
           {activeTab === "upcoming" && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-                <Calendar size={32} className="text-cyan-400" />
-                Upcoming Events
-              </h2>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold mb-2 bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <Calendar size={36} className="text-cyan-400" />
+                  Upcoming Events
+                </h2>
+                <p className="text-slate-400">Your reserved tickets for upcoming events</p>
+              </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="group rounded-xl overflow-hidden bg-slate-800/50 border border-cyan-500/20 hover:border-cyan-500/50 transition hover:shadow-lg hover:shadow-cyan-500/10"
+                    className="group rounded-xl overflow-hidden bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 hover:border-cyan-500/50 transition duration-300 hover:shadow-xl hover:shadow-cyan-500/10"
                   >
-                    <div className="relative overflow-hidden h-48 bg-slate-700">
+                    {/* Main Image */}
+                    <div className="relative overflow-hidden h-56 bg-slate-700">
                       <img
                         src={ticket.image || "/placeholder.svg"}
                         alt={ticket.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                        className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                       />
-                      <div className="absolute top-3 right-3 bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">
+                      <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold">
                         {ticket.category}
                       </div>
                       <div
-                        className={`absolute top-3 left-3 px-3 py-1 rounded-full text-sm font-semibold ${
-                          ticket.status === "Confirmed" ? "bg-green-500/80" : "bg-yellow-500/80"
+                        className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                          ticket.status === "Confirmed" ? "bg-emerald-500/90 text-white" : "bg-amber-500/90 text-white"
                         }`}
                       >
                         {ticket.status}
                       </div>
                     </div>
 
-                    <div className="p-4">
+                    <div className="p-5">
                       <h3 className="font-bold text-lg mb-3 line-clamp-2">{ticket.title}</h3>
 
                       <div className="space-y-2 mb-4 text-slate-300 text-sm">
                         <div className="flex items-center gap-2">
-                          <Calendar size={16} className="text-cyan-400" />
+                          <Calendar size={16} className="text-cyan-400 shrink-0" />
                           <span>{ticket.date}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Clock size={16} className="text-cyan-400" />
+                          <Clock size={16} className="text-cyan-400 shrink-0" />
                           <span>{ticket.time}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <MapPin size={16} className="text-cyan-400" />
+                          <MapPin size={16} className="text-cyan-400 shrink-0" />
                           <span className="line-clamp-1">{ticket.location}</span>
+                        </div>
+                      </div>
+
+                      <div className="mb-4 pb-4 border-t border-slate-700/50">
+                        <p className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+                          <ImageIcon size={14} />
+                          Event Gallery
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {ticket.gallery.map((img, idx) => (
+                            <div key={idx} className="rounded-lg overflow-hidden h-16 cursor-pointer group/img">
+                              <img
+                                src={img || "/placeholder.svg"}
+                                alt={`Gallery ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover/img:scale-110 transition duration-300"
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-sm mb-4 border-t border-slate-700/50 pt-3">
                         <span className="text-slate-400">
-                          Quantity: <span className="text-cyan-400 font-semibold">{ticket.quantity}</span>
+                          Qty: <span className="text-cyan-400 font-semibold">{ticket.quantity}</span>
                         </span>
                         <span className="text-slate-400">
                           Rs. <span className="text-cyan-400 font-semibold">{ticket.price}</span>
@@ -234,10 +238,11 @@ export default function UserDashboard() {
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="flex-1 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold hover:shadow-lg transition text-sm">
+                        <button className="flex-1 py-2.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-500 hover:to-cyan-500 transition duration-200 text-sm flex items-center justify-center gap-2">
+                          <Ticket size={16} />
                           View Ticket
                         </button>
-                        <button className="px-3 py-2 border border-cyan-500/50 rounded-lg hover:bg-slate-700/50 transition">
+                        <button className="px-3 py-2.5 border border-cyan-500/50 rounded-lg hover:bg-slate-700/50 transition duration-200">
                           <Share2 size={16} />
                         </button>
                       </div>
@@ -251,59 +256,101 @@ export default function UserDashboard() {
           {/* My Tickets Tab */}
           {activeTab === "tickets" && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-                <Ticket size={32} className="text-cyan-400" />
-                My Tickets
-              </h2>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold mb-2 bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <Ticket size={36} className="text-cyan-400" />
+                  My Tickets
+                </h2>
+                <p className="text-slate-400">Download and manage your event tickets</p>
+              </div>
 
               <div className="space-y-4">
                 {userTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="p-6 bg-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition"
+                    className="p-6 bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl hover:border-cyan-500/50 transition duration-300"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-bold text-lg mb-2">{ticket.title}</h3>
-                        <p className="text-slate-400 text-sm">Ticket #: {ticket.ticketNumber}</p>
+                    <div className="grid md:grid-cols-5 gap-6 mb-6">
+                      {/* Ticket Image */}
+                      <div className="md:col-span-2">
+                        <div className="rounded-lg overflow-hidden h-48 bg-slate-700 mb-3">
+                          <img
+                            src={ticket.image || "/placeholder.svg"}
+                            alt={ticket.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {ticket.gallery.map((img, idx) => (
+                            <div key={idx} className="rounded-lg overflow-hidden h-20 cursor-pointer group/img">
+                              <img
+                                src={img || "/placeholder.svg"}
+                                alt={`Gallery ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover/img:scale-110 transition duration-300"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <span
-                        className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                          ticket.status === "Confirmed"
-                            ? "bg-green-500/20 text-green-300"
-                            : "bg-yellow-500/20 text-yellow-300"
-                        }`}
-                      >
-                        {ticket.status}
-                      </span>
-                    </div>
 
-                    <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div>
-                        <p className="text-slate-400">Date</p>
-                        <p className="font-semibold text-cyan-300">{ticket.date}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400">Time</p>
-                        <p className="font-semibold text-cyan-300">{ticket.time}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400">Location</p>
-                        <p className="font-semibold text-cyan-300 line-clamp-1">{ticket.location}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400">Quantity</p>
-                        <p className="font-semibold text-cyan-300">{ticket.quantity} ticket(s)</p>
-                      </div>
-                    </div>
+                      {/* Ticket Details */}
+                      <div className="md:col-span-3">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="font-bold text-xl mb-2">{ticket.title}</h3>
+                            <p className="text-slate-400 text-sm">
+                              Ticket #: <span className="text-cyan-400 font-mono">{ticket.ticketNumber}</span>
+                            </p>
+                          </div>
+                          <span
+                            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${
+                              ticket.status === "Confizrmed"
+                                ? "bg-emerald-500/20 text-emerald-300"
+                                : "bg-amber-500/20 text-amber-300"
+                            }`}
+                          >
+                            {ticket.status}
+                          </span>
+                        </div>
 
-                    <div className="flex gap-3">
-                      <button className="flex-1 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold hover:shadow-lg transition text-sm">
-                        Download PDF
-                      </button>
-                      <button className="flex-1 py-2 border border-cyan-500/50 rounded-lg hover:bg-slate-700/50 transition text-sm">
-                        Share Ticket
-                      </button>
+                        <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                          <div>
+                            <p className="text-slate-400 mb-1">Date</p>
+                            <p className="font-semibold text-cyan-300 flex items-center gap-2">
+                              <Calendar size={16} />
+                              {ticket.date}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400 mb-1">Time</p>
+                            <p className="font-semibold text-cyan-300 flex items-center gap-2">
+                              <Clock size={16} />
+                              {ticket.time}
+                            </p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-slate-400 mb-1">Location</p>
+                            <p className="font-semibold text-cyan-300 flex items-center gap-2">
+                              <MapPin size={16} />
+                              {ticket.location}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button className="flex-1 py-2.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-500 hover:to-cyan-500 transition duration-200 text-sm flex items-center justify-center gap-2">
+                            <Download size={16} />
+                            Download PDF
+                          </button>
+                          <button className="flex-1 py-2.5 border border-cyan-500/50 rounded-lg hover:bg-slate-700/50 transition duration-200 text-sm flex items-center justify-center gap-2">
+                            <Share2 size={16} />
+                            Share Ticket
+                          </button>
+                          <button className="px-3 py-2.5 border border-cyan-500/50 rounded-lg hover:bg-slate-700/50 transition duration-200">
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -314,59 +361,64 @@ export default function UserDashboard() {
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-                <CreditCard size={32} className="text-cyan-400" />
-                Transaction History
-              </h2>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold mb-2 bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <CreditCard size={36} className="text-cyan-400" />
+                  Transaction History
+                </h2>
+                <p className="text-slate-400">Complete record of your transactions</p>
+              </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-700/50">
-                      <th className="px-4 py-3 text-left text-slate-400 font-semibold">Event</th>
-                      <th className="px-4 py-3 text-left text-slate-400 font-semibold">Type</th>
-                      <th className="px-4 py-3 text-left text-slate-400 font-semibold">Amount</th>
-                      <th className="px-4 py-3 text-left text-slate-400 font-semibold">Date</th>
-                      <th className="px-4 py-3 text-left text-slate-400 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactionHistory.map((transaction) => (
-                      <tr
-                        key={transaction.id}
-                        className="border-b border-slate-700/50 hover:bg-slate-700/30 transition"
-                      >
-                        <td className="px-4 py-3 font-medium">{transaction.event}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                              transaction.type === "Purchase"
-                                ? "bg-blue-500/20 text-blue-300"
-                                : "bg-red-500/20 text-red-300"
-                            }`}
-                          >
-                            {transaction.type}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-cyan-300">
-                          {transaction.amount > 0 ? `Rs. ${transaction.amount}` : "Free"}
-                        </td>
-                        <td className="px-4 py-3 text-slate-400">{transaction.date}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                              transaction.status === "Completed"
-                                ? "bg-green-500/20 text-green-300"
-                                : "bg-yellow-500/20 text-yellow-300"
-                            }`}
-                          >
-                            {transaction.status}
-                          </span>
-                        </td>
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="border-b border-slate-700/50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-slate-400 font-semibold">Event</th>
+                        <th className="px-6 py-4 text-left text-slate-400 font-semibold">Type</th>
+                        <th className="px-6 py-4 text-left text-slate-400 font-semibold">Amount</th>
+                        <th className="px-6 py-4 text-left text-slate-400 font-semibold">Date</th>
+                        <th className="px-6 py-4 text-left text-slate-400 font-semibold">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {transactionHistory.map((transaction, idx) => (
+                        <tr
+                          key={transaction.id}
+                          className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition duration-200 ${idx === transactionHistory.length - 1 ? "border-b-0" : ""}`}
+                        >
+                          <td className="px-6 py-4 font-medium">{transaction.event}</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                transaction.type === "Purchase"
+                                  ? "bg-blue-500/20 text-blue-300"
+                                  : "bg-red-500/20 text-red-300"
+                              }`}
+                            >
+                              {transaction.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-cyan-300">
+                            {transaction.amount > 0 ? `Rs. ${transaction.amount}` : "Free"}
+                          </td>
+                          <td className="px-6 py-4 text-slate-400">{transaction.date}</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                transaction.status === "Completed"
+                                  ? "bg-emerald-500/20 text-emerald-300"
+                                  : "bg-amber-500/20 text-amber-300"
+                              }`}
+                            >
+                              {transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -374,18 +426,21 @@ export default function UserDashboard() {
           {/* Favorites Tab */}
           {activeTab === "favorites" && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-                <Heart size={32} className="text-cyan-400" />
-                Favorite Events
-              </h2>
-              <div className="p-8 text-center bg-slate-800/50 border border-cyan-500/20 rounded-xl">
-                <Heart size={48} className="mx-auto mb-4 text-slate-600" />
-                <p className="text-slate-400">No favorite events yet. Start adding events to your favorites!</p>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold mb-2 bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <Heart size={36} className="text-cyan-400" />
+                  Favorite Events
+                </h2>
+              </div>
+              <div className="p-12 text-center bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+                <Heart size={56} className="mx-auto mb-4 text-slate-600" />
+                <p className="text-slate-400 mb-6">No favorite events yet. Start adding events to your favorites!</p>
                 <Link
                   to="/"
-                  className="mt-4 inline-block px-6 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold hover:shadow-lg transition"
+                  className="inline-block px-6 py-3 bg-linear-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-500 hover:to-cyan-500 transition duration-200 items-center gap-2"
                 >
                   Browse Events
+                  <ChevronRight size={16} />
                 </Link>
               </div>
             </div>
@@ -394,54 +449,58 @@ export default function UserDashboard() {
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-                <Settings size={32} className="text-cyan-400" />
-                Settings
-              </h2>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold mb-2 bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <Settings size={36} className="text-cyan-400" />
+                  Settings
+                </h2>
+              </div>
 
               <div className="max-w-2xl space-y-6">
                 {/* Profile Settings */}
-                <div className="p-6 bg-slate-800/50 border border-cyan-500/20 rounded-xl">
-                  <h3 className="text-xl font-bold mb-4">Profile Information</h3>
+                <div className="p-6 bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+                  <h3 className="text-xl font-bold mb-6">Profile Information</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-slate-400 text-sm mb-2">Full Name</label>
+                      <label className="block text-slate-400 text-sm mb-2 font-medium">Full Name</label>
                       <input
                         type="text"
                         placeholder="John Doe"
-                        className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500/50"
+                        className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500/70 transition duration-200"
                       />
                     </div>
                     <div>
-                      <label className="block text-slate-400 text-sm mb-2">Email</label>
+                      <label className="block text-slate-400 text-sm mb-2 font-medium">Email</label>
                       <input
                         type="email"
                         placeholder="john@example.com"
-                        className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500/50"
+                        className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500/70 transition duration-200"
                       />
                     </div>
-                    <button className="w-full py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold hover:shadow-lg transition">
+                    <button className="w-full py-3 bg-linear-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-500 hover:to-cyan-500 transition duration-200">
                       Save Changes
                     </button>
                   </div>
                 </div>
 
                 {/* Notifications */}
-                <div className="p-6 bg-slate-800/50 border border-cyan-500/20 rounded-xl">
-                  <h3 className="text-xl font-bold mb-4">Notifications</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4 rounded" defaultChecked />
-                      <span>Email notifications for event reminders</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4 rounded" defaultChecked />
-                      <span>Notifications for new events in my interests</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4 rounded" />
-                      <span>Marketing emails and promotions</span>
-                    </label>
+                <div className="p-6 bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+                  <h3 className="text-xl font-bold mb-6">Notifications</h3>
+                  <div className="space-y-4">
+                    {[
+                      "Email notifications for event reminders",
+                      "Notifications for new events in my interests",
+                      "Marketing emails and promotions",
+                    ].map((label, idx) => (
+                      <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 rounded border border-slate-600 bg-slate-700/50 cursor-pointer accent-cyan-500"
+                          defaultChecked={idx < 2}
+                        />
+                        <span className="text-slate-300 group-hover:text-white transition">{label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               </div>
