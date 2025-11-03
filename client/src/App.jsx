@@ -5,7 +5,7 @@ import Landing from "./component/landing.jsx";
 import LoginPage from "./component/login/loginPage.jsx";
 import Signup from "./component/login/signup.jsx";
 import NotFound from "./component/notFound.jsx";
-import Dashboard from "./component/dashboard.jsx";
+import Dashboard from "./component/user/dashboard.jsx";
 
 function App() {
   return (

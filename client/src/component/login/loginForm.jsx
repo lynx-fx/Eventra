@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react"
 
@@ -30,41 +32,41 @@ export default function LoginForm({ onForgotPassword }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Email field */}
       <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-semibold text-slate-900">
+        <label htmlFor="email" className="block text-sm font-semibold text-white">
           Email address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
           <input
             id="email"
             type="email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full pl-10 pr-4 py-3  border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
           />
         </div>
       </div>
 
       {/* Password field */}
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-semibold text-slate-900">
+        <label htmlFor="password" className="block text-sm font-semibold text-white">
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
           <input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -72,14 +74,14 @@ export default function LoginForm({ onForgotPassword }) {
       </div>
 
       {/* Error message */}
-      {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+      {error && <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-300">{error}</div>}
 
       {/* Forgot password link */}
       <div className="flex justify-end">
         <button
           type="button"
           onClick={onForgotPassword}
-          className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+          className="text-sm text-cyan-400 hover:text-cyan-300 hover:underline font-medium"
         >
           Forgot password?
         </button>

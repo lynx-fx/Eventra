@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, Loader2, User } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -44,11 +46,11 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative gradient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-80 h-80 bg-linear-to-br from-blue-400/20 to-cyan-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-linear-to-br from-orange-400/20 to-pink-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 right-10 w-80 h-80 bg-linear-to-br from-blue-500/30 to-cyan-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-80 h-80 bg-linear-to-br from-orange-500/30 to-pink-500/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-md">
@@ -57,22 +59,22 @@ export default function Signup() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-linear-to-br from-blue-600 to-cyan-500 rounded-xl mb-4 shadow-lg">
             <span className="text-2xl font-bold text-white">E</span>
           </div>
-          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
-            <span className="text-4xl font-bold text-slate-900 mb-2">
-              Join{" "}
-            </span>
-            Eventra
-          </h1>
-          <p className="text-slate-600 text-lg">
+          <a href="/">
+            <h1 className="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+              <span className="text-4xl font-bold text-white mb-2">Join </span>
+              Eventra
+            </h1>
+          </a>
+          <p className="text-slate-400 text-lg">
             Create your account to start buying and selling tickets
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
+        <div className="bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-700">
           {/* Success message */}
           {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+            <div className="mb-6 p-4 bg-green-900/30 border border-green-700 rounded-lg text-sm text-green-300 flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
                 ✓
               </div>
@@ -85,19 +87,19 @@ export default function Signup() {
             <div className="space-y-2">
               <label
                 htmlFor="name"
-                className="block text-sm font-semibold text-slate-900"
+                className="block text-sm font-semibold text-white"
               >
                 Full name
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
                   id="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
               </div>
             </div>
@@ -106,19 +108,19 @@ export default function Signup() {
             <div className="space-y-2">
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-slate-900"
+                className="block text-sm font-semibold text-white"
               >
                 Email address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
               </div>
             </div>
@@ -127,24 +129,24 @@ export default function Signup() {
             <div className="space-y-2">
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-slate-900"
+                className="block text-sm font-semibold text-white"
               >
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -153,14 +155,14 @@ export default function Signup() {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 At least 8 characters
               </p>
             </div>
 
             {/* Error message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-300">
                 {error}
               </div>
             )}
@@ -185,10 +187,10 @@ export default function Signup() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-300" />
+              <div className="w-full border-t border-slate-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-slate-500">
+              <span className="px-2 bg-slate-800 text-slate-500">
                 Or continue with
               </span>
             </div>
@@ -197,7 +199,7 @@ export default function Signup() {
           {/* Google signup button */}
           <button
             type="button"
-            className="w-full py-3 px-4 border border-slate-300 rounded-lg font-semibold text-slate-900 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 border border-slate-600 rounded-lg font-semibold text-slate-200 hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -221,11 +223,11 @@ export default function Signup() {
           </button>
 
           {/* Login link */}
-          <p className="text-center text-slate-600 text-sm mt-6">
+          <p className="text-center text-slate-400 text-sm mt-6">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+              className="text-cyan-400 hover:text-cyan-300 font-semibold hover:underline"
             >
               Sign in
             </Link>
