@@ -1,38 +1,60 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import axiosInstance from "../../service/axiosInstance.js";
+import Cookie from "js-cookie";
+import { toast } from "sonner";
+import {useNavigate} from "react-router-dom";
 
 export default function LoginForm({ onForgotPassword }) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    if (!email || !password) {
+      setError("Please fill in all fields");
+    } else if (!email.includes("@")) {
+      setError("Please enter a valid email");
+    }
+    try {
+      const response = await axiosInstance.post("/api/auth/login", {
+        email,
+        password,
+      });
 
-    // API call here
-    setTimeout(() => {
-      if (!email || !password) {
-        setError("Please fill in all fields")
-      } else if (!email.includes("@")) {
-        setError("Please enter a valid email")
+      if (response.data.success) {
+        Cookie.set("auth", response.data.token);
+        setIsLoading(false);
+        toast.success(response.data.message || "Logged in successfully.");
+        navigate("/dashboard")
       } else {
-        console.log("Login attempt:", { email, password })
+        toast.error(response.data.message || "Incorrect mail or password.");
+        setEmail("");
+        setPassword("");
+        setIsLoading(false);
       }
-      setIsLoading(false)
-    }, 1000)
-  }
+    } catch (err) {
+      console.log(err);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Email field */}
       <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-semibold text-white">
+        <label
+          htmlFor="email"
+          className="block text-sm font-semibold text-white"
+        >
           Email address
         </label>
         <div className="relative">
@@ -50,7 +72,10 @@ export default function LoginForm({ onForgotPassword }) {
 
       {/* Password field */}
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-semibold text-white">
+        <label
+          htmlFor="password"
+          className="block text-sm font-semibold text-white"
+        >
           Password
         </label>
         <div className="relative">
@@ -68,13 +93,21 @@ export default function LoginForm({ onForgotPassword }) {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Error message */}
-      {error && <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-300">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-300">
+          {error}
+        </div>
+      )}
 
       {/* Forgot password link */}
       <div className="flex justify-end">
@@ -103,5 +136,5 @@ export default function LoginForm({ onForgotPassword }) {
         )}
       </button>
     </form>
-  )
+  );
 }

@@ -17,25 +17,24 @@ exports.signup = async (req, res) => {
         .json({ success: false, message: `User already exists with ${email}` });
     }
 
-    password = hash(password, SALT_VALUE);
+    const hashedPassword = await hash(password, SALT_VALUE);
 
     const newUser = new User({
       userName,
       email,
-      password,
+      password: hashedPassword,
       userRole,
     });
     await newUser.save();
     res.status(200).json({
       success: true,
       message: "Account created",
-      newUser,
     });
   } catch (err) {
     console.log(err);
     return res
       .status(500)
-      .json({ success: false, message: "Error when signing up." });
+      .json({ success: false, message: "Error while signing up." });
   }
 };
 
@@ -43,7 +42,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const existingUser = await findOne({ email }).select("+password");
+    const existingUser = await User.findOne({ email }).select("+password");
     if (!existingUser) {
       return res.status(404).json({
         success: false,
@@ -53,14 +52,13 @@ exports.login = async (req, res) => {
     const result = await compare(password, existingUser.password);
     if (!result) {
       return res
-        .status(402)
+        .status(401)
         .json({ success: false, message: "Incorrect username or password" });
     }
 
     const token = jwt.sign(
       {
         id: existingUser.id,
-        email: existingUser.email,
       },
       process.env.TOKEN_SECRET,
       {
@@ -69,13 +67,8 @@ exports.login = async (req, res) => {
     );
 
     return res
-      .cookie("auth", token, {
-        httpOnly: process.env.NODE_ENV == "production" ? true : false,
-        secure: process.env.NODE_ENV == "production" ? true : false,
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-        expires: new Date(Date.now() + 86400000),
-      })
-      .json({ success: true, message: "Logged in", redirect: "/dashboard" });
+      .status(200)
+      .json({ success: true, message: "Logged in", redirect: "/dashboard", token });
   } catch (err) {
     console.log(err);
     return res

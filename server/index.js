@@ -31,14 +31,6 @@ app.use(
   })
 );
 
-mongoose
-  .connect(mongoUri)
-  .then(() => {
-    console.log("Datebase connected.");
-  })
-  .catch((err) => {
-    console.error("Database connection error: ", err);
-  });
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Hiee :)" });
@@ -50,10 +42,19 @@ app.get("/ping", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on  http://localhost:${PORT} and serving to ${frontend}`
-  );
-});
-
 app.use("/api/auth", authRouter);
+
+mongoose
+  .connect(mongoUri)
+  .then(() => {
+    console.log("Datebase connected.");
+
+    app.listen(PORT, () => {
+      console.log(
+        `Server running on  http://localhost:${PORT} and serving to ${frontend}`
+      );
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection error: ", err);
+  });
