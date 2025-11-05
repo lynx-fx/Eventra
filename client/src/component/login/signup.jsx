@@ -1,23 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, Loader2, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  User,
+  Trophy,
+  TableRowsSplit,
+  UserRound,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import axiosInstance from "../../service/axiosInstance.js";
 
 export default function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userDetails, setUserDetails] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const validateForm = () => {
-    if (!name.trim()) return "Please enter your name";
-    if (!email.includes("@")) return "Please enter a valid email";
-    if (password.length < 8) return "Password must be at least 8 characters";
+    if (!userDetails.name.trim()) return "Please enter your name";
+    if (!userDetails.email.includes("@")) return "Please enter a valid email";
+    if (userDetails.password !== userDetails.confirmPassword)
+      return "Confirm password doesn't match";
+    if (userDetails.password.length < 8)
+      return "Password must be at least 8 characters";
     return "";
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -33,16 +60,47 @@ export default function Signup() {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Signup attempt:", { name, email, password });
-      setSuccess(true);
-      setName("");
-      setEmail("");
-      setPassword("");
-    }, 1500);
+    try {
+      const response = await axiosInstance.post("/api/auth/signup", {
+        userName: userDetails.name,
+        email: userDetails.email,
+        password: userDetails.password,
+        userRole: "user",
+      });
 
-    setIsLoading(false);
+      setIsLoading(false);
+
+      if (response.data.success) {
+        setSuccess(true);
+        setUserDetails({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setTimeout(() => {
+          navigate(response.data.redirect);
+        }, 3000);
+      } else {
+        toast.error(response.data.message || "");
+        setUserDetails({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (err) {
+      setUserDetails({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setIsLoading(false);
+      toast.error("Something went wrong while signing in.");
+      console.log(err);
+    }
   };
 
   return (
@@ -94,11 +152,11 @@ export default function Signup() {
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
-                  id="name"
+                  name="name"
                   type="text"
                   placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={userDetails.name}
+                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
               </div>
@@ -115,11 +173,11 @@ export default function Signup() {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
-                  id="email"
+                  name="email"
                   type="email"
                   placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userDetails.email}
+                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
               </div>
@@ -136,13 +194,50 @@ export default function Signup() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                 <input
-                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                  value={userDetails.password}
+                  onChange={handleChange}
+                  className="appearance-none w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                At least 8 characters
+              </p>
+            </div>
+
+            {/* Confirm password */}
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-white"
+              >
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
+                <input
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={userDetails.confirmPassword}
+                  onChange={handleChange}
+                  className="appearance-none w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}

@@ -5,7 +5,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import axiosInstance from "../../service/axiosInstance.js";
 import Cookie from "js-cookie";
 import { toast } from "sonner";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm({ onForgotPassword }) {
   const [email, setEmail] = useState("");
@@ -18,32 +18,34 @@ export default function LoginForm({ onForgotPassword }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
     if (!email || !password) {
       setError("Please fill in all fields");
     } else if (!email.includes("@")) {
       setError("Please enter a valid email");
-    }
-    try {
-      const response = await axiosInstance.post("/api/auth/login", {
-        email,
-        password,
-      });
+    } else {
+      setIsLoading(true);
+      try {
+        const response = await axiosInstance.post("/api/auth/login", {
+          email,
+          password,
+        });
 
-      if (response.data.success) {
-        Cookie.set("auth", response.data.token);
-        setIsLoading(false);
-        toast.success(response.data.message || "Logged in successfully.");
-        navigate("/dashboard")
-      } else {
-        toast.error(response.data.message || "Incorrect mail or password.");
-        setEmail("");
-        setPassword("");
+        if (response.data.success) {
+          Cookie.set("auth", response.data.token);
+          setIsLoading(false);
+          toast.success(response.data.message || "Logged in successfully.");
+          navigate(response.data.redirect);
+        } else {
+          toast.error(response.data.message || "Incorrect mail or password.");
+          setEmail("");
+          setPassword("");
+          setIsLoading(false);
+        }
+      } catch (err) {
+        toast.error("Something went wrong while logging in.");
+        console.log(err);
         setIsLoading(false);
       }
-    } catch (err) {
-      console.log(err);
-      setIsLoading(false);
     }
   };
 

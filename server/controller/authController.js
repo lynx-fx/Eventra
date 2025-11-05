@@ -29,6 +29,7 @@ exports.signup = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Account created",
+      redirect: "/login",
     });
   } catch (err) {
     console.log(err);
@@ -68,7 +69,12 @@ exports.login = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Logged in", redirect: "/dashboard", token });
+      .json({
+        success: true,
+        message: "Logged in",
+        redirect: "/dashboard",
+        token,
+      });
   } catch (err) {
     console.log(err);
     return res
