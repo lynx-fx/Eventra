@@ -19,11 +19,16 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     userRole: {
-        type: String,
-        default: "user",
-        enum: ["user", "seller", "admin"],
-        required: true,
-    }
+      type: String,
+      default: "user",
+      enum: ["user", "seller", "admin"],
+      required: true,
+    },
+    authCode: {
+      type: String,
+      required: false,
+      select: false,
+    },
   },
   {
     timestamps: true,
