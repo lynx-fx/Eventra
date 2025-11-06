@@ -90,6 +90,7 @@ export default function LoginForm({ onForgotPassword }) {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full pl-10 pr-10 py-3 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
           />
+
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}

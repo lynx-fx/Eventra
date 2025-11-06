@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Eye,
   EyeOff,
@@ -8,19 +8,53 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import axiosInstance from "../../service/axiosInstance";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
-export default function ResetPassword({ token }) {
+export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTokenVerified, setIsTokenVerified] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email");
+  const token = searchParams.get("token");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get(
+          `/api/auth/validate-token?email=${email}&token=${token}`
+        );
+        setIsLoading(false);
+        if (response.data.success) {
+          setIsTokenVerified(true);
+        } else {
+          setIsTokenVerified(false);
+        }
+      } catch (err) {
+        setIsLoading(false);
+        console.log(err);
+        toast.error("Error while validating token.");
+      }
+    };
+    checkToken();
+  }, []);
+
+  useEffect(() => {
+    console.log("isTokenVerified:", isTokenVerified);
+  }, [isTokenVerified]);
 
   const validatePassword = (pass) => {
     if (pass.length < 8) return "Password must be at least 8 characters.";
-    if (!/[A-Z]/.test(pass)) return "Password must contain an uppercase letter.";
+    if (!/[A-Z]/.test(pass))
+      return "Password must contain an uppercase letter.";
     if (!/[0-9]/.test(pass)) return "Password must contain a number.";
     if (!/[!@#$%^&*]/.test(pass))
       return "Password must contain a special character (!@#$%^&*).";
@@ -32,7 +66,7 @@ export default function ResetPassword({ token }) {
 
     // Validation
     if (!password || !confirmPassword) {
-      toast.error("Please fill in all fields.")
+      toast.error("Please fill in all fields.");
       return;
     }
 
@@ -47,12 +81,27 @@ export default function ResetPassword({ token }) {
       return;
     }
 
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.post("/api/auth/reset-password", {
+        email,
+        password,
+        token,
+      });
 
-    setTimeout(() => {
-      setSuccess(true);
       setIsLoading(false);
-    }, 1500);
+      if (response.data.success) {
+        setSuccess(true);
+        setTimeout(()=> {
+          navigate("/login")
+        }, 5000)
+      } else {
+        toast.error(response.data.message || "Error while resetting password");
+      }
+    } catch (err) {
+      console.log(err.message);
+      toast.error("Error while reseting password.");
+    }
   };
 
   return (
@@ -179,13 +228,18 @@ export default function ResetPassword({ token }) {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !isTokenVerified}
                 className="w-full py-3 px-4 bg-linear-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg mt-6"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Resetting Password...
+                  </>
+                ) : !isTokenVerified ? (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    Invalid Token
                   </>
                 ) : (
                   <>

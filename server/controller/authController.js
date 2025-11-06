@@ -6,6 +6,8 @@ const tokenExtractor = require("../util/tokenExtractor.js");
 const User = require("../model/userModel.js");
 
 const transport = require("../middleware/sendMail.js");
+const { measureMemory } = require("vm");
+const { constants } = require("perf_hooks");
 
 const SALT_VALUE = 12;
 exports.signup = async (req, res) => {
@@ -161,7 +163,7 @@ exports.forgotPassword = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: `Password reset link sent to ${mail}`,
+        message: `Password reset link sent to ${email}.`,
       });
     } else {
       return res
@@ -176,4 +178,89 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-exports.resetPassword = async (req, res) => {};
+// TODO: Check for security flaw
+exports.validateToken = async (req, res) => {
+  try {
+    const { email, token } = req.query;
+
+    const existingUser = await User.findOne({ email }).select("+authCode");
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: `User with ${email} doesn't exists.`,
+      });
+    }
+
+    // Checking code validity
+    if (new Date() - existingUser.updatedAt > 10 * 60 * 1000) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Token expired, retry." });
+    }
+
+    // checking token
+    if (
+      createHmac("sha256", process.env.HMAC_CODE)
+        .update(token)
+        .digest("hex") === existingUser.authCode
+    ) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid token." });
+    }
+  } catch (err) {
+    console.log(err.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error while validating token." });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, password, token } = req.body;
+
+    const existingUser = await User.findOne({ email }).select(
+      "+password +authCode"
+    );
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: `User with ${email} doesn't exists.`,
+      });
+    }
+
+    // Revaidating token and removing it afterwards
+    if (new Date() - existingUser.updatedAt > 10 * 60 * 1000) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Token expired, retry." });
+    }
+
+    // checking token
+    if (
+      createHmac("sha256", process.env.HMAC_CODE)
+        .update(token)
+        .digest("hex") === existingUser.authCode
+    ) {
+      existingUser.password = await hash(password, SALT_VALUE);
+      existingUser.authCode = "";
+      await existingUser.save();
+    } else {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid token." });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Password changed successfully.", redirect: "/login" });
+  } catch (err) {
+    console.log(err.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error while reseting password." });
+  }
+};

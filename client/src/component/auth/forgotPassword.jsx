@@ -1,31 +1,48 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { X, Mail, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { X, Mail, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import axiosInstance from "../../service/axiosInstance";
 
 export default function ForgotPassword({ onClose }) {
-  const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-    // API call here
-    setTimeout(() => {
-      if (!email) {
-        setError("Please enter your email")
-      } else if (!email.includes("@")) {
-        setError("Please enter a valid email")
-      } else {
-        setSubmitted(true)
+    if (!email) {
+      setError("Please enter your email");
+    } else if (!email.includes("@")) {
+      setError("Please enter a valid email");
+    } else {
+      try {
+        const response = await axiosInstance.get(
+          `/api/auth/forgot-password?email=${email}`
+        );
+        setIsLoading(false);
+
+        if (response.data.success) {
+          setSubmitted(true);
+          toast.success(
+            response.data.message || "Reset mail sent successfully."
+          );
+        } else {
+          toast.error(
+            response.data.message || "Error while sending reset mail."
+          );
+        }
+      } catch (err) {
+        setIsLoading(false);
+        console.log(err.message);
       }
-      setIsLoading(false)
-    }, 1000)
-  }
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -40,14 +57,20 @@ export default function ForgotPassword({ onClose }) {
 
         {!submitted ? (
           <>
-            <h2 className="text-2xl font-bold text-white mb-2">Reset password</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Reset password
+            </h2>
             <p className="text-slate-300 text-sm mb-6">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your
+              password.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="reset-email" className="block text-sm font-semibold text-slate-200">
+                <label
+                  htmlFor="reset-email"
+                  className="block text-sm font-semibold text-slate-200"
+                >
                   Email address
                 </label>
                 <div className="relative">
@@ -64,7 +87,9 @@ export default function ForgotPassword({ onClose }) {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-400">{error}</div>
+                <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-sm text-red-400">
+                  {error}
+                </div>
               )}
 
               <button
@@ -98,9 +123,12 @@ export default function ForgotPassword({ onClose }) {
             </div>
             <h2 className="text-2xl font-bold text-white">Check your email</h2>
             <p className="text-slate-300">
-              We've sent a password reset link to <span className="font-semibold text-slate-200">{email}</span>
+              We've sent a password reset link to{" "}
+              <span className="font-semibold text-slate-200">{email}</span>
             </p>
-            <p className="text-sm text-slate-400">Didn't receive it? Check your spam folder or try another email.</p>
+            <p className="text-sm text-slate-400">
+              Didn't receive it? Check your spam folder or try another email.
+            </p>
             <button
               onClick={onClose}
               className="w-full py-3 px-4 bg-linear-to-r from-cyan-600 to-blue-600 text-white rounded-lg font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
@@ -111,5 +139,5 @@ export default function ForgotPassword({ onClose }) {
         )}
       </div>
     </div>
-  )
+  );
 }
