@@ -12,7 +12,8 @@ import {
   TableRowsSplit,
   UserRound,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axiosInstance from "../../service/axiosInstance.js";
 
@@ -27,8 +28,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
-
+  const router = useRouter();
   const validateForm = () => {
     if (!userDetails.name.trim()) return "Please enter your name";
     if (!userDetails.email.includes("@")) return "Please enter a valid email";
@@ -70,7 +70,7 @@ export default function Signup() {
 
       setIsLoading(false);
 
-      if (response.data.success) {
+      if (responseata.success) {
         setSuccess(true);
         setUserDetails({
           name: "",
@@ -79,7 +79,7 @@ export default function Signup() {
           confirmPassword: "",
         });
         setTimeout(() => {
-          navigate(response.data.redirect);
+          router.push(response.data.redirect);
         }, 3000);
       } else {
         toast.error(response.data.message || "");
@@ -321,7 +321,7 @@ export default function Signup() {
           <p className="text-center text-slate-400 text-sm mt-6">
             Already have an account?{" "}
             <Link
-              to="/login"
+              href="/auth/login"
               className="text-cyan-400 hover:text-cyan-300 font-semibold hover:underline"
             >
               Sign in

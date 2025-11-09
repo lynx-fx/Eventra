@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import {
   Eye,
@@ -9,7 +11,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import axiosInstance from "../../service/axiosInstance";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -20,10 +23,10 @@ export default function ResetPassword() {
   const [isTokenVerified, setIsTokenVerified] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const email = searchParams.get("email");
   const token = searchParams.get("token");
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const checkToken = async () => {
@@ -46,10 +49,6 @@ export default function ResetPassword() {
     };
     checkToken();
   }, []);
-
-  useEffect(() => {
-    console.log("isTokenVerified:", isTokenVerified);
-  }, [isTokenVerified]);
 
   const validatePassword = (pass) => {
     if (pass.length < 8) return "Password must be at least 8 characters.";
@@ -92,9 +91,9 @@ export default function ResetPassword() {
       setIsLoading(false);
       if (response.data.success) {
         setSuccess(true);
-        setTimeout(()=> {
-          navigate("/login")
-        }, 5000)
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 5000);
       } else {
         toast.error(response.data.message || "Error while resetting password");
       }
@@ -266,7 +265,7 @@ export default function ResetPassword() {
               </p>
             </div>
             <a
-              href="/login"
+              href="/auth/login"
               className="inline-block w-full py-3 px-4 bg-linear-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
             >
               Back to Login
@@ -278,7 +277,7 @@ export default function ResetPassword() {
         <p className="text-center text-slate-400 text-sm mt-6">
           Remember your password?{" "}
           <a
-            href="/login"
+            href="/auth/login"
             className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
           >
             Sign in here

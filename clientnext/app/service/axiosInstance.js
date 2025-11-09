@@ -1,8 +1,9 @@
 import axios from "axios";
 
-const BACKEND = import.meta.env.PROD
-  ? import.meta.env.VITE_BACKEND_HOSTED
-  : import.meta.env.VITE_BACKEND_LOCAL;
+const BACKEND =
+  process.env.NEXT_PUBLIC_NODE_ENV == "production"
+    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+    : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
 
 const axiosInstance = axios.create({
   baseURL: BACKEND,

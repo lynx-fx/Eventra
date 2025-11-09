@@ -56,7 +56,7 @@ exports.signup = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Account created",
-      redirect: "/login",
+      redirect: "/auth/login",
     });
   } catch (err) {
     console.log(err);
@@ -127,7 +127,7 @@ exports.forgotPassword = async (req, res) => {
         ? process.env.FRONT_END_HOSTED
         : process.env.FRONT_END_LOCAL;
 
-    const link = `${frontend}/reset-password?email=${encodeURIComponent(
+    const link = `${frontend}/auth/reset-password?email=${encodeURIComponent(
       email
     )}&token=${code}`;
 
@@ -256,7 +256,7 @@ exports.resetPassword = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Password changed successfully.", redirect: "/login" });
+      .json({ success: true, message: "Password changed successfully.", redirect: "/auth/login" });
   } catch (err) {
     console.log(err.message);
     return res

@@ -82,7 +82,7 @@ export default function LandingPage() {
               Discover
             </a>
             <Link
-              href="/login"
+              href="/auth/login"
               className="px-6 py-2 bg-linear-to-r from-blue-500 to-cyan-500 rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
             >
               Sign In
