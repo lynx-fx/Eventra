@@ -19,8 +19,16 @@ import {
   ImageIcon,
 } from "lucide-react"
 import { Link } from "react-router-dom"
+// import {User} from "./page"
 
-export default function UserDashboard() {
+// interface = Props {
+//   user: User;
+// }
+
+// TODO: Handle props
+export default function userDashboard(
+  // { user }: Props
+) {
   const [activeTab, setActiveTab] = useState("upcoming")
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
