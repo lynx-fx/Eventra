@@ -1,0 +1,20 @@
+const mongoose = require("mongoose");
+
+const reportSchema = new mongoose.Schema(
+  {
+    reportType: { type: String, required: true },
+    reportedDate: { type: Date, default: Date.now },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    imageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Image",
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Report", reportSchema);

@@ -3,11 +3,9 @@ const { hash, compare } = require("bcryptjs");
 const { createHmac } = require("crypto");
 
 const tokenExtractor = require("../util/tokenExtractor.js");
-const User = require("../model/userModel.js");
+const User = require("../model/Users.js");
 
 const transport = require("../middleware/sendMail.js");
-const { measureMemory } = require("vm");
-const { constants } = require("perf_hooks");
 
 const SALT_VALUE = 12;
 exports.signup = async (req, res) => {

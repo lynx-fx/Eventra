@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import axiosInstance from "../../service/axiosInstance.js";
+import axiosInstance from "../../../service/axiosInstance.js";
 import Cookie from "js-cookie";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
