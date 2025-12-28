@@ -18,9 +18,11 @@ export default function NavBar() {
           <Link href="/about" className="text-sm text-gray-400 hover:text-white transition-colors">
             About
           </Link>
+          <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition-colors">
           <button className="rounded-full bg-white text-black hover:bg-gray-100 border-none px-5 py-1.5 h-auto text-sm font-semibold transition-colors cursor-pointer">
-            Join us
+            Join Us
           </button>
+          </Link>
         </nav>
       </div>
     </header>

@@ -4,7 +4,12 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    isGoogleAuth: { type: Boolean, default: false },
+    password: {
+      type: String, required: function () {
+        return this.isGoogleAuth ? false : true;
+      }
+    },
     role: {
       type: String,
       enum: ["user", "organizer", "admin"],
@@ -13,6 +18,7 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     userLocation: { type: String },
     profileUrl: { type: String },
+    authCode: { type: String }
   },
   { timestamps: true }
 );

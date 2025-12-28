@@ -12,8 +12,8 @@ const Loading = () => {
         left: 0,
         width: "100vw",
         height: "100vh",
-        backdropFilter: "blur(6px)",
-        backgroundColor: "rgba(0, 0, 0, 0.3)", // optional dimming
+        backdropFilter: "blur(3px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

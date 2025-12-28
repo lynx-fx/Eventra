@@ -8,12 +8,14 @@ import axiosInstance from "../../../service/axiosInstance";
 import { useRouter } from "next/navigation";
 import Cookies from 'js-cookie'
 import { useGoogleLogin, type TokenResponse } from "@react-oauth/google";
+import ForgotPassword from "./forgotPassword"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
+  const [isFallenActive, setIsFallenActive] = useState<Boolean>(false);
   const router = useRouter();
 
 
@@ -101,22 +103,33 @@ export default function LoginPage() {
     onError: handleGoogleError,
     flow: "auth-code",
   });
-  
+
+  const toogleForgotModel = () => {
+    setIsFallenActive(!isFallenActive);
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col font-sans selection:bg-purple-500/30">
       <NavBar />
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden mt-24">
         {/* Background Glow */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-t from-purple-900/20 via-transparent to-transparent pointer-events-none" />
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-screen
+  bg-linear-to-t from-purple-900/50 from-20% via-transparent to-transparent pointer-events-none"
+        />
 
-        <div className="w-full max-w-md bg-[#111113] rounded-[32px] p-10 border border-white/5 shadow-2xl relative z-10">
+        <div className="w-full max-w-md bg-[#111113] rounded-4xl p-10 border border-white/5 shadow-2xl relative z-10">
           <div className="space-y-2 mb-8">
             <h1 className="text-3xl font-serif tracking-tight">Login</h1>
             <p className="text-gray-400 text-sm leading-relaxed">
               Sign in to access your account with your google or use you Eventra account.
             </p>
           </div>
+
+          {
+            isFallenActive && <ForgotPassword onClose={toogleForgotModel} />
+          }
 
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
@@ -147,9 +160,9 @@ export default function LoginPage() {
               </button>
 
               <div className="relative flex items-center py-2">
-                <div className="flex-grow border-t border-white/10"></div>
-                <span className="flex-shrink mx-4 text-xs text-gray-500 uppercase tracking-widest">or</span>
-                <div className="flex-grow border-t border-white/10"></div>
+                <div className="grow border-t border-white/10"></div>
+                <span className="shrink mx-4 text-xs text-gray-500 uppercase tracking-widest">or</span>
+                <div className="grow border-t border-white/10"></div>
               </div>
 
               <div className="space-y-4">
@@ -186,14 +199,16 @@ export default function LoginPage() {
               </button>
 
               <div className="pt-2">
-                <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white transition-colors">
+                <div onClick={toogleForgotModel} className="text-sm text-gray-400 hover:text-white transition-colors">
                   Forgot Password?
-                </Link>
+                </div>
               </div>
+
+
 
               <div className="border-t border-white/10 pt-4 flex items-center gap-2">
                 <span className="text-sm text-gray-400">Need a new account?</span>
-                <Link href="/signup" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
+                <Link href="/auth/signup" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
                   Sign up
                 </Link>
               </div>
