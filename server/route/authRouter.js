@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require("../controller/authController.js");
 
 router.post("/login", authController.login);
+router.post("/google-login", authController.googleLogin);
 router.post("/signup", authController.signup);
 router.post("/reset-password", authController.resetPassword);
 router.get("/forgot-password", authController.forgotPassword);

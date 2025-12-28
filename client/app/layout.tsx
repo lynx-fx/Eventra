@@ -1,13 +1,10 @@
-"use client";
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-// import { GoogleOAuthProvider } from "@react-oauth/google";
+import Providers from "./provider"
 
-
-// TODO: Use provider here to avoid using metadata with client
+// DONE: Use provider here to avoid using metadata with client
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,13 +16,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// export const metadata: Metadata = {
-//   title: "Eventra",
-//   description: "Buy ticket, sell ticket and use event rooms to share images. ",
-//   icons: {
-//     icon: '/logo.png',
-//   },
-// };
+export const metadata: Metadata = {
+  title: "Eventra",
+  description: "Buy ticket, sell ticket and use event rooms to share images. ",
+  icons: {
+    icon: '/logo.png',
+  },
+};
 
 export default function RootLayout({
   children,
@@ -37,11 +34,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}> */}
-          <Toaster richColors />
-          {children}
-        {/* </GoogleOAuthProvider> */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
+

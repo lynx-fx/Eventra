@@ -2,15 +2,17 @@ const jwt = require("jsonwebtoken");
 const { hash, compare } = require("bcryptjs");
 const { createHmac } = require("crypto");
 
+const { welcomeMail, forgotPasswordMail } = require("../util/mailtemplate.js")
+
 const tokenExtractor = require("../util/tokenExtractor.js");
 const User = require("../model/Users.js");
 
-const transport = require("../middleware/sendMail.js");
+const { oauth2client } = require("../util/googleConfig.js");
 
 const SALT_VALUE = 12;
 exports.signup = async (req, res) => {
   try {
-    const { userName, email, password, userRole } = req.body;
+    const { name, email, password, userRole } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -23,33 +25,14 @@ exports.signup = async (req, res) => {
     const hashedPassword = await hash(password, SALT_VALUE);
 
     const newUser = new User({
-      userName,
+      name,
       email,
       password: hashedPassword,
       userRole,
     });
     await newUser.save();
 
-    let mail = await transport.sendMail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Welcome to Eventra!",
-      html: `
-    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-      <div style="max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"> 
-        <h2 style="color: #333; text-align: center;">Welcome to Eventra!</h2>
-        <p style="color: #555;">Hi ${userName},</p>
-        <p style="color: #555;">Thank you for signing up! We're excited to have you on board.</p>
-        <hr style="border: none; border-top: 1px solid #ddd;">
-        <p style="color: #777; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} Eventra. All rights reserved.</p>
-      </div>
-    </div>
-  `,
-    });
-
-    if (mail.accepted.length <= 0) {
-      console.log("Signup mail not sent.");
-    }
+    welcomeMail(name, email);
 
     res.status(200).json({
       success: true,
@@ -106,6 +89,66 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.googleLogin = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const googleResponse = await oauth2client.getToken(code);
+    oauth2client.setCredentials(googleResponse.tokens);
+
+    const userRes = await fetch(
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleResponse.tokens.access_token}`,
+      {
+        method: "GET",
+      }
+    );
+
+    const { email, name, picture } = await userRes.json();
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      const newUser = new User({
+        email,
+        name,
+        profileUrl: picture,
+        isGoogleAuth: true,
+      });
+      await newUser.save();
+
+      const token = jwt.sign(
+        {
+          id: newUser._id,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.JWT_TIMEOUT,
+        }
+      );
+
+      return res.status(200).json({ success: true, message: "Account created and logged in", redirect: "/dashboard", token })
+
+    } else {
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.JWT_TIMEOUT,
+        }
+      );
+
+      return res.status(200).json({ success: true, message: "Logged in", redirect: "/dashboard", token })
+    }
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error while logging in",
+      error: err.message,
+    });
+  }
+};
+
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.query;
@@ -129,28 +172,7 @@ exports.forgotPassword = async (req, res) => {
       email
     )}&token=${code}`;
 
-    let mail = await transport.sendMail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Reset Your Password",
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-          <div style="max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"> 
-            <h2 style="color: #333; text-align: center;">Reset Your Password</h2>
-            <p style="color: #555;">You requested a password reset. Click the button below to reset your password. This link will expire in <strong>10 minutes</strong>.</p>
-            <div style="text-align: center; margin: 20px 0;">
-              <a href="${link}" 
-                 style="background-color: #007bff; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block;">
-                 Reset Password
-              </a>
-            </div>
-            <p style="color: #555;">If you didn’t request this, please ignore this email.</p>
-            <hr style="border: none; border-top: 1px solid #ddd;">
-            <p style="color: #777; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} Eventra. All rights reserved.</p>
-          </div>
-        </div>
-      `,
-    });
+    const mail = await forgotPasswordMail(email, link)
 
     if (mail.accepted.length > 0) {
       const hashedCode = createHmac("sha256", process.env.HMAC_CODE)
