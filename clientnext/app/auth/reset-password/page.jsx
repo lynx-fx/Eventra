@@ -10,9 +10,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import axiosInstance from "../../service/axiosInstance";
+import axiosInstance from "../../../service/axiosInstance";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+
+// TODO: Fix the validation crash issue
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import axiosInstance from "../../service/axiosInstance";
+import axiosInstance from "../../../service/axiosInstance";
 
 export default function ForgotPassword({ onClose }) {
   const [email, setEmail] = useState("");

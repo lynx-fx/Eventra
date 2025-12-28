@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import axiosInstance from "../../service/axiosInstance.js";
+import axiosInstance from "../../../service/axiosInstance";
 
 export default function Signup() {
   const [userDetails, setUserDetails] = useState({
