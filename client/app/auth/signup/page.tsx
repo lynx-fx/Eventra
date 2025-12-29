@@ -125,9 +125,9 @@ export default function SignupPage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden mt-20 py-12">
         {/* Background Glow */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-t from-purple-900/50 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-linear-to-t from-purple-900/50 from-30% via-transparent to-transparent pointer-events-none" />
 
-        <div className="w-full max-w-md bg-[#111113] rounded-[32px] p-10 border border-white/5 shadow-2xl relative z-10">
+        <div className="w-full max-w-md bg-[#111113] rounded-4xl p-10 border border-white/5 shadow-2xl relative z-10">
           <div className="space-y-2 mb-8">
             <h1 className="text-3xl font-serif tracking-tight text-balance">Create Account</h1>
             <p className="text-gray-400 text-sm leading-relaxed">

@@ -36,7 +36,7 @@ export default function Page() {
 
   switch (user.role) {
     case "user":
-      return <UserDashboard user={user} />;
+      return <UserDashboard />;
     case "seller":
       return <SellerDashboard user={user} />;
     case "admin":
