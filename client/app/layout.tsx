@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Eventra",
-  description: "Buy ticket, sell ticket and use event rooms to share images. ",
+  description: "Buy ticket, sell ticket and use event rooms to share images.",
   icons: {
     icon: '/logo.png',
   },

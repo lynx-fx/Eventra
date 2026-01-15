@@ -44,7 +44,7 @@ const events = [
 
 const TrendingEvents = () => {
     return (
-        <section className="py-20 bg-[#0f0f11]">
+        <section className="py-20 bg-[#0f0f11]" id="events">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-end mb-12">
                     <SectionHeading
