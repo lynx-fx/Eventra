@@ -31,9 +31,8 @@ app.use(
   })
 );
 
-
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Hiee :)" });
+  res.status(200).json({ message: "Hiee ;)" });
 });
 
 app.get("/ping", (req, res) => {

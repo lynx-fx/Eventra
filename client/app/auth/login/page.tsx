@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link"
-import NavBar from "../../component/navBar"
+import NavBar from "@/component/navBar"
 import { toast } from "sonner";
 import { useState } from "react";
 import axiosInstance from "../../../service/axiosInstance";
