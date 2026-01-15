@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import axiosInstance from "@/service/axiosInstance"
 import { useGoogleLogin, type TokenResponse } from "@react-oauth/google";
 import Cookies from "js-cookie"
-import NavBar from "@/app/component/navBar"
+import NavBar from "@/component/navBar"
 
 export default function SignupPage() {
   const [userDetails, setUserDetails] = useState({

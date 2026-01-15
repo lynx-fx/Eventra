@@ -52,7 +52,7 @@ export default function ResetPassword() {
     checkToken();
   }, []);
 
-  const validatePassword = (pass) => {
+  const validatePassword = (pass: any) => {
     if (pass.length < 8) return "Password must be at least 8 characters.";
     if (!/[A-Z]/.test(pass))
       return "Password must contain an uppercase letter.";
@@ -62,7 +62,7 @@ export default function ResetPassword() {
     return "";
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     // Validation
@@ -100,7 +100,8 @@ export default function ResetPassword() {
         toast.error(response.data.message || "Error while resetting password");
       }
     } catch (err) {
-      console.log(err.message);
+      const Err = err as Error;
+      console.log(Err.message);
       toast.error("Error while reseting password.");
     }
   };

@@ -2,7 +2,7 @@
   
 import React from "react";
 import Lottie from "lottie-react";
-import animationData from "./util/404.json";
+import animationData from "../util/404.json";
 
 const fadeInStyle = {
   animation: "fadeIn 1s ease forwards",

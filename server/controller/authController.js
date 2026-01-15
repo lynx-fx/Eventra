@@ -8,6 +8,7 @@ const tokenExtractor = require("../util/tokenExtractor.js");
 const User = require("../model/Users.js");
 
 const { oauth2client } = require("../util/googleConfig.js");
+const { log } = require("console");
 
 const SALT_VALUE = 12;
 exports.signup = async (req, res) => {
@@ -58,7 +59,15 @@ exports.login = async (req, res) => {
         message: `User with ${email} doesn't exists.`,
       });
     }
-    const result = await compare(password, existingUser.password);
+
+    if(!existingUser.password){
+      return res.status(400).json({
+        success: false,
+        message: "Try google login"
+      })
+    }
+    
+    const result = compare(password, existingUser.password);
     if (!result) {
       return res
         .status(401)
