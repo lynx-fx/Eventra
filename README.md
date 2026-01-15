@@ -36,7 +36,7 @@ Before you begin, ensure you have the following installed:
 *   **npm**: v9.0.0 or higher.
 *   **MongoDB**: A local instance or a cloud URI (MongoDB Atlas).
 
-## 🔧 Installation & Setup
+## 🔧 Installation & Setupte
 
 ### 1. Clone the Repository
 ```bash

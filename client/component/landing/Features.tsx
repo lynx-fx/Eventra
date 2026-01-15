@@ -21,7 +21,7 @@ const features = [
 
 const Features = () => {
     return (
-        <section className="py-20 relative z-10 -mt-10">
+        <section className="py-20 relative z-10 -mt-10" id="about">
             <div className="container mx-auto px-4">
                 <div className="bg-[#1c1c1e] rounded-3xl p-8 shadow-2xl border border-white/5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-12">

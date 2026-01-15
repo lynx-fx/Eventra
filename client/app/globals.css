@@ -10,3 +10,7 @@
   --primary: #8B5CF6;
   --primary-foreground: #ffffff;
 }
+
+*{
+  scroll-behavior: smooth;
+}
