@@ -6,7 +6,7 @@ import Link from 'next/link';
 const feedImages = [
     "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1000&auto=format&fit=crop",
 ];
 
@@ -21,7 +21,7 @@ const EventRoom = () => {
                             <span>New Feature</span>
                         </div>
                         <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Event Room</span>
+                            The <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600">Event Room</span>
                         </h2>
                         <p className="text-gray-400 text-lg mb-8 leading-relaxed">
                             Capture the moment and share your experience with fellow attendees. The Event Room is a dedicated space for every event where you can upload photos, connect with fans, and relive the memories.
