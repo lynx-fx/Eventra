@@ -1,0 +1,34 @@
+const ticketService = require("../service/ticketService.js");
+const tokenExtractor = require("../util/tokenExtractor.js");
+
+exports.getUserTickets = async (req, res) => {
+    try {
+        const userId = tokenExtractor(req);
+        const tickets = await ticketService.getUserTickets(userId);
+        res.status(200).json({ success: true, tickets });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.buyTicket = async (req, res) => {
+    try {
+        const userId = tokenExtractor(req);
+        const { eventId } = req.body;
+        const ticket = await ticketService.buyTicket(userId, eventId);
+        res.status(200).json({ success: true, ticket });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+exports.cancelTicket = async (req, res) => {
+    try {
+        const userId = tokenExtractor(req);
+        const { ticketId } = req.body;
+        const ticket = await ticketService.cancelTicket(ticketId, userId);
+        res.status(200).json({ success: true, message: "Ticket cancelled", ticket });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}

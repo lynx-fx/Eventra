@@ -4,8 +4,9 @@ import {
     Ticket,
     Image as ImageIcon,
     Calendar,
-    Settings,
+    User,
     LogOut,
+
 } from "lucide-react";
 import Link from "next/link";
 
@@ -18,9 +19,8 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: SidebarPro
     const navItems = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "tickets", label: "My Tickets", icon: Ticket },
-        { id: "gallery", label: "Event Gallery", icon: ImageIcon },
-        { id: "schedule", label: "Schedule", icon: Calendar },
-        { id: "settings", label: "Settings", icon: Settings },
+        { id: "gallery", label: "Event Room", icon: ImageIcon },
+        { id: "profile", label: "Profile", icon: User },
     ];
 
     return (
