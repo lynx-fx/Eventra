@@ -1,66 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
 import EventCard from "./components/EventCard";
-import { Search } from "lucide-react";
+import TicketList from "./components/TicketList";
+import EventGallery from "./components/EventGallery";
+import UserSettings from "./components/UserSettings";
+import { Search, LogOut } from "lucide-react";
 import Image from "next/image";
+import api from "../utils/api";
+import { useRouter } from "next/navigation";
 
-// Mock Data
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/1a1a1a/cccccc?text=Event+1",
-  },
-  {
-    id: 2,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/2a2a2a/cccccc?text=Event+2",
-  },
-  {
-    id: 3,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/3a3a3a/cccccc?text=Event+3",
-  },
-];
-
-const exploreEvents = [
-  {
-    id: 4,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/4a4a4a/cccccc?text=Event+4",
-  },
-  {
-    id: 5,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/5a5a5a/cccccc?text=Event+5",
-  },
-  {
-    id: 6,
-    title: "ICP X-mas Fest",
-    description: "Christmas fest held on informatics college Pokhara which included music, dances and other performances ...",
-    date: "Dec 25, 2025",
-    location: "Pokhara",
-    image: "https://placehold.co/400x300/6a6a6a/cccccc?text=Event+6",
-  },
-];
+// Interface for Event data
+interface EventData {
+  _id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  location: string;
+  category: string;
+  price: number;
+}
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [upcomingEvents, setUpcomingEvents] = useState<EventData[]>([]);
+  const [exploreEvents, setExploreEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Fetch Events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get("/events");
+        const allEvents = response.data.events;
+
+        // Simple client-side filtering (ideally do this on backend)
+        const now = new Date();
+        const upcoming = allEvents.filter((e: any) => new Date(e.startDate) > now).slice(0, 3);
+        const explore = allEvents.slice(0, 6); // Just show first 6 for explore
+
+        setUpcomingEvents(upcoming);
+        setExploreEvents(explore);
+      } catch (error) {
+        console.error("Failed to fetch events", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/login'); // Assuming you have a login route
+  };
+
 
   return (
     <div className="flex min-h-screen bg-[#0f0f11] text-white font-sans">
@@ -84,57 +79,74 @@ export default function UserDashboard() {
                 <p className="text-xs text-gray-400">email@gmail.com</p>
               </div>
               <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+              <button
+                onClick={handleLogout}
+                className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                title="Logout"
+              >
+                <LogOut size={20} />
+              </button>
             </div>
           </div>
 
           {activeTab === "overview" && (
             <div className="space-y-10">
-              {/* Your Upcoming Events */}
-              <section>
-                <h2 className="text-2xl font-serif mb-6 text-white">Your Upcoming Events</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {upcomingEvents.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      {...event}
-                      onView={() => console.log("View", event.id)}
-                      // Based on image, upcoming events have 'View' and 'Join' ? 
-                      // Actually image shows "View" and "Join" for upcoming events.
-                      onJoin={() => console.log("Join", event.id)}
-                    />
-                  ))}
-                </div>
-              </section>
+              {loading ? (
+                <div className="text-center text-gray-400 py-10">Loading events...</div>
+              ) : (
+                <>
+                  {/* Your Upcoming Events */}
+                  <section>
+                    <h2 className="text-2xl font-serif mb-6 text-white">Your Upcoming Events</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
+                        <EventCard
+                          key={event._id}
+                          title={event.title}
+                          description={event.description}
+                          date={new Date(event.startDate).toLocaleDateString()}
+                          location={event.location}
+                          // Fallback image if none provided
+                          image={"https://placehold.co/400x300/1a1a1a/cccccc?text=" + encodeURIComponent(event.title)}
+                          onView={() => console.log("View", event._id)}
+                          onJoin={() => console.log("Join", event._id)}
+                        />
+                      )) : (
+                        <p className="text-gray-500 italic">No upcoming events found.</p>
+                      )}
+                    </div>
+                  </section>
 
-              <hr className="border-gray-800" />
+                  <hr className="border-gray-800" />
 
-              {/* Explore New Events */}
-              <section>
-                <h2 className="text-2xl font-serif mb-6 text-white">Explore New Events</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {exploreEvents.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      {...event}
-                      onView={() => console.log("View", event)}
-                    // Explore events might only be viewable initially or joinable? 
-                    // Design shows explore events also having the specific look. I'll stick to the card style.
-                    />
-                  ))}
-                </div>
-              </section>
+                  {/* Explore New Events */}
+                  <section>
+                    <h2 className="text-2xl font-serif mb-6 text-white">Explore New Events</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {exploreEvents.map((event) => (
+                        <EventCard
+                          key={event._id}
+                          title={event.title}
+                          description={event.description}
+                          date={new Date(event.startDate).toLocaleDateString()}
+                          location={event.location}
+                          image={"https://placehold.co/400x300/4a4a4a/cccccc?text=" + encodeURIComponent(event.title)}
+                          onView={() => console.log("View", event)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                </>
+              )}
             </div>
           )}
 
-          {activeTab !== "overview" && (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Content for {activeTab}
-            </div>
-          )}
+          {activeTab === "tickets" && <TicketList />}
+          {activeTab === "gallery" && <EventGallery />}
+          {activeTab === "profile" && <UserSettings />}
+
         </div>
       </main>
     </div>
   );
 }
-
-
