@@ -1,0 +1,43 @@
+name: Deploy via SSH
+
+on:
+  push:
+    branches:
+      - deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies (client)
+        run: npm ci
+        working-directory: ./client
+
+      - name: Build (client)
+        run: npm run build
+        working-directory: ./client
+
+      - name: Deploy to server over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /var/www/Personal/Eventra/client/
+            git checkout deployment
+            git pull origin deployment
+            npm ci --production
+            npm run build
+            pm2 reload all

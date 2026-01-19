@@ -24,7 +24,7 @@ export default function Page() {
         id: "1",
         name: "Anup",
         email: "mail@example.com",
-        role: "user",
+        role: "seller",
       };
       setUser(fetchedUser);
     };
