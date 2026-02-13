@@ -20,7 +20,7 @@ exports.signup = async (name, email, password, userRole) => {
         name,
         email,
         password: hashedPassword,
-        userRole,
+        role: userRole,
     });
     await newUser.save();
 

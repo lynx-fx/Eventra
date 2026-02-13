@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Mail, Lock, Eye, EyeOff, Loader2, User } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Loader2, User, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -18,6 +18,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "user",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -50,14 +51,14 @@ export default function SignupPage() {
       return
     }
 
-    
+
     try {
       setIsLoading(true)
       const { data } = await axiosInstance.post("/api/auth/signup", {
         name: userDetails.name,
         email: userDetails.email,
         password: userDetails.password,
-        userRole: "user",
+        userRole: userDetails.role,
       })
 
       if (data.success) {
@@ -76,6 +77,7 @@ export default function SignupPage() {
         email: "",
         password: "",
         confirmPassword: "",
+        role: "user",
       })
     }
   }
@@ -133,6 +135,31 @@ export default function SignupPage() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Join Eventra to start buying and selling tickets for your favorite events.
             </p>
+          </div>
+
+          <div className="flex gap-4 mb-8">
+            <button
+              type="button"
+              onClick={() => setUserDetails(prev => ({ ...prev, role: 'user' }))}
+              className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${userDetails.role === 'user'
+                  ? 'bg-purple-600/10 border-purple-500 text-purple-400'
+                  : 'bg-[#1c1c1e] border-transparent text-gray-500 hover:bg-[#2c2c2e]'
+                }`}
+            >
+              <User className="w-6 h-6" />
+              <span className="text-xs font-medium">Buyer</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserDetails(prev => ({ ...prev, role: 'seller' }))}
+              className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${userDetails.role === 'seller'
+                  ? 'bg-purple-600/10 border-purple-500 text-purple-400'
+                  : 'bg-[#1c1c1e] border-transparent text-gray-500 hover:bg-[#2c2c2e]'
+                }`}
+            >
+              <ShoppingBag className="w-6 h-6" />
+              <span className="text-xs font-medium">Seller</span>
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
