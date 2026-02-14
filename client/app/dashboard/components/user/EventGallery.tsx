@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
-import api from "../../utils/api";
+import api from "../../../utils/api";
 
 interface EventData {
     _id: string;
