@@ -1,147 +1,164 @@
 "use client"
 
-import React from "react";
-import { Search, Plus, Calendar, MoreVertical, Edit2, Trash2, Eye } from "lucide-react";
-
-const events = [
-    {
-        id: 1,
-        name: "ICP X-mas Fest",
-        date: "Dec 25, 2025",
-        location: "Pokhara, Nepal",
-        sold: 245,
-        total: 500,
-        revenue: "$12,250",
-        status: "Active",
-        statusColor: "bg-green-500/20 text-green-500"
-    },
-    {
-        id: 2,
-        name: "Summer Music Festival",
-        date: "Jan 20, 2026",
-        location: "Kathmandu, Nepal",
-        sold: 180,
-        total: 300,
-        revenue: "$9,000",
-        status: "Active",
-        statusColor: "bg-green-500/20 text-green-500"
-    },
-    {
-        id: 3,
-        name: "Tech Conference 2026",
-        date: "Feb 15, 2026",
-        location: "Lalitpur, Nepal",
-        sold: 89,
-        total: 200,
-        revenue: "$8,900",
-        status: "Upcoming",
-        statusColor: "bg-blue-500/20 text-blue-500"
-    },
-    {
-        id: 4,
-        name: "Food Festival",
-        date: "Nov 10, 2025",
-        location: "Pokhara, Nepal",
-        sold: 500,
-        total: 500,
-        revenue: "$25,000",
-        status: "Completed",
-        statusColor: "bg-gray-500/20 text-gray-400"
-    }
-];
+import React, { useState, useEffect } from "react";
+import { Search, Plus, Calendar, MoreVertical, Edit2, Trash2, Eye, Loader2, MapPin } from "lucide-react";
+import axiosInstance from "../../../../service/axiosInstance";
+import CreateEventModal from "./CreateEventModal";
+import { toast } from "sonner";
 
 export default function SellerEvents() {
+    const [events, setEvents] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const fetchEvents = async () => {
+        setIsLoading(true);
+        try {
+            const { data } = await axiosInstance.get("/api/events");
+            if (data.success) {
+                setEvents(data.events);
+            }
+        } catch (error) {
+            console.error("Error fetching events:", error);
+            toast.error("Failed to load events");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this event?")) return;
+
+        try {
+            // Assuming there's a delete endpoint, if not I should check
+            const { data } = await axiosInstance.delete(`/api/events/${id}`);
+            if (data.success) {
+                toast.success("Event deleted");
+                fetchEvents();
+            }
+        } catch (error) {
+            toast.error("Failed to delete event");
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-serif text-white">Manage Events</h2>
-                <button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-purple-600/20">
-                    <Plus size={18} />
-                    <span>New Event</span>
+                <div>
+                    <h2 className="text-3xl font-serif text-white">Manage Events</h2>
+                    <p className="text-gray-500 text-sm mt-1">Manage and track your published events.</p>
+                </div>
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-purple-600/20 active:scale-95"
+                >
+                    <Plus size={20} />
+                    <span className="font-bold">New Event</span>
                 </button>
             </div>
 
-            <div className="bg-[#1c1c1e] rounded-3xl border border-white/5 overflow-hidden">
-                <div className="p-6 border-b border-white/5 flex gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+            <div className="bg-[#1c1c1e] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+                <div className="p-6 border-b border-white/5 bg-white/[0.02] flex gap-4">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-500 transition-colors w-4 h-4" />
                         <input
                             type="text"
-                            placeholder="Search your events..."
-                            className="w-full bg-[#111113] border-none rounded-xl py-2.5 pl-11 pr-4 text-sm text-gray-300 focus:ring-1 focus:ring-purple-500 outline-none"
+                            placeholder="Search your events database..."
+                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-11 pr-4 text-sm text-gray-300 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
                         />
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b border-white/5">
-                                <th className="px-6 py-4 font-medium">Event Details</th>
-                                <th className="px-6 py-4 font-medium">Capacity</th>
-                                <th className="px-6 py-4 font-medium">Sales</th>
-                                <th className="px-6 py-4 font-medium">Status</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {events.map((event) => (
-                                <tr key={event.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="px-6 py-5">
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-200 font-medium">{event.name}</span>
-                                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                                                <Calendar size={12} />
-                                                <span>{event.date}</span>
-                                                <span>•</span>
-                                                <span>{event.location}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="w-32">
-                                            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                                                <span>{event.sold} Sold</span>
-                                                <span>{event.total}</span>
-                                            </div>
-                                            <div className="h-1.5 bg-[#111113] rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-purple-500 rounded-full"
-                                                    style={{ width: `${(event.sold / event.total) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <span className="text-gray-300 font-medium">{event.revenue}</span>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.statusColor}`}>
-                                            {event.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-5 text-right">
-                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors">
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                        <button className="group-hover:hidden p-2 text-gray-500">
-                                            <MoreVertical size={16} />
-                                        </button>
-                                    </td>
+                    {isLoading ? (
+                        <div className="py-20 flex flex-col items-center justify-center text-gray-500 gap-4">
+                            <Loader2 className="animate-spin text-purple-500" size={32} />
+                            <p className="font-serif italic">Loading events...</p>
+                        </div>
+                    ) : events.length === 0 ? (
+                        <div className="py-24 flex flex-col items-center justify-center text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-600 mb-4">
+                                <Calendar size={32} />
+                            </div>
+                            <h3 className="text-xl font-serif text-white mb-2">No events found</h3>
+                            <p className="text-gray-500 max-w-xs mx-auto text-sm">You haven't created any events yet. Start by clicking "New Event".</p>
+                        </div>
+                    ) : (
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="text-xs text-gray-500 uppercase tracking-widest border-b border-white/5 font-bold">
+                                    <th className="px-8 py-5">Event Details</th>
+                                    <th className="px-8 py-5">Date & Time</th>
+                                    <th className="px-8 py-5">Price</th>
+                                    <th className="px-8 py-5">Status</th>
+                                    <th className="px-8 py-5 text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {events.map((event) => (
+                                    <tr key={event._id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <td className="px-8 py-6">
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-200 font-bold text-base group-hover:text-white transition-colors">{event.title}</span>
+                                                <span className="text-xs text-gray-500 mt-1 line-clamp-1">{event.description || "No description provided"}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
+                                                    <Calendar size={12} className="text-purple-500" />
+                                                    {new Date(event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] text-gray-600">
+                                                    <MapPin size={10} />
+                                                    {event.category || "General"}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className="text-purple-400 font-bold font-mono">
+                                                ${event.price ? event.price.toFixed(2) : "0.00"}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${new Date(event.endDate) < new Date() ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"
+                                                }`}>
+                                                {new Date(event.endDate) < new Date() ? "Ended" : "Live"}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                                    <Eye size={18} />
+                                                </button>
+                                                <button className="p-2 text-gray-500 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all">
+                                                    <Edit2 size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(event._id)}
+                                                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
+
+            <CreateEventModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchEvents}
+            />
         </div>
     );
 }

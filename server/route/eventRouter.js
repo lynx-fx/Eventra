@@ -9,5 +9,6 @@ router.get("/:id", eventController.getEventById);
 
 // Protected routes (e.g. create event - maybe admin only in future?)
 router.post("/", protect, eventController.createEvent);
+router.delete("/:id", protect, eventController.deleteEvent);
 
 module.exports = router;
