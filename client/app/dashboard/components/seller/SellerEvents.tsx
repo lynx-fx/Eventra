@@ -125,9 +125,11 @@ export default function SellerEvents() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${new Date(event.endDate) < new Date() ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${event.status === "approved" ? "bg-green-500/10 text-green-500" :
+                                                    event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
+                                                        "bg-red-500/10 text-red-500"
                                                 }`}>
-                                                {new Date(event.endDate) < new Date() ? "Ended" : "Live"}
+                                                {event.status || "pending"}
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
