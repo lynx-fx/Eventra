@@ -21,3 +21,11 @@ exports.createEvent = async (eventData) => {
     await event.save();
     return event;
 };
+
+exports.deleteEvent = async (eventId) => {
+    return await Event.findByIdAndDelete(eventId);
+};
+
+exports.updateEventStatus = async (eventId, status) => {
+    return await Event.findByIdAndUpdate(eventId, { status }, { new: true });
+};

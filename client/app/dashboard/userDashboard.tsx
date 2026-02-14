@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
-import EventCard from "./components/EventCard";
-import TicketList from "./components/TicketList";
-import EventGallery from "./components/EventGallery";
-import UserSettings from "./components/UserSettings";
+import EventCard from "./components/user/EventCard";
+import TicketList from "./components/user/TicketList";
+import EventGallery from "./components/user/EventGallery";
+import UserSettings from "./components/user/UserSettings";
 import { Search, LogOut } from "lucide-react";
 import Image from "next/image";
 import api from "../utils/api";

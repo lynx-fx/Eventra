@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { User } from "./page";
-import SellerSidebar from "./components/SellerSidebar";
-import SellerEvents from "./components/SellerEvents";
-import SellerSales from "./components/SellerSales";
-import SellerAttendees from "./components/SellerAttendees";
-import SellerAnalytics from "./components/SellerAnalytics";
-import UserSettings from "./components/UserSettings";
+import SellerSidebar from "./components/seller/SellerSidebar";
+import SellerEvents from "./components/seller/SellerEvents";
+import SellerSales from "./components/seller/SellerSales";
+import SellerAttendees from "./components/seller/SellerAttendees";
+import SellerAnalytics from "./components/seller/SellerAnalytics";
+import UserSettings from "./components/user/UserSettings";
 import { Search, Plus, Calendar, Users, DollarSign, Eye, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 

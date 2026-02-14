@@ -38,3 +38,22 @@ exports.createEvent = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 }
+
+exports.deleteEvent = async (req, res) => {
+    try {
+        await eventService.deleteEvent(req.params.id);
+        res.status(200).json({ success: true, message: "Event deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+exports.updateEventStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const event = await eventService.updateEventStatus(req.params.id, status);
+        res.status(200).json({ success: true, event });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
