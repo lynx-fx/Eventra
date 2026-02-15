@@ -1,6 +1,7 @@
 import React from "react";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 interface EventCardProps {
   title: string;
@@ -22,49 +23,63 @@ export default function EventCard({
   onJoin,
 }: EventCardProps) {
   return (
-    <div className="bg-[#1C1C24] rounded-2xl overflow-hidden min-w-[300px] w-full max-w-[350px] shadow-lg flex flex-col h-full border border-gray-800">
-      <div className="relative h-48 w-full">
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-[#111113] rounded-3xl overflow-hidden shadow-2xl flex flex-col h-full border border-white/5 hover:border-purple-500/30 transition-all group"
+    >
+      <div className="relative h-56 w-full overflow-hidden">
         <Image
           src={image}
           alt={title}
           fill
-          className="object-cover"
+          className="object-cover group-hover:scale-110 transition-transform duration-700"
         />
+        <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
+        <div className="absolute top-4 right-4">
+          <div className="bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
+            <ArrowUpRight size={18} />
+          </div>
+        </div>
       </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-white font-bold text-lg mb-1">{title}</h3>
-        <p className="text-gray-400 text-xs mb-3 line-clamp-2">
+
+      <div className="p-6 flex flex-col flex-1 relative">
+        <h3 className="text-white font-bold text-xl mb-2 group-hover:text-purple-400 transition-colors leading-tight">{title}</h3>
+        <p className="text-gray-500 text-sm mb-6 line-clamp-2 font-light">
           {description}
         </p>
-        
-        <div className="mt-auto space-y-2">
-            <div className="flex items-center text-gray-400 text-xs">
-            <Calendar className="w-3 h-3 mr-2" />
+
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="flex items-center text-gray-400 text-xs font-medium">
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
+              <Calendar className="w-4 h-4 text-purple-500" />
+            </div>
             <span>{date}</span>
+          </div>
+          <div className="flex items-center text-gray-400 text-xs font-medium">
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
+              <MapPin className="w-4 h-4 text-purple-500" />
             </div>
-            <div className="flex items-center text-gray-400 text-xs">
-            <MapPin className="w-3 h-3 mr-2" />
             <span>{location}</span>
-            </div>
+          </div>
         </div>
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-4 mt-8">
           <button
             onClick={onView}
-            className="flex-1 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white py-2 rounded-full text-sm font-medium transition-colors"
+            className="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
           >
-            View
+            Details
           </button>
           {onJoin && (
             <button
               onClick={onJoin}
-              className="flex-1 bg-white hover:bg-gray-100 text-black py-2 rounded-full text-sm font-medium transition-colors"
+              className="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95"
             >
-              Join
+              Get Ticket
             </button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -4,6 +4,10 @@ exports.getAllEvents = async () => {
     return await Event.find().sort({ startDate: 1 });
 };
 
+exports.getEventsByQuery = async (query) => {
+    return await Event.find(query).sort({ startDate: 1 });
+};
+
 exports.getUpcomingEvents = async () => {
     // Logic to get events starting soon, e.g., in the next 30 days
     const now = new Date();

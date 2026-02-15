@@ -47,8 +47,9 @@ exports.login = async (email, password) => {
     const token = jwt.sign(
         {
             id: existingUser.id,
+            role: existingUser.role,
         },
-        process.env.TOKEN_SECRET,
+        process.env.JWT_SECRET,
         {
             expiresIn: "168hours",
         }
@@ -85,6 +86,7 @@ exports.googleLogin = async (code) => {
         token = jwt.sign(
             {
                 id: newUser._id,
+                role: newUser.role,
             },
             process.env.JWT_SECRET,
             {
@@ -96,6 +98,7 @@ exports.googleLogin = async (code) => {
         token = jwt.sign(
             {
                 id: user._id,
+                role: user.role,
             },
             process.env.JWT_SECRET,
             {
@@ -159,6 +162,10 @@ exports.validateToken = async (email, token) => {
     } else {
         throw new Error("Invalid token.");
     }
+};
+
+exports.getUserById = async (userId) => {
+    return await User.findById(userId);
 };
 
 exports.resetPassword = async (email, password, token) => {

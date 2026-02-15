@@ -163,3 +163,15 @@ exports.resetPassword = async (req, res) => {
       .json({ success: false, message: "Error while reseting password." });
   }
 };
+exports.getCurrentUser = async (req, res) => {
+  try {
+    const user = await userService.getUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: "Error fetching user data" });
+  }
+};
