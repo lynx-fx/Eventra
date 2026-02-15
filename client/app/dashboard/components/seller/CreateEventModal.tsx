@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, DollarSign, Type, AlignLeft, Tag, Loader2 } from "lucide-react";
+import { X, Calendar, DollarSign, Type, AlignLeft, Tag, Loader2, MapPin, Users } from "lucide-react";
 import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 interface Props {
     isOpen: boolean;
@@ -14,11 +15,18 @@ interface Props {
 
 export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) {
     const [isLoading, setIsLoading] = useState(false);
+    const AUTH_TOKEN = Cookies.get("auth");
     const [formData, setFormData] = useState({
         title: "",
         description: "",
         category: "",
+        location: "",
         price: "",
+        capacity: {
+            premium: "",
+            standard: "",
+            economy: "",
+        },
         startDate: "",
         endDate: "",
     });
@@ -31,6 +39,15 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
             const { data } = await axiosInstance.post("/api/events", {
                 ...formData,
                 price: Number(formData.price) || 0,
+                capacity: {
+                    premium: Number(formData.capacity.premium) || 0,
+                    standard: Number(formData.capacity.standard) || 0,
+                    economy: Number(formData.capacity.economy) || 0,
+                }
+            },{
+                headers:{
+                    auth: AUTH_TOKEN
+                }
             });
 
             if (data.success) {
@@ -41,7 +58,13 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                     title: "",
                     description: "",
                     category: "",
+                    location: "",
                     price: "",
+                    capacity: {
+                        premium: "",
+                        standard: "",
+                        economy: "",
+                    },
                     startDate: "",
                     endDate: "",
                 });
@@ -112,7 +135,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Category</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Event Category</label>
                                     <div className="relative group">
                                         <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
                                         <input
@@ -122,6 +145,63 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                             placeholder="e.g. Music, Tech, Art"
                                             className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Location</label>
+                                    <div className="relative group">
+                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
+                                        <input
+                                            required
+                                            type="text"
+                                            value={formData.location}
+                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                            placeholder="e.g. Kathmandu, Nepal"
+                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block">Ticket Capacities (Categories)</label>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <div className="relative group">
+                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                <input
+                                                    type="number"
+                                                    value={formData.capacity.premium}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, premium: e.target.value } })}
+                                                    placeholder="Premium"
+                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="relative group">
+                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                <input
+                                                    type="number"
+                                                    value={formData.capacity.standard}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, standard: e.target.value } })}
+                                                    placeholder="Standard"
+                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="relative group">
+                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                <input
+                                                    type="number"
+                                                    value={formData.capacity.economy}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, economy: e.target.value } })}
+                                                    placeholder="Economy"
+                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -146,9 +226,10 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                         <input
                                             required
                                             type="datetime-local"
+                                            step="60"
                                             value={formData.startDate}
                                             onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
                                         />
                                     </div>
                                 </div>
@@ -160,9 +241,10 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                         <input
                                             required
                                             type="datetime-local"
+                                            step="60"
                                             value={formData.endDate}
                                             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
                                         />
                                     </div>
                                 </div>

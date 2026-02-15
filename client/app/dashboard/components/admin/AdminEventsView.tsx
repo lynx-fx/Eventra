@@ -10,10 +10,13 @@ import {
     XCircle,
     Eye,
     Download,
-    Loader2
+    Loader2,
+    MapPin,
+    Users
 } from "lucide-react"
 import axiosInstance from "../../../../service/axiosInstance"
 import { toast } from "sonner"
+import Cookies from "js-cookie"
 
 export default function AdminEventsView() {
     const [events, setEvents] = useState<any[]>([])
@@ -23,7 +26,10 @@ export default function AdminEventsView() {
     const fetchEvents = async () => {
         setIsLoading(true)
         try {
-            const { data } = await axiosInstance.get("/api/events")
+            const token = Cookies.get("auth")
+            const { data } = await axiosInstance.get("/api/events", {
+                headers: { auth: token }
+            })
             if (data.success) {
                 setEvents(data.events)
             }
@@ -40,7 +46,11 @@ export default function AdminEventsView() {
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {
-            const { data } = await axiosInstance.patch(`/api/events/${id}/status`, { status: newStatus })
+            const token = Cookies.get("auth")
+            const { data } = await axiosInstance.patch(`/api/events/${id}/status`,
+                { status: newStatus },
+                { headers: { auth: token } }
+            )
             if (data.success) {
                 toast.success(`Event ${newStatus} successfully`)
                 fetchEvents()
@@ -49,6 +59,7 @@ export default function AdminEventsView() {
             toast.error("Failed to update status")
         }
     }
+
 
     const filteredEvents = events.filter(event =>
         filterStatus === "All" || event.status === filterStatus.toLowerCase()
@@ -128,11 +139,23 @@ export default function AdminEventsView() {
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="py-5 px-8 text-sm text-gray-400">{event.category || "General"}</td>
+                                    <td className="py-5 px-8">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm text-gray-400">{event.category || "General"}</span>
+                                            <span className="text-[10px] text-gray-600 flex items-center gap-1">
+                                                <MapPin size={10} />
+                                                {event.location || "Global"}
+                                            </span>
+                                            <span className="text-[10px] text-purple-500/50 flex items-center gap-1 mt-0.5">
+                                                <Users size={10} />
+                                                {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} Cap
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td className="py-5 px-8 text-center">
                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest ${event.status === "approved" ? "bg-green-500/10 text-green-500" :
-                                                event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
-                                                    "bg-red-500/10 text-red-500"
+                                            event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
+                                                "bg-red-500/10 text-red-500"
                                             }`}>
                                             {event.status || "pending"}
                                         </span>

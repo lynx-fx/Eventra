@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Ticket, Calendar, MapPin, QrCode, Loader2, Sparkles } from "lucide-react";
-import axiosInstance from "../../../service/axiosInstance";
+import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 
 interface TicketData {

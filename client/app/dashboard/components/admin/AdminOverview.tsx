@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import axiosInstance from "../../../../service/axiosInstance"
 import { toast } from "sonner"
+import Cookies from "js-cookie"
 
 export default function AdminOverview() {
     const [statsData, setStatsData] = useState<any>(null)
@@ -25,7 +26,10 @@ export default function AdminOverview() {
     const fetchData = async () => {
         setIsLoading(true)
         try {
-            const { data } = await axiosInstance.get("/api/events")
+            const token = Cookies.get("auth")
+            const { data } = await axiosInstance.get("/api/events", {
+                headers: { auth: token }
+            })
             if (data.success) {
                 const totalEvents = data.events.length
                 const pending = data.events.filter((e: any) => e.status === "pending")
@@ -46,6 +50,7 @@ export default function AdminOverview() {
             setIsLoading(false)
         }
     }
+
 
     useEffect(() => {
         fetchData()

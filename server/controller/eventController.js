@@ -1,13 +1,45 @@
+const { tokenExtractor } = require("../util/tokenExtractor.js");
+const jwt = require("jsonwebtoken");
 const eventService = require("../service/eventService.js");
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await eventService.getAllEvents();
+        const token = tokenExtractor(req);
+        let query = {};
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                if (decoded.role === "seller") {
+                    query = { seller: decoded.id };
+                } else if (decoded.role === "admin") {
+                    query = {};
+                } else {
+                    query = { status: "approved" };
+                }
+            } catch (e) {
+                query = { status: "approved" };
+            }
+        } else if (req.user) {
+            // If already authenticated by middleware
+            if (req.user.role === "seller") {
+                query = { seller: req.user.id };
+            } else if (req.user.role === "admin") {
+                query = {};
+            } else {
+                query = { status: "approved" };
+            }
+        } else {
+            query = { status: "approved" };
+        }
+
+        const events = await eventService.getEventsByQuery(query);
         res.status(200).json({ success: true, events });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 
 exports.getUpcoming = async (req, res) => {
     try {
@@ -30,9 +62,12 @@ exports.getEventById = async (req, res) => {
     }
 };
 
+
 exports.createEvent = async (req, res) => {
     try {
-        const event = await eventService.createEvent(req.body);
+        // req.user is set by protect middleware
+        const userId = req.user.id;
+        const event = await eventService.createEvent({ ...req.body, seller: userId });
         res.status(201).json({ success: true, event });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -57,3 +92,4 @@ exports.updateEventStatus = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 }
+

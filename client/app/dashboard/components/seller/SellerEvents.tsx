@@ -1,40 +1,24 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
-import { Search, Plus, Calendar, MoreVertical, Edit2, Trash2, Eye, Loader2, MapPin } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Plus, Calendar, Edit2, Trash2, Eye, Loader2, MapPin, Users } from "lucide-react";
 import axiosInstance from "../../../../service/axiosInstance";
 import CreateEventModal from "./CreateEventModal";
 import { toast } from "sonner";
 
-export default function SellerEvents() {
-    const [events, setEvents] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface Props {
+    events: any[];
+    isLoading: boolean;
+    fetchEvents: () => void;
+}
+
+export default function SellerEvents({ events, isLoading, fetchEvents }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const fetchEvents = async () => {
-        setIsLoading(true);
-        try {
-            const { data } = await axiosInstance.get("/api/events");
-            if (data.success) {
-                setEvents(data.events);
-            }
-        } catch (error) {
-            console.error("Error fetching events:", error);
-            toast.error("Failed to load events");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchEvents();
-    }, []);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm("Are you sure you want to delete this event?")) return;
 
         try {
-            // Assuming there's a delete endpoint, if not I should check
             const { data } = await axiosInstance.delete(`/api/events/${id}`);
             if (data.success) {
                 toast.success("Event deleted");
@@ -115,7 +99,13 @@ export default function SellerEvents() {
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[10px] text-gray-600">
                                                     <MapPin size={10} />
-                                                    {event.category || "General"}
+                                                    {event.location || "Global"}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] text-purple-500/50 mt-1">
+                                                    <Users size={10} />
+                                                    <span>
+                                                        {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} Total Spots
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -126,8 +116,8 @@ export default function SellerEvents() {
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${event.status === "approved" ? "bg-green-500/10 text-green-500" :
-                                                    event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
-                                                        "bg-red-500/10 text-red-500"
+                                                event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
+                                                    "bg-red-500/10 text-red-500"
                                                 }`}>
                                                 {event.status || "pending"}
                                             </span>
@@ -164,3 +154,4 @@ export default function SellerEvents() {
         </div>
     );
 }
+

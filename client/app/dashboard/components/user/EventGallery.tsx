@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowLeft, Calendar, MapPin, Loader2, Image as ImageIcon } from "lucide-react";
-import axiosInstance from "../../../service/axiosInstance";
+import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 
 interface EventData {

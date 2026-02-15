@@ -1,3 +1,3 @@
 exports.tokenExtractor = (req) => {
-    return req.cookies?.auth || null;
+    return req.headers?.auth || null;
 }

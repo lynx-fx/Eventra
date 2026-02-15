@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "./page";
 import SellerSidebar from "./components/seller/SellerSidebar";
 import SellerEvents from "./components/seller/SellerEvents";
@@ -10,6 +10,10 @@ import SellerAnalytics from "./components/seller/SellerAnalytics";
 import UserSettings from "./components/user/UserSettings";
 import { Search, Plus, Calendar, Users, DollarSign, Eye, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import axiosInstance from "../../service/axiosInstance";
+import CreateEventModal from "./components/seller/CreateEventModal";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 interface Props {
   user: User;
@@ -17,49 +21,51 @@ interface Props {
 
 export default function SellerDashboard({ user }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    try {
+      const token = Cookies.get("auth");
+      const { data } = await axiosInstance.get("/api/events", {
+        headers: {
+          auth: token
+        }
+      });
+      if (data.success) {
+        setEvents(data.events);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Failed to load events");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handleLogout = () => {
     console.log("Logging out...");
     router.push("/");
   };
 
+  const totalRevenue = events.reduce((acc, event) => acc + (event.price || 0) * (event.soldTickets || 0), 0);
+  const totalTickets = events.reduce((acc, event) => acc + (event.soldTickets || 0), 0);
+
   const stats = [
-    { label: "Total Events", value: "8", icon: Calendar, trend: "up" },
-    { label: "Tickets Sold", value: "1,014", icon: Users, trend: "up" },
-    { label: "Total Revenue", value: "$55,150", icon: DollarSign, trend: "up" },
-    { label: "Total Views", value: "12.4k", icon: Eye, trend: "up" },
+    { label: "Total Events", value: events.length.toString(), icon: Calendar },
+    { label: "Tickets Sold", value: totalTickets.toLocaleString(), icon: Users },
+    { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign },
+    { label: "Total Views", value: "0", icon: Eye }, // Placeholder for views
   ];
 
-  const recentEvents = [
-    {
-      id: 1,
-      name: "ICP X-mas Fest",
-      date: "Dec 25, 2025",
-      sold: 245,
-      total: 500,
-      status: "Active",
-      statusColor: "bg-green-500/10 text-green-500"
-    },
-    {
-      id: 2,
-      name: "Summer Music",
-      date: "Jan 20, 2026",
-      sold: 180,
-      total: 300,
-      status: "Active",
-      statusColor: "bg-green-500/10 text-green-500"
-    },
-    {
-      id: 3,
-      name: "Tech Conf",
-      date: "Feb 15, 2026",
-      sold: 89,
-      total: 200,
-      status: "Upcoming",
-      statusColor: "bg-blue-500/10 text-blue-500"
-    }
-  ];
+  const recentEvents = [...events].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30">
@@ -140,20 +146,27 @@ export default function SellerDashboard({ user }: Props) {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    {recentEvents.map((event) => (
-                      <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-white/10 transition-all group">
+                    {isLoading ? (
+                      <div className="py-10 text-center text-gray-500 italic">Loading events...</div>
+                    ) : recentEvents.length === 0 ? (
+                      <div className="py-10 text-center text-gray-500 italic">No events found.</div>
+                    ) : recentEvents.map((event) => (
+                      <div key={event._id} className="flex items-center justify-between p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-white/10 transition-all group">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-white/5 flex flex-col items-center justify-center text-[10px] uppercase font-bold text-gray-400">
-                            <span className="text-purple-500">{event.date.split(' ')[0]}</span>
-                            <span>{event.date.split(' ')[1].replace(',', '')}</span>
+                            <span className="text-purple-500">{new Date(event.startDate).toLocaleDateString(undefined, { month: 'short' })}</span>
+                            <span>{new Date(event.startDate).getDate()}</span>
                           </div>
                           <div>
-                            <h4 className="text-gray-200 font-medium group-hover:text-white transition-colors">{event.name}</h4>
-                            <p className="text-xs text-gray-500">{event.sold} / {event.total} tickets sold</p>
+                            <h4 className="text-gray-200 font-medium group-hover:text-white transition-colors">{event.title}</h4>
+                            <p className="text-xs text-gray-500">{event.soldTickets || 0} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} tickets sold</p>
                           </div>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.statusColor}`}>
-                          {event.status}
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.status === "approved" ? "bg-green-500/10 text-green-500" :
+                          event.status === "pending" ? "bg-orange-500/10 text-orange-500" :
+                            "bg-red-500/10 text-red-500"
+                          }`}>
+                          {event.status || "pending"}
                         </span>
                       </div>
                     ))}
@@ -164,7 +177,10 @@ export default function SellerDashboard({ user }: Props) {
                 <div className="space-y-6">
                   <div className="bg-linear-to-br from-purple-600 to-blue-710 p-8 rounded-4xl text-white shadow-2xl shadow-purple-600/20">
                     <h3 className="text-xl font-serif mb-4 leading-tight">Host Your Next Big Event</h3>
-                    <button className="w-full py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="w-full py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+                    >
                       <Plus size={18} />
                       Create Now
                     </button>
@@ -194,7 +210,7 @@ export default function SellerDashboard({ user }: Props) {
             </div>
           )}
 
-          {activeTab === "events" && <SellerEvents />}
+          {activeTab === "events" && <SellerEvents events={events} isLoading={isLoading} fetchEvents={fetchEvents} />}
           {activeTab === "sales" && <SellerSales />}
           {activeTab === "attendees" && <SellerAttendees />}
           {activeTab === "analytics" && <SellerAnalytics />}
@@ -202,6 +218,13 @@ export default function SellerDashboard({ user }: Props) {
 
         </div>
       </main>
+
+      <CreateEventModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchEvents}
+      />
     </div>
   );
 }
+

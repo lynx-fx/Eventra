@@ -20,6 +20,11 @@ interface EventData {
   location: string;
   category: string;
   price: number;
+  capacity: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
   status: string;
 }
 
@@ -33,7 +38,12 @@ export default function UserDashboard() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/api/events");
+      const token = Cookies.get("auth");
+      const response = await axiosInstance.get("/api/events", {
+        headers: {
+          auth: token
+        }
+      });
       if (response.data.success) {
         const allEvents = response.data.events;
 
