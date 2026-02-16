@@ -131,12 +131,25 @@ export default function AdminEventsView() {
                             {filteredEvents.map((event) => (
                                 <tr key={event._id} className="group hover:bg-white/[0.01] transition-colors">
                                     <td className="py-5 px-8">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-gray-200 group-hover:text-white">{event.title}</span>
-                                            <span className="text-[11px] text-gray-600 flex items-center gap-1 mt-1">
-                                                <Calendar size={10} />
-                                                {new Date(event.eventDate || event.startDate).toLocaleDateString()}
-                                            </span>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-lg bg-[#1c1c1e] border border-white/5 overflow-hidden flex-shrink-0">
+                                                <img
+                                                    src={
+                                                        event.bannerImage?.startsWith("/images")
+                                                            ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${event.bannerImage}`
+                                                            : (event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop")
+                                                    }
+                                                    alt={event.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-gray-200 group-hover:text-white">{event.title}</span>
+                                                <span className="text-[11px] text-gray-600 flex items-center gap-1 mt-1">
+                                                    <Calendar size={10} />
+                                                    {new Date(event.eventDate || event.startDate).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="py-5 px-8">

@@ -22,6 +22,12 @@ export default function EventCard({
   onView,
   onJoin,
 }: EventCardProps) {
+  const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+    : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
+
+  const imageUrl = image?.startsWith("/images") ? `${BACKEND}${image}` : image;
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -29,7 +35,7 @@ export default function EventCard({
     >
       <div className="relative h-56 w-full overflow-hidden">
         <Image
-          src={image}
+          src={imageUrl}
           alt={title}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-700"

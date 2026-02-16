@@ -5,6 +5,7 @@ import DashboardSidebar from "./components/DashboardSidebar";
 import EventCard from "./components/user/EventCard";
 import TicketList from "./components/user/TicketList";
 import EventGallery from "./components/user/EventGallery";
+import BookingModal from "./components/user/BookingModal";
 import UserSettings from "./components/user/UserSettings";
 import { Search, LogOut, Bell, User as UserIcon, Loader2, Calendar } from "lucide-react";
 import axiosInstance from "../../service/axiosInstance";
@@ -22,13 +23,23 @@ interface EventData {
   eventDate: string;
   location: string;
   category: string;
-  price: number;
+  price: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
   capacity: {
     premium: number;
     standard: number;
     economy: number;
   };
+  soldTickets: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
   status: string;
+  bannerImage?: string;
 }
 
 interface Props {
@@ -41,6 +52,8 @@ export default function UserDashboard({ user, setUser }: Props) {
   const [upcomingEvents, setUpcomingEvents] = useState<EventData[]>([]);
   const [exploreEvents, setExploreEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const router = useRouter();
 
   const fetchEvents = async () => {
@@ -161,9 +174,12 @@ export default function UserDashboard({ user, setUser }: Props) {
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Global"}
-                            image={"https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
+                            image={event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                             onView={() => console.log("View", event._id)}
-                            onJoin={() => console.log("Join", event._id)}
+                            onJoin={() => {
+                              setSelectedEvent(event);
+                              setIsBookingModalOpen(true);
+                            }}
                           />
                         ))}
                       </div>
@@ -194,8 +210,12 @@ export default function UserDashboard({ user, setUser }: Props) {
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Online"}
-                            image={"https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
+                            image={event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
                             onView={() => console.log("View", event)}
+                            onJoin={() => {
+                              setSelectedEvent(event);
+                              setIsBookingModalOpen(true);
+                            }}
                           />
                         ))}
                       </div>
@@ -214,6 +234,16 @@ export default function UserDashboard({ user, setUser }: Props) {
 
         </div>
       </main>
+
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        onSuccess={fetchEvents}
+      />
     </div>
   );
 }

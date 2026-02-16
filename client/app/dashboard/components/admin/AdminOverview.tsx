@@ -34,7 +34,15 @@ export default function AdminOverview() {
                 const totalEvents = data.events.length
                 const pending = data.events.filter((e: any) => e.status === "pending")
                 const approvedCount = data.events.filter((e: any) => e.status === "approved").length
-                const totalRev = data.events.reduce((acc: number, curr: any) => acc + (curr.price || 0), 0)
+                const totalRev = data.events.reduce((acc: number, curr: any) => {
+                    const soldPremium = curr.soldTickets?.premium || 0;
+                    const soldStandard = curr.soldTickets?.standard || 0;
+                    const soldEconomy = curr.soldTickets?.economy || 0;
+                    const eventRev = ((curr.price?.premium || 0) * soldPremium) +
+                        ((curr.price?.standard || 0) * soldStandard) +
+                        ((curr.price?.economy || 0) * soldEconomy);
+                    return acc + eventRev;
+                }, 0)
 
                 setStatsData({
                     totalEvents,

@@ -86,9 +86,22 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                                 {events.map((event) => (
                                     <tr key={event._id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-gray-200 font-bold text-base group-hover:text-white transition-colors">{event.title}</span>
-                                                <span className="text-xs text-gray-500 mt-1 line-clamp-1">{event.description || "No description provided"}</span>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-[#111113] border border-white/5 overflow-hidden flex-shrink-0">
+                                                    <img
+                                                        src={
+                                                            event.bannerImage?.startsWith("/images")
+                                                                ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${event.bannerImage}`
+                                                                : (event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop")
+                                                        }
+                                                        alt={event.title}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-gray-200 font-bold text-base group-hover:text-white transition-colors">{event.title}</span>
+                                                    <span className="text-xs text-gray-500 mt-1 line-clamp-1">{event.description || "No description provided"}</span>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
@@ -104,14 +117,14 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                                                 <div className="flex items-center gap-2 text-[10px] text-purple-500/50 mt-1">
                                                     <Users size={10} />
                                                     <span>
-                                                        {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} Total Spots
+                                                        {(event.soldTickets?.premium || 0) + (event.soldTickets?.standard || 0) + (event.soldTickets?.economy || 0)} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} Sold
                                                     </span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className="text-purple-400 font-bold font-mono">
-                                                ${event.price ? event.price.toFixed(2) : "0.00"}
+                                                ${event.price?.standard ? event.price.standard.toFixed(2) : "0.00"}
                                             </span>
                                         </td>
                                         <td className="px-8 py-6">

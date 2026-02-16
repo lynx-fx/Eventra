@@ -56,8 +56,24 @@ export default function SellerDashboard({ user, setUser }: Props) {
     router.push("/");
   };
 
-  const totalRevenue = events.reduce((acc, event) => acc + (event.price || 0) * (event.soldTickets || 0), 0);
-  const totalTickets = events.reduce((acc, event) => acc + (event.soldTickets || 0), 0);
+  const totalTickets = events.reduce((acc, event) => {
+    const sold = typeof event.soldTickets === 'object'
+      ? (event.soldTickets?.premium || 0) + (event.soldTickets?.standard || 0) + (event.soldTickets?.economy || 0)
+      : (event.soldTickets || 0);
+    return acc + sold;
+  }, 0);
+
+  const totalRevenue = events.reduce((acc, event) => {
+    const soldPremium = event.soldTickets?.premium || 0;
+    const soldStandard = event.soldTickets?.standard || 0;
+    const soldEconomy = event.soldTickets?.economy || 0;
+
+    const rev = ((event.price?.premium || 0) * soldPremium) +
+      ((event.price?.standard || 0) * soldStandard) +
+      ((event.price?.economy || 0) * soldEconomy);
+
+    return acc + rev;
+  }, 0);
 
   const stats = [
     { label: "Total Events", value: events.length.toString(), icon: Calendar },
@@ -160,7 +176,9 @@ export default function SellerDashboard({ user, setUser }: Props) {
                           </div>
                           <div>
                             <h4 className="text-gray-200 font-medium group-hover:text-white transition-colors">{event.title}</h4>
-                            <p className="text-xs text-gray-500">{event.soldTickets || 0} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} tickets sold</p>
+                            <p className="text-xs text-gray-500">
+                              {(event.soldTickets?.premium || 0) + (event.soldTickets?.standard || 0) + (event.soldTickets?.economy || 0)} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} tickets sold
+                            </p>
                           </div>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.status === "approved" ? "bg-green-500/10 text-green-500" :

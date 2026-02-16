@@ -16,12 +16,17 @@ interface Props {
 export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const AUTH_TOKEN = Cookies.get("auth");
+    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
         category: "",
         location: "",
-        price: "",
+        price: {
+            premium: "",
+            standard: "",
+            economy: "",
+        },
         capacity: {
             premium: "",
             standard: "",
@@ -30,24 +35,57 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
         startDate: "",
         endDate: "",
         eventDate: "",
+        bannerImage: null as File | null,
     });
+
+    const nextStep = () => {
+        if (step === 1) {
+            if (!formData.title || !formData.location || !formData.category) {
+                toast.error("Please fill in the required basic event details.");
+                return;
+            }
+            setStep(2);
+        }
+    };
+
+    const prevStep = () => setStep(1);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (step === 1) {
+            nextStep();
+            return;
+        }
         setIsLoading(true);
 
         try {
-            const { data } = await axiosInstance.post("/api/events", {
-                ...formData,
-                price: Number(formData.price) || 0,
-                capacity: {
-                    premium: Number(formData.capacity.premium) || 0,
-                    standard: Number(formData.capacity.standard) || 0,
-                    economy: Number(formData.capacity.economy) || 0,
-                }
-            }, {
+            const formDataToSend = new FormData();
+            formDataToSend.append("title", formData.title);
+            formDataToSend.append("description", formData.description);
+            formDataToSend.append("category", formData.category);
+            formDataToSend.append("location", formData.location);
+            formDataToSend.append("startDate", formData.startDate);
+            formDataToSend.append("endDate", formData.endDate);
+            formDataToSend.append("eventDate", formData.eventDate);
+            formDataToSend.append("price", JSON.stringify({
+                premium: Number(formData.price.premium) || 0,
+                standard: Number(formData.price.standard) || 0,
+                economy: Number(formData.price.economy) || 0,
+            }));
+            formDataToSend.append("capacity", JSON.stringify({
+                premium: Number(formData.capacity.premium) || 0,
+                standard: Number(formData.capacity.standard) || 0,
+                economy: Number(formData.capacity.economy) || 0,
+            }));
+
+            if (formData.bannerImage) {
+                formDataToSend.append("bannerImage", formData.bannerImage);
+            }
+
+            const { data } = await axiosInstance.post("/api/events", formDataToSend, {
                 headers: {
-                    auth: AUTH_TOKEN
+                    auth: AUTH_TOKEN,
+                    "Content-Type": "multipart/form-data",
                 }
             });
 
@@ -55,12 +93,17 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                 toast.success("Event created successfully!");
                 onSuccess();
                 onClose();
+                setStep(1);
                 setFormData({
                     title: "",
                     description: "",
                     category: "",
                     location: "",
-                    price: "",
+                    price: {
+                        premium: "",
+                        standard: "",
+                        economy: "",
+                    },
                     capacity: {
                         premium: "",
                         standard: "",
@@ -69,6 +112,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                     startDate: "",
                     endDate: "",
                     eventDate: "",
+                    bannerImage: null,
                 });
             } else {
                 toast.error(data.message || "Failed to create event");
@@ -98,197 +142,314 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         className="relative w-full max-w-2xl bg-[#1c1c1e] rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
                     >
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center">
-                            <h3 className="text-xl font-serif text-white">Create New Event</h3>
+                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-linear-to-r from-purple-600/5 to-transparent">
+                            <div>
+                                <h3 className="text-xl font-serif text-white">Create New Event</h3>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
+                                    Step {step} of 2 — {step === 1 ? "Basics" : "Logistics & Pricing"}
+                                </p>
+                            </div>
                             <button onClick={onClose} className="p-2 text-gray-500 hover:text-white transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Event Title</label>
-                                    <div className="relative group">
-                                        <Type className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            required
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            placeholder="e.g. Summer Music Festival"
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
+                        {/* Progress Bar */}
+                        <div className="h-1 w-full bg-white/5">
+                            <motion.div
+                                initial={{ width: "50%" }}
+                                animate={{ width: step === 1 ? "50%" : "100%" }}
+                                className="h-full bg-purple-600 shadow-[0_0_10px_rgba(147,51,234,0.5)]"
+                            />
+                        </div>
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Description</label>
-                                    <div className="relative group">
-                                        <AlignLeft className="absolute left-4 top-4 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            placeholder="Describe your event..."
-                                            rows={4}
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all resize-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Event Category</label>
-                                    <div className="relative group">
-                                        <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            type="text"
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            placeholder="e.g. Music, Tech, Art"
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Location</label>
-                                    <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            required
-                                            type="text"
-                                            value={formData.location}
-                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                            placeholder="e.g. Kathmandu, Nepal"
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 mb-2 block">Ticket Capacities (Categories)</label>
-                                    <div className="grid grid-cols-3 gap-4">
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                            <AnimatePresence mode="wait">
+                                {step === 1 ? (
+                                    <motion.div
+                                        key="step1"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        className="space-y-6"
+                                    >
                                         <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Event Title</label>
                                             <div className="relative group">
-                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                <Type className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
                                                 <input
-                                                    type="number"
-                                                    value={formData.capacity.premium}
-                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, premium: e.target.value } })}
-                                                    placeholder="Premium"
-                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                    required
+                                                    type="text"
+                                                    value={formData.title}
+                                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                    placeholder="e.g. Summer Music Festival"
+                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
                                                 />
                                             </div>
                                         </div>
+
                                         <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Banner Image</label>
                                             <div className="relative group">
-                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
                                                 <input
-                                                    type="number"
-                                                    value={formData.capacity.standard}
-                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, standard: e.target.value } })}
-                                                    placeholder="Standard"
-                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setFormData({ ...formData, bannerImage: e.target.files ? e.target.files[0] : null })}
+                                                    className="hidden"
+                                                    id="banner-upload"
+                                                />
+                                                <label
+                                                    htmlFor="banner-upload"
+                                                    className="w-full bg-[#111113] border border-white/5 border-dashed rounded-xl py-8 flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 transition-all group"
+                                                >
+                                                    <Tag className="text-gray-500 mb-2 group-hover:text-purple-500 transition-colors" />
+                                                    <span className="text-xs text-gray-400">
+                                                        {formData.bannerImage ? formData.bannerImage.name : "Click to upload banner image"}
+                                                    </span>
+                                                </label>
+                                            </div>
+                                            {formData.bannerImage && (
+                                                <div className="mt-4 relative h-32 w-full rounded-2xl overflow-hidden border border-white/10">
+                                                    <img
+                                                        src={URL.createObjectURL(formData.bannerImage)}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Category</label>
+                                                <div className="relative group">
+                                                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        value={formData.category}
+                                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                        placeholder="e.g. Music"
+                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Location</label>
+                                                <div className="relative group">
+                                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        value={formData.location}
+                                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                        placeholder="e.g. Kathmandu"
+                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Description</label>
+                                            <div className="relative group">
+                                                <AlignLeft className="absolute left-4 top-4 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
+                                                <textarea
+                                                    value={formData.description}
+                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                    placeholder="Describe your event..."
+                                                    rows={4}
+                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all resize-none"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <div className="relative group">
-                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
-                                                <input
-                                                    type="number"
-                                                    value={formData.capacity.economy}
-                                                    onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, economy: e.target.value } })}
-                                                    placeholder="Economy"
-                                                    className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                                />
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="step2"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="space-y-8"
+                                    >
+                                        <div className="space-y-4">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block mb-2">Ticket Tiers (Capacities & Prices)</label>
+
+                                            {/* Premium Tier */}
+                                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-4">
+                                                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                                    <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Premium Tier</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="relative group">
+                                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.capacity.premium}
+                                                            onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, premium: e.target.value } })}
+                                                            placeholder="Capacity"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                    <div className="relative group">
+                                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.price.premium}
+                                                            onChange={(e) => setFormData({ ...formData, price: { ...formData.price, premium: e.target.value } })}
+                                                            placeholder="Price ($)"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Standard Tier */}
+                                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-4">
+                                                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Standard Tier</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="relative group">
+                                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.capacity.standard}
+                                                            onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, standard: e.target.value } })}
+                                                            placeholder="Capacity"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                    <div className="relative group">
+                                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.price.standard}
+                                                            onChange={(e) => setFormData({ ...formData, price: { ...formData.price, standard: e.target.value } })}
+                                                            placeholder="Price ($)"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Economy Tier */}
+                                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-4">
+                                                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Economy Tier</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="relative group">
+                                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.capacity.economy}
+                                                            onChange={(e) => setFormData({ ...formData, capacity: { ...formData.capacity, economy: e.target.value } })}
+                                                            placeholder="Capacity"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                    <div className="relative group">
+                                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3 h-3 group-focus-within:text-purple-500 transition-colors" />
+                                                        <input
+                                                            type="number"
+                                                            value={formData.price.economy}
+                                                            onChange={(e) => setFormData({ ...formData, price: { ...formData.price, economy: e.target.value } })}
+                                                            placeholder="Price ($)"
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Ticket Price ($)</label>
-                                    <div className="relative group">
-                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            type="number"
-                                            value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            placeholder="0.00"
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
+                                        <div className="space-y-4 pt-4 border-t border-white/5">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 block">Timeline</label>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 text-purple-400">Actual Event Date</label>
-                                    <div className="relative group">
-                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 w-4 h-4 group-focus-within:text-purple-400 transition-colors" />
-                                        <input
-                                            required
-                                            type="datetime-local"
-                                            step="60"
-                                            value={formData.eventDate}
-                                            onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                                            className="w-full bg-[#111113] border border-purple-500/30 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
-                                        />
-                                    </div>
-                                </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-purple-400 uppercase tracking-widest ml-1">Event Date (When it happens)</label>
+                                                <div className="relative group">
+                                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 w-4 h-4 group-focus-within:text-purple-400 transition-colors" />
+                                                    <input
+                                                        required
+                                                        type="datetime-local"
+                                                        value={formData.eventDate}
+                                                        onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                                                        className="w-full bg-[#111113] border border-purple-500/30 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
+                                                    />
+                                                </div>
+                                            </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Ticket Sales Start</label>
-                                    <div className="relative group">
-                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            required
-                                            type="datetime-local"
-                                            step="60"
-                                            value={formData.startDate}
-                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
-                                        />
-                                    </div>
-                                </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Sales Start</label>
+                                                    <div className="relative group">
+                                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+                                                        <input
+                                                            required
+                                                            type="datetime-local"
+                                                            value={formData.startDate}
+                                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-11 pr-3 text-xs text-gray-200 outline-none [color-scheme:dark]"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Sales End</label>
+                                                    <div className="relative group">
+                                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+                                                        <input
+                                                            required
+                                                            type="datetime-local"
+                                                            value={formData.endDate}
+                                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-11 pr-3 text-xs text-gray-200 outline-none [color-scheme:dark]"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Ticket Sales End</label>
-                                    <div className="relative group">
-                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                        <input
-                                            required
-                                            type="datetime-local"
-                                            step="60"
-                                            value={formData.endDate}
-                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                            className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="flex-1 px-6 py-3.5 rounded-xl border border-white/5 text-gray-400 font-bold hover:bg-white/5 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="flex-1 px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-600/20 flex items-center justify-center gap-2"
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="animate-spin" size={20} />
-                                            <span>Creating...</span>
-                                        </>
-                                    ) : (
-                                        <span>Create Event</span>
-                                    )}
-                                </button>
+                            <div className="flex gap-4 pt-6 border-t border-white/5">
+                                {step === 1 ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={onClose}
+                                            className="flex-1 px-6 py-3.5 rounded-xl border border-white/5 text-gray-400 font-bold hover:bg-white/5 transition-all text-sm"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={nextStep}
+                                            className="flex-1 px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-600/20 text-sm"
+                                        >
+                                            Next: Pricing
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={prevStep}
+                                            className="flex-1 px-6 py-3.5 rounded-xl border border-white/5 text-gray-400 font-bold hover:bg-white/5 transition-all text-sm"
+                                        >
+                                            Back
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="flex-1 px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-600/20 flex items-center justify-center gap-2 text-sm"
+                                        >
+                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <span>Publish Event</span>}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </form>
                     </motion.div>
