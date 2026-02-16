@@ -57,6 +57,21 @@ exports.cancelTicket = async (ticketId, userId) => {
     if (!ticket) {
         throw new Error("Ticket not found or unauthorized");
     }
+
+    if (ticket.status === 'cancelled') {
+        throw new Error("Ticket is already cancelled");
+    }
+
+    const event = await Event.findById(ticket.eventId);
+    if (event) {
+        // Decrease sold tickets count
+        const ticketType = ticket.ticketType || 'standard';
+        if (event.soldTickets[ticketType] > 0) {
+            event.soldTickets[ticketType] -= 1;
+        }
+        await event.save();
+    }
+
     ticket.status = 'cancelled';
     await ticket.save();
     return ticket;

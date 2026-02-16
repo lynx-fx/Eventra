@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowLeft, Calendar, MapPin, Loader2, Image as ImageIcon } from "lucide-react";
 import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 interface EventData {
     _id: string;
@@ -26,16 +27,35 @@ export default function EventGallery() {
     const [galleryImages, setGalleryImages] = useState<ImageData[]>([]);
     const [loadingRooms, setLoadingRooms] = useState(true);
     const [loadingGallery, setLoadingGallery] = useState(false);
+    const AUTH_TOKEN = Cookies.get("auth");
 
     // Fetch Events for Rooms
     useEffect(() => {
         const fetchEventRooms = async () => {
             setLoadingRooms(true);
             try {
-                const response = await axiosInstance.get("/api/events");
-                if (response.data.success) {
-                    // Only show approved events in gallery
-                    setEventRooms(response.data.events.filter((e: any) => e.status === "approved"));
+                // 1. Fetch user tickets to see which events they've bought
+                const ticketsResponse = await axiosInstance.get("/api/tickets", {
+                    headers: {
+                        auth: AUTH_TOKEN,
+                    }
+                });
+                let purchasedEventIds: string[] = [];
+
+                if (ticketsResponse.data.success) {
+                    purchasedEventIds = ticketsResponse.data.tickets.map((t: any) =>
+                        typeof t.eventId === 'object' ? t.eventId._id : t.eventId
+                    );
+                }
+
+                // 2. Fetch all events
+                const eventsResponse = await axiosInstance.get("/api/events");
+                if (eventsResponse.data.success) {
+                    // 3. Filter only approved events that the user has purchased
+                    const filteredRooms = eventsResponse.data.events.filter((e: any) =>
+                        e.status === "approved" && purchasedEventIds.includes(e._id)
+                    );
+                    setEventRooms(filteredRooms);
                 }
             } catch (error) {
                 console.error("Failed to fetch event rooms", error);
@@ -91,44 +111,54 @@ export default function EventGallery() {
                 {eventRooms.length === 0 ? (
                     <div className="bg-[#111113] rounded-4xl p-12 text-center border border-white/5 border-dashed">
                         <ImageIcon className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                        <h3 className="text-gray-400 font-medium">No galleries available</h3>
-                        <p className="text-gray-600 text-sm mt-2">Check back after our next big event.</p>
+                        <h3 className="text-gray-400 font-medium">No Event Rooms Joined</h3>
+                        <p className="text-gray-600 text-sm mt-2">Exclusive event rooms and galleries appear here after you purchase a ticket.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {eventRooms.map((event) => (
-                            <div
-                                key={event._id}
-                                onClick={() => setSelectedEvent(event)}
-                                className="group bg-[#111113] rounded-3xl overflow-hidden border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer shadow-2xl relative"
-                            >
-                                <div className="relative h-64 w-full overflow-hidden">
-                                    <Image
-                                        src={"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=2070&auto=format&fit=crop"}
-                                        alt={event.title}
-                                        fill
-                                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                    />
-                                    <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="text-white font-bold text-xl mb-3 group-hover:text-purple-400 transition-colors">{event.title}</h3>
-                                    <div className="flex flex-col gap-2 text-sm text-gray-500 font-light">
-                                        <div className="flex items-center gap-3">
-                                            <Calendar size={14} className="text-purple-500" />
-                                            <span>{new Date(event.startDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+                        {eventRooms.map((event: any) => {
+                            const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
+
+                            const imageUrl = event.bannerImage?.startsWith("/images")
+                                ? `${BACKEND}${event.bannerImage}`
+                                : (event.bannerImage || "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=2070&auto=format&fit=crop");
+
+                            return (
+                                <div
+                                    key={event._id}
+                                    onClick={() => setSelectedEvent(event)}
+                                    className="group bg-[#111113] rounded-3xl overflow-hidden border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer shadow-2xl relative"
+                                >
+                                    <div className="relative h-64 w-full overflow-hidden">
+                                        <Image
+                                            src={imageUrl}
+                                            alt={event.title}
+                                            fill
+                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                        />
+                                        <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
+                                    </div>
+                                    <div className="p-6">
+                                        <h3 className="text-white font-bold text-xl mb-3 group-hover:text-purple-400 transition-colors uppercase tracking-tight">{event.title}</h3>
+                                        <div className="flex flex-col gap-2 text-sm text-gray-500 font-light">
+                                            <div className="flex items-center gap-3">
+                                                <Calendar size={14} className="text-purple-500" />
+                                                <span>{new Date(event.startDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <MapPin size={14} className="text-purple-500" />
+                                                <span>{event.location || "Earth"}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <MapPin size={14} className="text-purple-500" />
-                                            <span>{event.location || "Earth"}</span>
+                                        <div className="mt-6 text-purple-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                                            Enter Room &rarr;
                                         </div>
                                     </div>
-                                    <div className="mt-6 text-purple-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                                        Enter Room &rarr;
-                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

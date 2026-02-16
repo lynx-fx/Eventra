@@ -95,6 +95,20 @@ exports.googleLogin = async (code) => {
         );
         return { token, isNewUser: true };
     } else {
+        // If user exists but has no profileUrl, update it with google picture
+        if (!user.profileUrl && picture) {
+            user.profileUrl = picture;
+        }
+
+        // Ensure isGoogleAuth is set
+        if (!user.isGoogleAuth) {
+            user.isGoogleAuth = true;
+        }
+
+        if (user.isModified()) {
+            await user.save();
+        }
+
         token = jwt.sign(
             {
                 id: user._id,
@@ -198,4 +212,26 @@ exports.resetPassword = async (email, password, token) => {
 
 exports.updateUser = async (userId, updateData) => {
     return await User.findByIdAndUpdate(userId, updateData, { new: true });
+};
+
+exports.changePassword = async (userId, currentPassword, newPassword) => {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    if (user.isGoogleAuth && !user.password) {
+        throw new Error("Google accounts do not have passwords. Use Google login.");
+    }
+
+    const isMatch = await compare(currentPassword, user.password);
+    if (!isMatch) {
+        throw new Error("Incorrect current password");
+    }
+
+    const hashedPassword = await hash(newPassword, SALT_VALUE);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { success: true };
 };

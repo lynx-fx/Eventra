@@ -178,12 +178,31 @@ exports.getCurrentUser = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, bio, profileUrl } = req.body;
-    const updatedUser = await userService.updateUser(req.user.id, { name, bio, profileUrl });
+    const { name, bio } = req.body;
+    const updateData = { name, bio };
+
+    if (req.file) {
+      updateData.profileUrl = `/images/${req.file.filename}`;
+    } else if (req.body.profileUrl) {
+      updateData.profileUrl = req.body.profileUrl;
+    }
+
+    const updatedUser = await userService.updateUser(req.user.id, updateData);
     res.status(200).json({ success: true, message: "Profile updated", user: updatedUser });
   } catch (err) {
     console.log(err.message);
     res.status(500).json({ success: false, message: "Error updating profile" });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    await userService.changePassword(req.user.id, currentPassword, newPassword);
+    res.status(200).json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).json({ success: false, message: err.message });
   }
 };
 

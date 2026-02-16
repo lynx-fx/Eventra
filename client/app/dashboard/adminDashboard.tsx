@@ -66,8 +66,19 @@ export default function AdminDashboard({ user, setUser }: Props) {
 
                 <div className="group relative">
                   <button className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#111113] border border-white/5 hover:border-white/10 transition-all cursor-pointer">
-                    <div className="w-10 h-10 bg-linear-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-purple-600/20">
-                      {user.name.charAt(0)}
+                    <div className="w-10 h-10 bg-linear-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-purple-600/20 overflow-hidden">
+                      {user.profileUrl ? (
+                        <img
+                          src={user.profileUrl.startsWith("/images")
+                            ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${user.profileUrl}`
+                            : user.profileUrl
+                          }
+                          className="w-full h-full object-cover"
+                          alt="Profile"
+                        />
+                      ) : (
+                        user.name.charAt(0).toUpperCase()
+                      )}
                     </div>
                     <ChevronDown size={14} className="text-gray-500 mr-2" />
                   </button>
