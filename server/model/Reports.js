@@ -3,8 +3,9 @@ const mongoose = require("mongoose");
 const reportSchema = new mongoose.Schema(
   {
     reportType: { type: String, required: true },
+    reportReason: { type: String, required: true },
     reportedDate: { type: Date, default: Date.now },
-    userId: {
+    reporterId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
