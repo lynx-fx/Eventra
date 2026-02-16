@@ -110,8 +110,22 @@ export default function SellerDashboard({ user, setUser }: Props) {
                   <p className="text-sm font-medium text-gray-200">{user.name}</p>
                   <p className="text-xs text-gray-500 font-mono">{user.email}</p>
                 </div>
-                <div className="w-11 h-11 bg-linear-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-white font-serif text-lg shadow-xl shadow-purple-600/20">
-                  {user.name.charAt(0)}
+                <div
+                  onClick={() => setActiveTab("profile")}
+                  className="w-11 h-11 bg-linear-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-white font-serif text-lg shadow-xl shadow-purple-600/20 cursor-pointer overflow-hidden relative group"
+                >
+                  {user.profileUrl ? (
+                    <img
+                      src={user.profileUrl.startsWith("/images")
+                        ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${user.profileUrl}`
+                        : user.profileUrl
+                      }
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt="Profile"
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <button
                   onClick={handleLogout}

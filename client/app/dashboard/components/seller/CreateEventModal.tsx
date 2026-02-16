@@ -425,8 +425,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                             Cancel
                                         </button>
                                         <button
-                                            type="button"
-                                            onClick={nextStep}
+                                            type="submit"
                                             className="flex-1 px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-600/20 text-sm"
                                         >
                                             Next: Pricing

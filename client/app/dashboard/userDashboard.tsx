@@ -60,11 +60,23 @@ export default function UserDashboard({ user, setUser }: Props) {
     setLoading(true);
     try {
       const token = Cookies.get("auth");
-      const response = await axiosInstance.get("/api/events", {
-        headers: {
-          auth: token
-        }
+
+      // 1. Fetch tickets to identify user's events
+      const ticketsResponse = await axiosInstance.get("/api/tickets", {
+        headers: { auth: token }
       });
+      let purchasedEventIds: string[] = [];
+      if (ticketsResponse.data.success) {
+        purchasedEventIds = ticketsResponse.data.tickets.map((t: any) =>
+          typeof t.eventId === 'object' ? t.eventId._id : t.eventId
+        );
+      }
+
+      // 2. Fetch all events
+      const response = await axiosInstance.get("/api/events", {
+        headers: { auth: token }
+      });
+
       if (response.data.success) {
         const allEvents = response.data.events;
 
@@ -72,11 +84,17 @@ export default function UserDashboard({ user, setUser }: Props) {
         const approvedEvents = allEvents.filter((e: any) => e.status === "approved");
 
         const now = new Date();
+
+        // Filter upcoming events that the user HAS BOUGHT TICKETS for
         const upcoming = approvedEvents
-          .filter((e: any) => new Date(e.eventDate || e.startDate) > now)
+          .filter((e: any) =>
+            new Date(e.eventDate || e.startDate) > now &&
+            purchasedEventIds.includes(e._id)
+          )
           .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime())
           .slice(0, 3);
 
+        // Explore can be any approved events the user MIGHT want to join
         const explore = approvedEvents.slice(0, 6);
 
         setUpcomingEvents(upcoming);
@@ -128,8 +146,26 @@ export default function UserDashboard({ user, setUser }: Props) {
               </button>
 
               <div className="flex items-center gap-4 pl-6 border-l border-white/10">
-                <div className="w-11 h-11 bg-linear-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-xl shadow-purple-600/20">
-                  U
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-gray-200">{user.name}</p>
+                  <p className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.2em]">{user.role}</p>
+                </div>
+                <div
+                  onClick={() => setActiveTab("profile")}
+                  className="w-11 h-11 bg-linear-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-xl shadow-purple-600/20 cursor-pointer overflow-hidden relative group"
+                >
+                  {user.profileUrl ? (
+                    <img
+                      src={user.profileUrl.startsWith("/images")
+                        ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${user.profileUrl}`
+                        : user.profileUrl
+                      }
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt="Profile"
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <button
                   onClick={handleLogout}
