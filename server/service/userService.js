@@ -195,3 +195,7 @@ exports.resetPassword = async (email, password, token) => {
         throw new Error("Invalid token.");
     }
 };
+
+exports.updateUser = async (userId, updateData) => {
+    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+};

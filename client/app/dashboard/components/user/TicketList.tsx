@@ -6,12 +6,14 @@ import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 
 interface TicketData {
-    ticketId: string;
+    _id: string;
     eventId: {
         title: string;
-        startDate: string;
+        eventDate: string;
         location: string;
     };
+    ticketType: string;
+    price: number;
     status: string;
     purchaseDate: string;
 }
@@ -66,7 +68,7 @@ export default function TicketList() {
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                     {tickets.map((ticket) => (
-                        <div key={ticket.ticketId} className="bg-[#111113] rounded-4xl p-8 border border-white/5 flex flex-col md:flex-row gap-8 hover:border-purple-500/30 transition-all group relative overflow-hidden shadow-2xl">
+                        <div key={ticket._id} className="bg-[#111113] rounded-4xl p-8 border border-white/5 flex flex-col md:flex-row gap-8 hover:border-purple-500/30 transition-all group relative overflow-hidden shadow-2xl">
 
                             {/* Decorative Background Elements */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl -mr-16 -mt-16 group-hover:bg-purple-500/20 transition-all" />
@@ -85,7 +87,7 @@ export default function TicketList() {
                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
                                             <Calendar size={14} className="text-purple-500" />
                                         </div>
-                                        <span>{ticket.eventId?.startDate ? new Date(ticket.eventId.startDate).toLocaleDateString() : "TBA"}</span>
+                                        <span>{ticket.eventId?.eventDate ? new Date(ticket.eventId.eventDate).toLocaleDateString() : "TBA"}</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-gray-400 text-xs font-medium">
                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
@@ -98,11 +100,15 @@ export default function TicketList() {
                                 <div className="pt-6 border-t border-white/5 flex justify-between items-end">
                                     <div>
                                         <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">Access Token</p>
-                                        <p className="font-mono text-gray-400 text-sm">#{ticket.ticketId.substring(0, 12).toUpperCase()}</p>
+                                        <p className="font-mono text-gray-400 text-sm">#{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">Price Paid</p>
+                                        <p className="text-purple-400 font-bold font-mono">${ticket.price?.toFixed(2)}</p>
                                     </div>
                                     <div className="flex items-center gap-2 text-purple-500/50">
                                         <Sparkles size={14} />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Premium Pass</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">{ticket.ticketType} Pass</span>
                                     </div>
                                 </div>
                             </div>

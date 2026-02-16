@@ -12,6 +12,12 @@ const ticketSchema = new mongoose.Schema(
       ref: "Event",
       required: true,
     },
+    ticketType: {
+      type: String,
+      enum: ["premium", "standard", "economy"],
+      required: true,
+    },
+    price: { type: Number, required: true },
     status: {
       type: String,
       enum: ["active", "used", "cancelled"],

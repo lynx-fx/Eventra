@@ -65,9 +65,24 @@ exports.getEventById = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
     try {
-        // req.user is set by protect middleware
         const userId = req.user.id;
-        const event = await eventService.createEvent({ ...req.body, seller: userId });
+        const eventData = { ...req.body };
+
+        // Handle File Upload
+        if (req.file) {
+            // Using path.posix.join or similar to ensure forward slashes for URLs
+            eventData.bannerImage = `/images/${req.file.filename}`;
+        }
+
+        // Handle parsing of price and capacity if they come as JSON strings from FormData
+        if (typeof eventData.price === 'string') {
+            try { eventData.price = JSON.parse(eventData.price); } catch (e) { }
+        }
+        if (typeof eventData.capacity === 'string') {
+            try { eventData.capacity = JSON.parse(eventData.capacity); } catch (e) { }
+        }
+
+        const event = await eventService.createEvent({ ...eventData, seller: userId });
         res.status(201).json({ success: true, event });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

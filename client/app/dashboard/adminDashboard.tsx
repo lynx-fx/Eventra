@@ -6,6 +6,7 @@ import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminOverview from "./components/admin/AdminOverview";
 import AdminEventsView from "./components/admin/AdminEventsView";
 import AdminUsersView from "./components/admin/AdminUsersView";
+import UserSettings from "./components/user/UserSettings";
 import { Search, Bell, LogOut, ChevronDown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -13,9 +14,10 @@ import { toast } from "sonner";
 
 interface Props {
   user: User;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-export default function AdminDashboard({ user }: Props) {
+export default function AdminDashboard({ user, setUser }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
   const router = useRouter();
 
@@ -71,7 +73,10 @@ export default function AdminDashboard({ user }: Props) {
                   </button>
 
                   <div className="absolute right-0 mt-3 w-56 bg-[#161618] border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2 overflow-hidden">
-                    <button className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <button
+                      onClick={() => setActiveTab("profile")}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    >
                       Profiles Settings
                     </button>
                     <div className="h-px bg-white/5 my-1 mx-2" />
@@ -93,6 +98,7 @@ export default function AdminDashboard({ user }: Props) {
             {activeTab === "overview" && <AdminOverview />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
+            {(activeTab === "profile" || activeTab === "settings") && <UserSettings user={user} setUser={setUser} />}
 
             {activeTab === "sellers" && (
               <div className="flex flex-col items-center justify-center py-24 bg-[#111113] rounded-4xl border border-dashed border-white/10">

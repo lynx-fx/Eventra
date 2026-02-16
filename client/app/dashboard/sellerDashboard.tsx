@@ -17,9 +17,10 @@ import { toast } from "sonner";
 
 interface Props {
   user: User;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-export default function SellerDashboard({ user }: Props) {
+export default function SellerDashboard({ user, setUser }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +56,24 @@ export default function SellerDashboard({ user }: Props) {
     router.push("/");
   };
 
-  const totalRevenue = events.reduce((acc, event) => acc + (event.price || 0) * (event.soldTickets || 0), 0);
-  const totalTickets = events.reduce((acc, event) => acc + (event.soldTickets || 0), 0);
+  const totalTickets = events.reduce((acc, event) => {
+    const sold = typeof event.soldTickets === 'object'
+      ? (event.soldTickets?.premium || 0) + (event.soldTickets?.standard || 0) + (event.soldTickets?.economy || 0)
+      : (event.soldTickets || 0);
+    return acc + sold;
+  }, 0);
+
+  const totalRevenue = events.reduce((acc, event) => {
+    const soldPremium = event.soldTickets?.premium || 0;
+    const soldStandard = event.soldTickets?.standard || 0;
+    const soldEconomy = event.soldTickets?.economy || 0;
+
+    const rev = ((event.price?.premium || 0) * soldPremium) +
+      ((event.price?.standard || 0) * soldStandard) +
+      ((event.price?.economy || 0) * soldEconomy);
+
+    return acc + rev;
+  }, 0);
 
   const stats = [
     { label: "Total Events", value: events.length.toString(), icon: Calendar },
@@ -154,12 +171,14 @@ export default function SellerDashboard({ user }: Props) {
                       <div key={event._id} className="flex items-center justify-between p-4 rounded-2xl bg-[#0a0a0c] border border-white/5 hover:border-white/10 transition-all group">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-white/5 flex flex-col items-center justify-center text-[10px] uppercase font-bold text-gray-400">
-                            <span className="text-purple-500">{new Date(event.startDate).toLocaleDateString(undefined, { month: 'short' })}</span>
-                            <span>{new Date(event.startDate).getDate()}</span>
+                            <span className="text-purple-500">{new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short' })}</span>
+                            <span>{new Date(event.eventDate || event.startDate).getDate()}</span>
                           </div>
                           <div>
                             <h4 className="text-gray-200 font-medium group-hover:text-white transition-colors">{event.title}</h4>
-                            <p className="text-xs text-gray-500">{event.soldTickets || 0} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} tickets sold</p>
+                            <p className="text-xs text-gray-500">
+                              {(event.soldTickets?.premium || 0) + (event.soldTickets?.standard || 0) + (event.soldTickets?.economy || 0)} / {(event.capacity?.premium || 0) + (event.capacity?.standard || 0) + (event.capacity?.economy || 0)} tickets sold
+                            </p>
                           </div>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.status === "approved" ? "bg-green-500/10 text-green-500" :
@@ -214,7 +233,7 @@ export default function SellerDashboard({ user }: Props) {
           {activeTab === "sales" && <SellerSales />}
           {activeTab === "attendees" && <SellerAttendees />}
           {activeTab === "analytics" && <SellerAnalytics />}
-          {activeTab === "profile" && <UserSettings />}
+          {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
         </div>
       </main>
