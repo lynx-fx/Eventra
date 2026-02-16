@@ -53,9 +53,9 @@ export default function EventGallery() {
                 let purchasedEventIds: string[] = [];
 
                 if (ticketsResponse.data.success) {
-                    purchasedEventIds = ticketsResponse.data.tickets.map((t: any) =>
-                        typeof t.eventId === 'object' ? t.eventId._id : t.eventId
-                    );
+                    purchasedEventIds = ticketsResponse.data.tickets
+                        .map((t: any) => t.eventId && (typeof t.eventId === 'object' ? t.eventId._id : t.eventId))
+                        .filter(Boolean);
                 }
 
                 // 2. Fetch all events
@@ -151,7 +151,7 @@ export default function EventGallery() {
                     auth: AUTH_TOKEN
                 }
             });
- 
+
             if (response.data.success) {
                 toast.success(response.data.message || "Image reported for review");
                 setReportingImageId(null);
@@ -200,15 +200,15 @@ export default function EventGallery() {
         return (
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div>
-                    <h2 className="text-4xl font-serif text-white tracking-tight">Event <span className="text-purple-500">Rooms</span></h2>
-                    <p className="text-gray-500 mt-2 font-light">Step into the past and relive the most iconic moments.</p>
+                    <h2 className="text-4xl font-serif text-foreground tracking-tight">Event <span className="text-primary">Rooms</span></h2>
+                    <p className="text-muted-foreground mt-2 font-light">Step into the past and relive the most iconic moments.</p>
                 </div>
 
                 {eventRooms.length === 0 ? (
-                    <div className="bg-[#111113] rounded-4xl p-12 text-center border border-white/5 border-dashed">
-                        <ImageIcon className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                        <h3 className="text-gray-400 font-medium">No Event Rooms Joined</h3>
-                        <p className="text-gray-600 text-sm mt-2">Exclusive event rooms and galleries appear here after you purchase a ticket.</p>
+                    <div className="bg-card rounded-4xl p-12 text-center border border-border border-dashed">
+                        <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-muted-foreground font-medium">No Event Rooms Joined</h3>
+                        <p className="text-muted-foreground text-sm mt-2">Exclusive event rooms and galleries appear here after you purchase a ticket.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -217,38 +217,40 @@ export default function EventGallery() {
                                 ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
                                 : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
 
-                            const imageUrl = event.bannerImage?.startsWith("/images")
-                                ? `${BACKEND}${event.bannerImage}`
+                            const isRelative = event.bannerImage?.startsWith("/images") || event.bannerImage?.startsWith("images");
+                            const imageUrl = isRelative
+                                ? `${BACKEND}${event.bannerImage?.startsWith("/") ? event.bannerImage : `/${event.bannerImage}`}`
                                 : (event.bannerImage || "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=2070&auto=format&fit=crop");
 
                             return (
                                 <div
                                     key={event._id}
                                     onClick={() => setSelectedEvent(event)}
-                                    className="group bg-[#111113] rounded-3xl overflow-hidden border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer shadow-2xl relative"
+                                    className="group bg-card rounded-3xl overflow-hidden border border-border hover:border-primary/30 transition-all cursor-pointer shadow-2xl relative"
                                 >
                                     <div className="relative h-64 w-full overflow-hidden">
                                         <Image
                                             src={imageUrl}
                                             alt={event.title}
                                             fill
+                                            unoptimized
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
-                                        <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
+                                        <div className="absolute inset-0 bg-linear-to-t from-card via-transparent to-transparent opacity-60" />
                                     </div>
                                     <div className="p-6">
-                                        <h3 className="text-white font-bold text-xl mb-3 group-hover:text-purple-400 transition-colors uppercase tracking-tight">{event.title}</h3>
-                                        <div className="flex flex-col gap-2 text-sm text-gray-500 font-light">
+                                        <h3 className="text-foreground font-bold text-xl mb-3 group-hover:text-primary transition-colors uppercase tracking-tight">{event.title}</h3>
+                                        <div className="flex flex-col gap-2 text-sm text-muted-foreground font-light">
                                             <div className="flex items-center gap-3">
-                                                <Calendar size={14} className="text-purple-500" />
+                                                <Calendar size={14} className="text-primary" />
                                                 <span>{new Date(event.startDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <MapPin size={14} className="text-purple-500" />
+                                                <MapPin size={14} className="text-primary" />
                                                 <span>{event.location || "Earth"}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-6 text-purple-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                                        <div className="mt-6 text-primary text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                                             Enter Room &rarr;
                                         </div>
                                     </div>
@@ -267,13 +269,13 @@ export default function EventGallery() {
                 <div className="flex items-center gap-6">
                     <button
                         onClick={() => setSelectedEvent(null)}
-                        className="p-3 rounded-2xl bg-[#111113] text-gray-400 border border-white/5 hover:text-white hover:border-white/10 transition-all active:scale-95"
+                        className="p-3 rounded-2xl bg-card text-muted-foreground border border-border hover:text-foreground hover:border-border/80 transition-all active:scale-95"
                     >
                         <ArrowLeft size={24} />
                     </button>
                     <div>
-                        <h2 className="text-4xl font-serif text-white tracking-tight">{selectedEvent.title}</h2>
-                        <p className="text-purple-500 font-bold uppercase tracking-widest text-xs mt-1">Exclusive Metadata Archives</p>
+                        <h2 className="text-4xl font-serif text-foreground tracking-tight">{selectedEvent.title}</h2>
+                        <p className="text-primary font-bold uppercase tracking-widest text-xs mt-1">Exclusive Metadata Archives</p>
                     </div>
                 </div>
 
@@ -288,7 +290,7 @@ export default function EventGallery() {
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploading}
-                        className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-50 transition-all disabled:opacity-50 shadow-2xl"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
                     >
                         {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
                         {isUploading ? "Uploading..." : "Upload Moment"}
@@ -302,11 +304,11 @@ export default function EventGallery() {
                     <p className="text-gray-500 font-serif italic text-sm">Decoding visual data...</p>
                 </div>
             ) : galleryImages.length === 0 ? (
-                <div className="bg-[#111113] rounded-4xl p-20 text-center border border-white/5 border-dashed">
-                    <p className="text-gray-500 font-serif italic mb-6">"Visual evidence for this event has been restricted or not yet processed."</p>
+                <div className="bg-card rounded-4xl p-20 text-center border border-border border-dashed">
+                    <p className="text-muted-foreground font-serif italic mb-6">"Visual evidence for this event has been restricted or not yet processed."</p>
                     <button
                         onClick={() => setSelectedEvent(null)}
-                        className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
+                        className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
                     >
                         Return to Archives
                     </button>
@@ -317,13 +319,14 @@ export default function EventGallery() {
                         const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
                             ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
                             : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
-                        const imageUrl = img.imageUrl.startsWith("/images") ? `${BACKEND}${img.imageUrl}` : img.imageUrl;
+                        const isRelative = img.imageUrl.startsWith("/images") || img.imageUrl.startsWith("images");
+                        const imageUrl = isRelative ? `${BACKEND}${img.imageUrl.startsWith("/") ? img.imageUrl : `/${img.imageUrl}`}` : img.imageUrl;
 
                         return (
                             <div
                                 key={img._id}
                                 onClick={() => setSelectedImageIndex(index)}
-                                className="break-inside-avoid relative group rounded-3xl overflow-hidden border border-white/5 transition-all hover:border-purple-500/30 shadow-2xl cursor-pointer"
+                                className="break-inside-avoid relative group rounded-3xl overflow-hidden border border-border transition-all hover:border-primary/30 shadow-2xl cursor-pointer"
                             >
                                 <img
                                     src={imageUrl}
@@ -446,19 +449,19 @@ export default function EventGallery() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-md bg-[#111113] rounded-[32px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(239,68,68,0.1)] p-8 space-y-8"
+                            className="relative w-full max-w-md bg-card rounded-[32px] overflow-hidden border border-border shadow-[0_0_80px_rgba(239,68,68,0.1)] p-8 space-y-8"
                         >
                             <div className="space-y-2">
                                 <div className="flex justify-between items-start">
-                                    <h2 className="text-2xl font-serif text-white tracking-tight">Report <span className="text-red-500">Content</span></h2>
+                                    <h2 className="text-2xl font-serif text-foreground tracking-tight">Report <span className="text-red-500">Content</span></h2>
                                     <button
                                         onClick={() => setReportingImageId(null)}
-                                        className="p-2 text-gray-500 hover:text-white transition-colors"
+                                        className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                                     >
                                         <X size={20} />
                                     </button>
                                 </div>
-                                <p className="text-gray-500 text-sm font-light">Help us keep our archives safe and respectful.</p>
+                                <p className="text-muted-foreground text-sm font-light">Help us keep our archives safe and respectful.</p>
                             </div>
 
                             <div className="space-y-4">
@@ -467,9 +470,9 @@ export default function EventGallery() {
                                         value={reportReason}
                                         onChange={(e) => setReportReason(e.target.value)}
                                         placeholder="Type the reason for reporting..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:outline-hidden focus:border-red-500/50 transition-all min-h-[120px] resize-none"
+                                        className="w-full bg-accent/50 border border-input rounded-2xl p-4 text-foreground text-sm focus:outline-hidden focus:border-red-500/50 transition-all min-h-[120px] resize-none"
                                     />
-                                    <div className="absolute top-4 right-4 text-[10px] text-gray-700 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-4 right-4 text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                                         Required
                                     </div>
                                 </div>
@@ -479,7 +482,7 @@ export default function EventGallery() {
                                 <button
                                     onClick={submitReport}
                                     disabled={isReporting || !reportReason.trim()}
-                                    className="w-full py-4 bg-red-600 hover:bg-red-500 disabled:bg-gray-800 disabled:text-gray-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl"
+                                    className="w-full py-4 bg-red-600 hover:bg-red-500 disabled:bg-muted disabled:text-muted-foreground text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl"
                                 >
                                     {isReporting ? <Loader2 className="animate-spin" size={14} /> : (
                                         <>

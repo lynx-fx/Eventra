@@ -247,9 +247,12 @@ export default function TicketList({ user }: Props) {
                                         const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
                                             ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
                                             : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
-                                        const imageUrl = selectedTicket.eventId?.bannerImage?.startsWith("/images")
-                                            ? `${BACKEND}${selectedTicket.eventId.bannerImage}`
+
+                                        const isRelative = selectedTicket.eventId?.bannerImage?.startsWith("/images") || selectedTicket.eventId?.bannerImage?.startsWith("images");
+                                        const imageUrl = isRelative
+                                            ? `${BACKEND}${selectedTicket.eventId?.bannerImage?.startsWith("/") ? selectedTicket.eventId.bannerImage : `/${selectedTicket.eventId?.bannerImage}`}`
                                             : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
+
                                         return (
                                             <img
                                                 src={imageUrl}
@@ -361,8 +364,10 @@ export default function TicketList({ user }: Props) {
                                 const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
                                     ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
                                     : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
-                                const imageUrl = selectedTicket.eventId?.bannerImage?.startsWith("/images")
-                                    ? `${BACKEND}${selectedTicket.eventId.bannerImage}`
+
+                                const isRelative = selectedTicket.eventId?.bannerImage?.startsWith("/images") || selectedTicket.eventId?.bannerImage?.startsWith("images");
+                                const imageUrl = isRelative
+                                    ? `${BACKEND}${selectedTicket.eventId?.bannerImage?.startsWith("/") ? selectedTicket.eventId.bannerImage : `/${selectedTicket.eventId?.bannerImage}`}`
                                     : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
                                 return (
                                     <img

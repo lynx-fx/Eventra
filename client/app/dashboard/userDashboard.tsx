@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { User } from "./page";
+import { ModeToggle } from "../../component/ThemeToggle";
 
 interface EventData {
   _id: string;
@@ -67,9 +68,9 @@ export default function UserDashboard({ user, setUser }: Props) {
       });
       let purchasedEventIds: string[] = [];
       if (ticketsResponse.data.success) {
-        purchasedEventIds = ticketsResponse.data.tickets.map((t: any) =>
-          typeof t.eventId === 'object' ? t.eventId._id : t.eventId
-        );
+        purchasedEventIds = ticketsResponse.data.tickets
+          .map((t: any) => t.eventId && (typeof t.eventId === 'object' ? t.eventId._id : t.eventId))
+          .filter(Boolean);
       }
 
       // 2. Fetch all events
@@ -119,7 +120,7 @@ export default function UserDashboard({ user, setUser }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30 overflow-hidden">
+    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden">
       <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
@@ -129,26 +130,27 @@ export default function UserDashboard({ user, setUser }: Props) {
 
         <div className="p-8 lg:p-12 relative z-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8 border-b border-white/5 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8 border-b border-border pb-8">
             <div className="relative w-full max-w-xl group">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 w-5 h-5 pointer-events-none transition-colors" />
               <input
                 type="text"
                 placeholder="Search events, organizers or vibes..."
-                className="w-full bg-[#111113] border border-white/5 text-gray-200 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 outline-none placeholder-gray-600 transition-all font-light shadow-2xl"
+                className="w-full bg-card border border-border text-foreground rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none placeholder-muted-foreground transition-all font-light shadow-2xl"
               />
             </div>
 
             <div className="flex items-center gap-6 w-full md:w-auto justify-end">
-              <button className="p-3 bg-[#111113] border border-white/5 rounded-2xl text-gray-500 hover:text-white hover:border-white/10 transition-all relative">
+              <ModeToggle />
+              <button className="p-3 bg-card border border-border rounded-2xl text-muted-foreground hover:text-foreground hover:border-border/80 transition-all relative">
                 <Bell size={20} />
-                <span className="absolute top-3 right-3 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#111113]" />
+                <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-card" />
               </button>
 
-              <div className="flex items-center gap-4 pl-6 border-l border-white/10">
+              <div className="flex items-center gap-4 pl-6 border-l border-border">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-200">{user.name}</p>
-                  <p className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.2em]">{user.role}</p>
+                  <p className="text-sm font-medium text-foreground">{user.name}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em]">{user.role}</p>
                 </div>
                 <div
                   onClick={() => setActiveTab("profile")}
@@ -174,8 +176,8 @@ export default function UserDashboard({ user, setUser }: Props) {
           {activeTab === "overview" && (
             <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <header>
-                <h1 className="text-5xl font-serif text-white tracking-tight leading-tight">Your <span className="text-purple-500">Dashboard</span></h1>
-                <p className="text-gray-500 mt-3 text-lg max-w-lg font-light">Explore the most anticipated events and manage your bookings in one place.</p>
+                <h1 className="text-5xl font-serif text-foreground tracking-tight leading-tight">Your <span className="text-primary">Dashboard</span></h1>
+                <p className="text-muted-foreground mt-3 text-lg max-w-lg font-light">Explore the most anticipated events and manage your bookings in one place.</p>
               </header>
 
               {loading ? (
@@ -189,8 +191,8 @@ export default function UserDashboard({ user, setUser }: Props) {
                   <section>
                     <div className="flex justify-between items-end mb-8">
                       <div>
-                        <h2 className="text-2xl font-serif text-white">Your Upcoming Events</h2>
-                        <p className="text-gray-500 text-sm mt-1">Events you are attending soon.</p>
+                        <h2 className="text-2xl font-serif text-foreground">Your Upcoming Events</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Events you are attending soon.</p>
                       </div>
                     </div>
 
@@ -204,7 +206,7 @@ export default function UserDashboard({ user, setUser }: Props) {
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Global"}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
-                            onView={() => console.log("View", event._id)}
+                            onView={() => router.push(`/events/${event._id}`)}
                             onJoin={() => {
                               setSelectedEvent(event);
                               setIsBookingModalOpen(true);
@@ -213,10 +215,10 @@ export default function UserDashboard({ user, setUser }: Props) {
                         ))}
                       </div>
                     ) : (
-                      <div className="bg-[#111113] rounded-4xl p-12 text-center border border-white/5 border-dashed">
-                        <Calendar className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                        <h3 className="text-gray-400 font-medium">No Upcoming Events</h3>
-                        <p className="text-gray-600 text-sm mt-2">Time to discover something new and exciting!</p>
+                      <div className="bg-card rounded-4xl p-12 text-center border border-border border-dashed">
+                        <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-muted-foreground font-medium">No Upcoming Events</h3>
+                        <p className="text-muted-foreground text-sm mt-2">Time to discover something new and exciting!</p>
                       </div>
                     )}
                   </section>
@@ -225,8 +227,8 @@ export default function UserDashboard({ user, setUser }: Props) {
                   <section>
                     <div className="flex justify-between items-end mb-8">
                       <div>
-                        <h2 className="text-2xl font-serif text-white">Explore New Events</h2>
-                        <p className="text-gray-500 text-sm mt-1">Recommended for you based on your vibes.</p>
+                        <h2 className="text-2xl font-serif text-foreground">Explore New Events</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Recommended for you based on your vibes.</p>
                       </div>
                     </div>
 
@@ -240,11 +242,12 @@ export default function UserDashboard({ user, setUser }: Props) {
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Online"}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
-                            onView={() => console.log("View", event)}
+                            onView={() => router.push(`/events/${event._id}`)}
                             onJoin={() => {
                               setSelectedEvent(event);
                               setIsBookingModalOpen(true);
-                            }}
+                            }
+                            }
                           />
                         ))}
                       </div>
