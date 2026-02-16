@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const {tokenExtractor} = require("../util/tokenExtractor.js");
+const { tokenExtractor } = require("../util/tokenExtractor.js");
 
 exports.identifier = (req, res, next) => {
   const token = tokenExtractor(req);
@@ -12,7 +12,7 @@ exports.identifier = (req, res, next) => {
       });
   }
   try {
-    const decode = jwt.verify(token, process.env.TOKEN_SECRET);
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
     if (decode) {
       next();
     } else {

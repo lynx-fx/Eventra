@@ -109,7 +109,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-purple-500/30">
       <NavBar />
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden mt-24">
@@ -119,10 +119,10 @@ export default function LoginPage() {
   bg-linear-to-t from-purple-900/50 from-20% via-transparent to-transparent pointer-events-none"
         />
 
-        <div className="w-full max-w-md bg-[#111113] rounded-4xl p-10 border border-white/5 shadow-2xl relative z-10">
+        <div className="w-full max-w-md bg-card rounded-4xl p-10 border border-border shadow-2xl relative z-10">
           <div className="space-y-2 mb-8">
             <h1 className="text-3xl font-serif tracking-tight">Login</h1>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Sign in to access your account with your google or use you Eventra account.
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full py-3.5 rounded-xl bg-[#1c1c1e] border border-transparent hover:bg-[#2c2c2e] transition-all flex items-center justify-center gap-3 group cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-secondary border border-transparent hover:bg-secondary/80 transition-all flex items-center justify-center gap-3 group cursor-pointer"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
                   <path
@@ -156,13 +156,13 @@ export default function LoginPage() {
                     fill="#EA4335"
                   />
                 </svg>
-                <span className="font-medium text-gray-200 group-hover:text-white">Continue with Google</span>
+                <span className="font-medium text-foreground group-hover:text-foreground/80">Continue with Google</span>
               </button>
 
               <div className="relative flex items-center py-2">
-                <div className="grow border-t border-white/10"></div>
-                <span className="shrink mx-4 text-xs text-gray-500 uppercase tracking-widest">or</span>
-                <div className="grow border-t border-white/10"></div>
+                <div className="grow border-t border-border"></div>
+                <span className="shrink mx-4 text-xs text-muted-foreground uppercase tracking-widest">or</span>
+                <div className="grow border-t border-border"></div>
               </div>
 
               <div className="space-y-4">
@@ -173,7 +173,7 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Email"
-                    className="w-full bg-[#1c1c1e] border-none py-4 px-5 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                    className="w-full bg-secondary border-none py-4 px-5 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                     required
                   />
                 </div>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Password"
-                    className="w-full bg-[#1c1c1e] border-none py-4 px-5 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                    className="w-full bg-secondary border-none py-4 px-5 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                     required
                   />
                 </div>
@@ -199,15 +199,15 @@ export default function LoginPage() {
               </button>
 
               <div className="pt-2">
-                <div onClick={toogleForgotModel} className="text-sm text-gray-400 hover:text-white transition-colors">
+                <div onClick={toogleForgotModel} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Forgot Password?
                 </div>
               </div>
 
 
 
-              <div className="border-t border-white/10 pt-4 flex items-center gap-2">
-                <span className="text-sm text-gray-400">Need a new account?</span>
+              <div className="border-t border-border pt-4 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Need a new account?</span>
                 <Link href="/auth/signup" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
                   Sign up
                 </Link>

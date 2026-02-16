@@ -1,152 +1,281 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
-import EventCard from "./components/EventCard";
-import TicketList from "./components/TicketList";
-import EventGallery from "./components/EventGallery";
-import UserSettings from "./components/UserSettings";
-import { Search, LogOut } from "lucide-react";
-import Image from "next/image";
-import api from "../utils/api";
+import EventCard from "./components/user/EventCard";
+import TicketList from "./components/user/TicketList";
+import EventGallery from "./components/user/EventGallery";
+import BookingModal from "./components/user/BookingModal";
+import UserSettings from "./components/user/UserSettings";
+import { Search, LogOut, Bell, User as UserIcon, Loader2, Calendar } from "lucide-react";
+import axiosInstance from "../../service/axiosInstance";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import { User } from "./page";
+import { ModeToggle } from "../../component/ThemeToggle";
 
-// Interface for Event data
 interface EventData {
   _id: string;
   title: string;
   description: string;
   startDate: string;
+  endDate: string;
+  eventDate: string;
   location: string;
   category: string;
-  price: number;
+  price: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
+  capacity: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
+  soldTickets: {
+    premium: number;
+    standard: number;
+    economy: number;
+  };
+  status: string;
+  bannerImage?: string;
 }
 
-export default function UserDashboard() {
+interface Props {
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+}
+
+export default function UserDashboard({ user, setUser }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
   const [upcomingEvents, setUpcomingEvents] = useState<EventData[]>([]);
   const [exploreEvents, setExploreEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const router = useRouter();
 
-  // Fetch Events
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await api.get("/events");
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get("auth");
+
+      // 1. Fetch tickets to identify user's events
+      const ticketsResponse = await axiosInstance.get("/api/tickets", {
+        headers: { auth: token }
+      });
+      let purchasedEventIds: string[] = [];
+      if (ticketsResponse.data.success) {
+        purchasedEventIds = ticketsResponse.data.tickets
+          .map((t: any) => t.eventId && (typeof t.eventId === 'object' ? t.eventId._id : t.eventId))
+          .filter(Boolean);
+      }
+
+      // 2. Fetch all events
+      const response = await axiosInstance.get("/api/events", {
+        headers: { auth: token }
+      });
+
+      if (response.data.success) {
         const allEvents = response.data.events;
 
-        // Simple client-side filtering (ideally do this on backend)
+        // Filter only approved events for users
+        const approvedEvents = allEvents.filter((e: any) => e.status === "approved");
+
         const now = new Date();
-        const upcoming = allEvents.filter((e: any) => new Date(e.startDate) > now).slice(0, 3);
-        const explore = allEvents.slice(0, 6); // Just show first 6 for explore
+
+        // Filter upcoming events that the user HAS BOUGHT TICKETS for
+        const upcoming = approvedEvents
+          .filter((e: any) =>
+            new Date(e.eventDate || e.startDate) > now &&
+            purchasedEventIds.includes(e._id)
+          )
+          .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime())
+          .slice(0, 3);
+
+        // Explore can be any approved events the user MIGHT want to join
+        const explore = approvedEvents.slice(0, 6);
 
         setUpcomingEvents(upcoming);
         setExploreEvents(explore);
-      } catch (error) {
-        console.error("Failed to fetch events", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch events", error);
+      toast.error("Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchEvents();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login'); // Assuming you have a login route
+    Cookies.remove("auth");
+    toast.success("Successfully logged out");
+    router.push("/");
   };
 
-
   return (
-    <div className="flex min-h-screen bg-[#0f0f11] text-white font-sans">
-      <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden">
+      <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          {/* Header / Search Bar */}
-          <div className="flex justify-between items-center mb-10">
-            <div className="relative w-full max-w-xl">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] pointer-events-none rounded-full" />
+
+        <div className="p-8 lg:p-12 relative z-10 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8 border-b border-border pb-8">
+            <div className="relative w-full max-w-xl group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 w-5 h-5 pointer-events-none transition-colors" />
               <input
                 type="text"
-                placeholder="Your event, ticket or venues"
-                className="w-full bg-[#1C1C24] border border-gray-800 text-gray-200 pl-12 pr-4 py-3 rounded-full focus:outline-none focus:border-[#8B5CF6] transition-colors"
+                placeholder="Search events, organizers or vibes..."
+                className="w-full bg-card border border-border text-foreground rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none placeholder-muted-foreground transition-all font-light shadow-2xl"
               />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right mr-2">
-                <p className="text-sm font-medium">User</p>
-                <p className="text-xs text-gray-400">email@gmail.com</p>
-              </div>
-              <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-              <button
-                onClick={handleLogout}
-                className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
-                title="Logout"
-              >
-                <LogOut size={20} />
+
+            <div className="flex items-center gap-6 w-full md:w-auto justify-end">
+              <ModeToggle />
+              <button className="p-3 bg-card border border-border rounded-2xl text-muted-foreground hover:text-foreground hover:border-border/80 transition-all relative">
+                <Bell size={20} />
+                <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-card" />
               </button>
+
+              <div className="flex items-center gap-4 pl-6 border-l border-border">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-foreground">{user.name}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em]">{user.role}</p>
+                </div>
+                <div
+                  onClick={() => setActiveTab("profile")}
+                  className="w-11 h-11 bg-linear-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-xl shadow-purple-600/20 cursor-pointer overflow-hidden relative group"
+                >
+                  {user.profileUrl ? (
+                    <img
+                      src={user.profileUrl.startsWith("/images")
+                        ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${user.profileUrl}`
+                        : user.profileUrl
+                      }
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt="Profile"
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {activeTab === "overview" && (
-            <div className="space-y-10">
+            <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <header>
+                <h1 className="text-5xl font-serif text-foreground tracking-tight leading-tight">Your <span className="text-primary">Dashboard</span></h1>
+                <p className="text-muted-foreground mt-3 text-lg max-w-lg font-light">Explore the most anticipated events and manage your bookings in one place.</p>
+              </header>
+
               {loading ? (
-                <div className="text-center text-gray-400 py-10">Loading events...</div>
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                  <Loader2 className="animate-spin text-purple-500" size={40} />
+                  <p className="text-gray-500 font-serif italic">Synchronizing your experience...</p>
+                </div>
               ) : (
                 <>
                   {/* Your Upcoming Events */}
                   <section>
-                    <h2 className="text-2xl font-serif mb-6 text-white">Your Upcoming Events</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
-                        <EventCard
-                          key={event._id}
-                          title={event.title}
-                          description={event.description}
-                          date={new Date(event.startDate).toLocaleDateString()}
-                          location={event.location}
-                          // Fallback image if none provided
-                          image={"https://placehold.co/400x300/1a1a1a/cccccc?text=" + encodeURIComponent(event.title)}
-                          onView={() => console.log("View", event._id)}
-                          onJoin={() => console.log("Join", event._id)}
-                        />
-                      )) : (
-                        <p className="text-gray-500 italic">No upcoming events found.</p>
-                      )}
+                    <div className="flex justify-between items-end mb-8">
+                      <div>
+                        <h2 className="text-2xl font-serif text-foreground">Your Upcoming Events</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Events you are attending soon.</p>
+                      </div>
                     </div>
-                  </section>
 
-                  <hr className="border-gray-800" />
+                    {upcomingEvents.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {upcomingEvents.map((event) => (
+                          <EventCard
+                            key={event._id}
+                            title={event.title}
+                            description={event.description}
+                            date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            location={event.location || "Global"}
+                            image={event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
+                            onView={() => router.push(`/events/${event._id}`)}
+                            onJoin={() => {
+                              setSelectedEvent(event);
+                              setIsBookingModalOpen(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-card rounded-4xl p-12 text-center border border-border border-dashed">
+                        <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-muted-foreground font-medium">No Upcoming Events</h3>
+                        <p className="text-muted-foreground text-sm mt-2">Time to discover something new and exciting!</p>
+                      </div>
+                    )}
+                  </section>
 
                   {/* Explore New Events */}
                   <section>
-                    <h2 className="text-2xl font-serif mb-6 text-white">Explore New Events</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {exploreEvents.map((event) => (
-                        <EventCard
-                          key={event._id}
-                          title={event.title}
-                          description={event.description}
-                          date={new Date(event.startDate).toLocaleDateString()}
-                          location={event.location}
-                          image={"https://placehold.co/400x300/4a4a4a/cccccc?text=" + encodeURIComponent(event.title)}
-                          onView={() => console.log("View", event)}
-                        />
-                      ))}
+                    <div className="flex justify-between items-end mb-8">
+                      <div>
+                        <h2 className="text-2xl font-serif text-foreground">Explore New Events</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Recommended for you based on your vibes.</p>
+                      </div>
                     </div>
+
+                    {exploreEvents.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {exploreEvents.map((event) => (
+                          <EventCard
+                            key={event._id}
+                            title={event.title}
+                            description={event.description}
+                            date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            location={event.location || "Online"}
+                            image={event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
+                            onView={() => router.push(`/events/${event._id}`)}
+                            onJoin={() => {
+                              setSelectedEvent(event);
+                              setIsBookingModalOpen(true);
+                            }
+                            }
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 italic py-10">No events to explore right now.</p>
+                    )}
                   </section>
                 </>
               )}
             </div>
           )}
 
-          {activeTab === "tickets" && <TicketList />}
+          {activeTab === "tickets" && <TicketList user={user} />}
           {activeTab === "gallery" && <EventGallery />}
-          {activeTab === "profile" && <UserSettings />}
+          {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
         </div>
       </main>
+
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        onSuccess={fetchEvents}
+      />
     </div>
   );
 }

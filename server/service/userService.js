@@ -20,7 +20,7 @@ exports.signup = async (name, email, password, userRole) => {
         name,
         email,
         password: hashedPassword,
-        userRole,
+        role: userRole,
     });
     await newUser.save();
 
@@ -47,8 +47,9 @@ exports.login = async (email, password) => {
     const token = jwt.sign(
         {
             id: existingUser.id,
+            role: existingUser.role,
         },
-        process.env.TOKEN_SECRET,
+        process.env.JWT_SECRET,
         {
             expiresIn: "168hours",
         }
@@ -85,6 +86,7 @@ exports.googleLogin = async (code) => {
         token = jwt.sign(
             {
                 id: newUser._id,
+                role: newUser.role,
             },
             process.env.JWT_SECRET,
             {
@@ -93,9 +95,24 @@ exports.googleLogin = async (code) => {
         );
         return { token, isNewUser: true };
     } else {
+        // If user exists but has no profileUrl, update it with google picture
+        if (!user.profileUrl && picture) {
+            user.profileUrl = picture;
+        }
+
+        // Ensure isGoogleAuth is set
+        if (!user.isGoogleAuth) {
+            user.isGoogleAuth = true;
+        }
+
+        if (user.isModified()) {
+            await user.save();
+        }
+
         token = jwt.sign(
             {
                 id: user._id,
+                role: user.role,
             },
             process.env.JWT_SECRET,
             {
@@ -161,6 +178,10 @@ exports.validateToken = async (email, token) => {
     }
 };
 
+exports.getUserById = async (userId) => {
+    return await User.findById(userId);
+};
+
 exports.resetPassword = async (email, password, token) => {
     const existingUser = await User.findOne({ email }).select(
         "+password +authCode"
@@ -187,4 +208,30 @@ exports.resetPassword = async (email, password, token) => {
     } else {
         throw new Error("Invalid token.");
     }
+};
+
+exports.updateUser = async (userId, updateData) => {
+    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+};
+
+exports.changePassword = async (userId, currentPassword, newPassword) => {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    if (user.isGoogleAuth && !user.password) {
+        throw new Error("Google accounts do not have passwords. Use Google login.");
+    }
+
+    const isMatch = await compare(currentPassword, user.password);
+    if (!isMatch) {
+        throw new Error("Incorrect current password");
+    }
+
+    const hashedPassword = await hash(newPassword, SALT_VALUE);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { success: true };
 };

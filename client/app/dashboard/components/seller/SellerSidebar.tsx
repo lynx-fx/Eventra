@@ -7,14 +7,14 @@ import {
     LogOut,
     BarChart3
 } from "lucide-react";
-import Link from "next/link";
 
 interface SidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    onLogout: () => void;
 }
 
-export default function SellerSidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function SellerSidebar({ activeTab, setActiveTab, onLogout }: SidebarProps) {
     const navItems = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "events", label: "My Events", icon: Calendar },
@@ -50,13 +50,13 @@ export default function SellerSidebar({ activeTab, setActiveTab }: SidebarProps)
             </nav>
 
             <div className="pt-6 border-t border-gray-800 mt-auto">
-                <Link
-                    href="/logout"
-                    className="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-colors"
+                <button
+                    onClick={onLogout}
+                    className="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-colors w-full"
                 >
                     <LogOut size={20} />
                     <span>Logout</span>
-                </Link>
+                </button>
             </div>
         </aside>
     );

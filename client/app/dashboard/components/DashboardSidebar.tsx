@@ -3,19 +3,17 @@ import {
     LayoutDashboard,
     Ticket,
     Image as ImageIcon,
-    Calendar,
     User,
     LogOut,
-
 } from "lucide-react";
-import Link from "next/link";
 
 interface SidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    onLogout: () => void;
 }
 
-export default function DashboardSidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function DashboardSidebar({ activeTab, setActiveTab, onLogout }: SidebarProps) {
     const navItems = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "tickets", label: "My Tickets", icon: Ticket },
@@ -24,9 +22,9 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: SidebarPro
     ];
 
     return (
-        <aside className="w-64 bg-[#050505] min-h-screen p-6 flex flex-col border-r border-gray-900">
+        <aside className="w-64 bg-card min-h-screen p-6 flex flex-col border-r border-border">
             <div className="mb-10 pl-2">
-                <h1 className="text-white text-2xl font-serif">Eventra</h1>
+                <h1 className="text-foreground text-2xl font-serif">Eventra</h1>
             </div>
 
             <nav className="space-y-2 flex-col flex-1">
@@ -38,8 +36,8 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: SidebarPro
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors ${isActive
-                                ? "bg-[#8B5CF6] text-white font-medium"
-                                : "text-gray-400 hover:text-white hover:bg-[#1a1a1a]"
+                                ? "bg-primary text-primary-foreground font-medium"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
                                 }`}
                         >
                             <Icon size={20} />
@@ -49,14 +47,14 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: SidebarPro
                 })}
             </nav>
 
-            <div className="pt-6 border-t border-gray-800 mt-auto">
-                <Link
-                    href="/logout"
-                    className="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-colors"
+            <div className="pt-6 border-t border-border mt-auto">
+                <button
+                    onClick={onLogout}
+                    className="flex items-center gap-4 px-4 py-3 text-muted-foreground hover:text-foreground transition-colors w-full"
                 >
                     <LogOut size={20} />
                     <span>Logout</span>
-                </Link>
+                </button>
             </div>
         </aside>
     );

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Mail, Lock, Eye, EyeOff, Loader2, User } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Loader2, User, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -18,6 +18,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "user",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -50,14 +51,14 @@ export default function SignupPage() {
       return
     }
 
-    
+
     try {
       setIsLoading(true)
       const { data } = await axiosInstance.post("/api/auth/signup", {
         name: userDetails.name,
         email: userDetails.email,
         password: userDetails.password,
-        userRole: "user",
+        userRole: userDetails.role,
       })
 
       if (data.success) {
@@ -76,6 +77,7 @@ export default function SignupPage() {
         email: "",
         password: "",
         confirmPassword: "",
+        role: "user",
       })
     }
   }
@@ -119,7 +121,7 @@ export default function SignupPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-purple-500/30">
       <NavBar />
 
       {/* Main Content */}
@@ -127,12 +129,37 @@ export default function SignupPage() {
         {/* Background Glow */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-linear-to-t from-purple-900/50 from-30% via-transparent to-transparent pointer-events-none" />
 
-        <div className="w-full max-w-md bg-[#111113] rounded-4xl p-10 border border-white/5 shadow-2xl relative z-10">
+        <div className="w-full max-w-md bg-card rounded-4xl p-10 border border-border shadow-2xl relative z-10">
           <div className="space-y-2 mb-8">
             <h1 className="text-3xl font-serif tracking-tight text-balance">Create Account</h1>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Join Eventra to start buying and selling tickets for your favorite events.
             </p>
+          </div>
+
+          <div className="flex gap-4 mb-8">
+            <button
+              type="button"
+              onClick={() => setUserDetails(prev => ({ ...prev, role: 'user' }))}
+              className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${userDetails.role === 'user'
+                ? 'bg-purple-600/10 border-purple-500 text-purple-400'
+                : 'bg-secondary border-transparent text-muted-foreground hover:bg-secondary/80'
+                }`}
+            >
+              <User className="w-6 h-6" />
+              <span className="text-xs font-medium">Buyer</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserDetails(prev => ({ ...prev, role: 'seller' }))}
+              className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${userDetails.role === 'seller'
+                ? 'bg-purple-600/10 border-purple-500 text-purple-400'
+                : 'bg-secondary border-transparent text-muted-foreground hover:bg-secondary/80'
+                }`}
+            >
+              <ShoppingBag className="w-6 h-6" />
+              <span className="text-xs font-medium">Seller</span>
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -145,7 +172,7 @@ export default function SignupPage() {
                   placeholder="Full Name"
                   value={userDetails.name}
                   onChange={handleChange}
-                  className="w-full bg-[#1c1c1e] border-none py-4 pl-12 pr-5 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full bg-secondary border-none py-4 pl-12 pr-5 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
@@ -157,7 +184,7 @@ export default function SignupPage() {
                   placeholder="Email Address"
                   value={userDetails.email}
                   onChange={handleChange}
-                  className="w-full bg-[#1c1c1e] border-none py-4 pl-12 pr-5 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full bg-secondary border-none py-4 pl-12 pr-5 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
@@ -169,7 +196,7 @@ export default function SignupPage() {
                   placeholder="Password"
                   value={userDetails.password}
                   onChange={handleChange}
-                  className="w-full bg-[#1c1c1e] border-none py-4 pl-12 pr-12 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full bg-secondary border-none py-4 pl-12 pr-12 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
                 <button
                   type="button"
@@ -188,7 +215,7 @@ export default function SignupPage() {
                   placeholder="Confirm Password"
                   value={userDetails.confirmPassword}
                   onChange={handleChange}
-                  className="w-full bg-[#1c1c1e] border-none py-4 pl-12 pr-12 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full bg-secondary border-none py-4 pl-12 pr-12 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
             </div>
@@ -211,15 +238,15 @@ export default function SignupPage() {
             </button>
 
             <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink mx-4 text-xs text-gray-500 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-white/10"></div>
+              <div className="flex-grow border-t border-border"></div>
+              <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-widest">or</span>
+              <div className="flex-grow border-t border-border"></div>
             </div>
 
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full py-3.5 rounded-xl bg-[#1c1c1e] border border-transparent hover:bg-[#2c2c2e] transition-all flex items-center justify-center gap-3 group"
+              className="w-full py-3.5 rounded-xl bg-secondary border border-transparent hover:bg-secondary/80 transition-all flex items-center justify-center gap-3 group"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
                 <path
@@ -239,11 +266,11 @@ export default function SignupPage() {
                   fill="#EA4335"
                 />
               </svg>
-              <span className="font-medium text-gray-200 group-hover:text-white">Sign up with Google</span>
+              <span className="font-medium text-foreground group-hover:text-foreground/80">Sign up with Google</span>
             </button>
 
-            <div className="border-t border-white/10 pt-4 flex items-center gap-2">
-              <span className="text-sm text-gray-400">Already have an account?</span>
+            <div className="border-t border-border pt-4 flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Already have an account?</span>
               <Link href="/auth/login" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
                 Sign in
               </Link>

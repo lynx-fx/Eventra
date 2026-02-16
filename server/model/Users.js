@@ -12,12 +12,13 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "organizer", "admin"],
+      enum: ["user", "admin", "seller"],
       default: "user",
     },
     isActive: { type: Boolean, default: true },
     userLocation: { type: String },
     profileUrl: { type: String },
+    bio: { type: String },
     authCode: { type: String }
   },
   { timestamps: true }
