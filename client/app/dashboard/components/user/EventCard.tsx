@@ -26,7 +26,10 @@ export default function EventCard({
     ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
     : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
 
-  const imageUrl = image?.startsWith("/images") ? `${BACKEND}${image}` : image;
+  const isRelative = image?.startsWith("/images") || image?.startsWith("images");
+  const imageUrl = isRelative
+    ? `${BACKEND}${image?.startsWith("/") ? image : `/${image}`}`
+    : image;
 
   return (
     <motion.div
@@ -38,6 +41,7 @@ export default function EventCard({
           src={imageUrl}
           alt={title}
           fill
+          unoptimized
           className="object-cover group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />

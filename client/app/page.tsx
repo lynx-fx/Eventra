@@ -10,7 +10,7 @@ import BookingSteps from '../component/landing/BookingSteps';
 
 export default function page() {
   return (
-    <div className="min-h-screen bg-[#0f0f11] font-sans text-gray-100 overflow-x-hidden">
+    <div className="min-h-screen font-sans overflow-x-hidden">
       <NavBar />
 
       <main>
