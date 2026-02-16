@@ -9,3 +9,47 @@ exports.getGallery = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+exports.uploadImage = async (req, res) => {
+    try {
+        const { eventRoomId } = req.body;
+        const userId = req.user.id;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No image file provided" });
+        }
+
+        const imageUrl = `/images/${req.file.filename}`;
+        const imageData = {
+            imageUrl,
+            userId,
+            eventRoomId
+        };
+
+        let image = await imageService.saveImage(imageData);
+        image = await image.populate('userId', 'name');
+        res.status(201).json({ success: true, image });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.reportImage = async (req, res) => {
+    try {
+        const { imageId, reportReason } = req.body;
+        const userId = req.user.id;
+
+        const reportData = {
+            imageId,
+            reportType: "Image",
+            reportReason,
+            reporterId: userId
+        };
+
+        const report = await imageService.reportImage(reportData);
+        res.status(201).json({ success: true, report });
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
