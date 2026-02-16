@@ -52,7 +52,8 @@ export default function SellerDashboard({ user, setUser }: Props) {
   }, []);
 
   const handleLogout = () => {
-    console.log("Logging out...");
+    Cookies.remove("auth");
+    toast.success("Successfully logged out");
     router.push("/");
   };
 
@@ -86,7 +87,7 @@ export default function SellerDashboard({ user, setUser }: Props) {
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30">
-      <SellerSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <SellerSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       <main className="flex-1 overflow-y-auto relative">
         {/* Background Glow */}
@@ -127,12 +128,6 @@ export default function SellerDashboard({ user, setUser }: Props) {
                     user.name.charAt(0).toUpperCase()
                   )}
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                >
-                  <LogOut size={20} />
-                </button>
               </div>
             </div>
           </div>

@@ -38,7 +38,7 @@ exports.buyTicket = async (userId, eventId, ticketType = 'standard') => {
         eventId,
         ticketType,
         price: finalPrice,
-        status: 'active'
+        status: 'active',
     });
 
     // Update event sold tickets count

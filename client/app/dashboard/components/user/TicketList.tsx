@@ -1,11 +1,20 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas-pro";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ticket, Calendar, MapPin, QrCode, Loader2, Sparkles } from "lucide-react";
+import { Ticket, Calendar, MapPin, QrCode, Loader2, Sparkles, Download } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
+import { User } from "../../page";
+
+interface Props {
+    user?: User;
+}
+
 
 interface TicketData {
     _id: string;
@@ -22,11 +31,14 @@ interface TicketData {
     purchaseDate: string;
 }
 
-export default function TicketList() {
+export default function TicketList({ user }: Props) {
     const [tickets, setTickets] = useState<TicketData[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const ticketRef = useRef<HTMLDivElement>(null);
+    const pdfRef = useRef<HTMLDivElement>(null);
     const AUTH_TOKEN = Cookies.get("auth");
 
     const fetchTickets = async () => {
@@ -71,6 +83,38 @@ export default function TicketList() {
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setIsCancelling(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!pdfRef.current) return;
+        setIsDownloading(true);
+        try {
+            const canvas = await html2canvas(pdfRef.current, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#0a0a0c",
+                logging: false,
+            });
+            const imgData = canvas.toDataURL("image/png");
+
+            const imgWidth = canvas.width / 2;
+            const imgHeight = canvas.height / 2;
+
+            const pdf = new jsPDF({
+                orientation: imgWidth > imgHeight ? "l" : "p",
+                unit: "px",
+                format: [imgWidth, imgHeight]
+            });
+
+            pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+            pdf.save(`Ticket-${selectedTicket?._id}.pdf`);
+            toast.success("Ticket downloaded successfully");
+        } catch (error) {
+            console.error("PDF generation failed", error);
+            toast.error("Failed to generate PDF");
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -157,8 +201,13 @@ export default function TicketList() {
 
                                 {/* QR Preview */}
                                 <div className="md:border-l border-dashed border-white/10 md:pl-8 flex flex-col items-center justify-center bg-white/5 md:bg-transparent p-6 md:pr-10">
-                                    <div className="bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                                        <QrCode size={48} color="black" />
+                                    <div className="bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500 overflow-hidden w-16 h-16 flex items-center justify-center">
+                                        <QRCodeSVG
+                                            value={`${window.location.origin}/ticket/${ticket._id}`}
+                                            size={48}
+                                            level="H"
+                                            includeMargin={false}
+                                        />
                                     </div>
                                 </div>
 
@@ -185,85 +234,205 @@ export default function TicketList() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-xl bg-[#111113] rounded-[48px] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.15)]"
+                            className="relative w-full max-w-[400px] bg-[#0a0a0c] rounded-[40px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]"
                         >
-                            {/* Ticket Header Image */}
-                            <div className="h-48 w-full relative">
-                                {(() => {
-                                    const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
-                                        ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
-                                        : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
-                                    const imageUrl = selectedTicket.eventId?.bannerImage?.startsWith("/images")
-                                        ? `${BACKEND}${selectedTicket.eventId.bannerImage}`
-                                        : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
-                                    return (
-                                        <img
-                                            src={imageUrl}
-                                            className="w-full h-full object-cover"
-                                            alt="Event"
-                                        />
-                                    );
-                                })()}
-                                <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-[#111113]/40 to-transparent" />
-                                <button
-                                    onClick={() => setSelectedTicket(null)}
-                                    className="absolute top-6 right-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white/70 hover:text-white transition-colors border border-white/10"
-                                >
-                                    <Sparkles size={20} className="animate-pulse" />
-                                </button>
+                            <div ref={ticketRef} className="bg-[#0a0a0c] w-full aspect-[9/16] flex flex-col relative overflow-hidden">
+                                {/* Decorative Ticket Cutouts */}
+                                <div className="absolute top-[65%] -left-4 w-8 h-8 bg-black rounded-full z-20 border-r border-white/10" />
+                                <div className="absolute top-[65%] -right-4 w-8 h-8 bg-black rounded-full z-20 border-l border-white/10" />
+
+                                {/* Ticket Header Image */}
+                                <div className="h-48 w-full relative">
+                                    {(() => {
+                                        const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                            ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                            : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
+                                        const imageUrl = selectedTicket.eventId?.bannerImage?.startsWith("/images")
+                                            ? `${BACKEND}${selectedTicket.eventId.bannerImage}`
+                                            : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
+                                        return (
+                                            <img
+                                                src={imageUrl}
+                                                className="w-full h-full object-cover"
+                                                alt="Event"
+                                            />
+                                        );
+                                    })()}
+                                    <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-[#111113]/40 to-transparent" />
+                                    <div className="absolute top-6 right-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white/70 border border-white/10">
+                                        <Sparkles size={20} className="animate-pulse" />
+                                    </div>
+                                </div>
+
+                                <div className="px-6 md:px-10 pb-10 -mt-10 relative space-y-10">
+                                    <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-0 mt-6 md:mt-0">
+                                        <div className="space-y-4 text-center md:text-left w-full">
+                                            <div className="space-y-2">
+                                                <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full inline-block">
+                                                    {selectedTicket.ticketType} Pass
+                                                </span>
+                                                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight break-words">{selectedTicket.eventId?.title}</h2>
+                                                <p className="text-[10px] text-gray-400 font-mono">#{selectedTicket._id.toUpperCase()}</p>
+                                            </div>
+
+                                            <div className="pt-4 border-t border-white/5 space-y-1">
+                                                <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black">Ticket Holder</p>
+                                                <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
+                                                <p className="text-[10px] text-gray-400">{user?.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-3 shrink-0">
+                                            <div className="bg-white p-3 md:p-4 rounded-[28px] md:rounded-[32px] shadow-2xl w-32 h-32 md:w-36 md:h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/20">
+                                                <QRCodeSVG
+                                                    value={`${window.location.origin}/ticket/${selectedTicket._id}`}
+                                                    size={110}
+                                                    level="H"
+                                                    includeMargin={false}
+                                                    className="w-full h-full"
+                                                />
+                                            </div>
+                                            <span className="text-[8px] text-gray-600 font-black uppercase tracking-[0.3em]">Scan for Entry</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative py-4 overflow-hidden">
+                                        <div className="absolute -left-14 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#0a0a0c] rounded-full hidden md:block" />
+                                        <div className="absolute -right-14 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#0a0a0c] rounded-full hidden md:block" />
+                                        <div className="border-t border-dashed border-white/20 w-full" />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-y-8 gap-x-12 py-6 relative">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Event Date</p>
+                                            <p className="text-sm font-bold text-gray-200">
+                                                {new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1 md:text-right">
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Location</p>
+                                            <p className="text-sm font-bold text-gray-200 break-words">{selectedTicket.eventId?.location}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="px-10 pb-10 -mt-10 relative space-y-8">
-                                <div className="flex justify-between items-end">
-                                    <div className="space-y-2">
-                                        <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
-                                            {selectedTicket.ticketType} Pass
-                                        </span>
-                                        <h2 className="text-3xl font-bold text-white leading-tight">{selectedTicket.eventId?.title}</h2>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-[24px] shadow-2xl">
-                                        <QrCode size={80} color="black" />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-8 border-y border-white/5 py-8">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Event Date</p>
-                                        <p className="text-sm font-bold text-gray-200">
-                                            {new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Location</p>
-                                        <p className="text-sm font-bold text-gray-200">{selectedTicket.eventId?.location}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Purchased On</p>
-                                        <p className="text-sm font-bold text-gray-200">{new Date(selectedTicket.purchaseDate).toLocaleDateString()}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Access Code</p>
-                                        <p className="text-sm font-bold text-purple-400 font-mono italic">#{selectedTicket._id.toUpperCase()}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-4">
-                                    {selectedTicket.status === 'active' && new Date(selectedTicket.eventId?.eventDate) > new Date() && (
-                                        <button
-                                            onClick={() => handleCancelTicket(selectedTicket._id)}
-                                            disabled={isCancelling}
-                                            className="w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] text-red-500/70 hover:text-red-500 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            {isCancelling ? <Loader2 className="animate-spin" size={14} /> : "Cancel Booking & Refund"}
-                                        </button>
+                            <div className="px-8 pb-8 space-y-4">
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    disabled={isDownloading}
+                                    className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-100 transition-all flex items-center justify-center gap-2 shadow-xl"
+                                >
+                                    {isDownloading ? <Loader2 className="animate-spin" size={12} /> : (
+                                        <>
+                                            <Download size={14} />
+                                            Download pass
+                                        </>
                                     )}
-                                    <p className="text-center text-[9px] text-gray-600 uppercase tracking-widest font-medium">Please present this digital pass at the entrance for entry validation.</p>
-                                </div>
+                                </button>
+
+                                {selectedTicket.status === 'active' && new Date(selectedTicket.eventId?.eventDate) > new Date() && (
+                                    <button
+                                        onClick={() => handleCancelTicket(selectedTicket._id)}
+                                        disabled={isCancelling}
+                                        className="w-full py-2 text-[9px] font-black uppercase tracking-[0.2em] text-red-500/40 hover:text-red-500 transition-colors"
+                                    >
+                                        {isCancelling ? <Loader2 className="animate-spin" size={10} /> : "Cancel Booking"}
+                                    </button>
+                                )}
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Hidden High-Fidelity PDF pass (State B refined version) */}
+            {selectedTicket && (
+                <div
+                    ref={pdfRef}
+                    className="fixed -left-[1000px] top-0 pointer-events-none"
+                    style={{ zIndex: -1 }}
+                >
+                    <div className="bg-[#0a0a0c] w-[400px] aspect-[9/16] flex flex-col relative overflow-hidden border border-white/10">
+                        <div className="absolute top-[62%] -left-5 w-10 h-10 bg-black rounded-full z-10 border-r border-white/5" />
+                        <div className="absolute top-[62%] -right-5 w-10 h-10 bg-black rounded-full z-10 border-l border-white/5" />
+
+                        <div className="h-[35%] w-full relative shrink-0">
+                            {(() => {
+                                const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                    : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
+                                const imageUrl = selectedTicket.eventId?.bannerImage?.startsWith("/images")
+                                    ? `${BACKEND}${selectedTicket.eventId.bannerImage}`
+                                    : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
+                                return (
+                                    <img
+                                        src={imageUrl}
+                                        className="w-full h-full object-cover"
+                                        alt="Event"
+                                    />
+                                );
+                            })()}
+                            <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                            <div className="absolute top-8 right-8 p-3 bg-black/40 backdrop-blur-md rounded-full text-white/70 border border-white/10">
+                                <Sparkles size={18} className="animate-pulse text-purple-400" />
+                            </div>
+                            <div className="absolute bottom-6 left-8">
+                                <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-purple-900/40">
+                                    {selectedTicket.ticketType} PASS
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 px-10 pt-4 pb-10 flex flex-col justify-between relative bg-[#0a0a0c]">
+                            <div className="space-y-8">
+                                <div className="space-y-2 text-center">
+                                    <h2 className="text-3xl font-bold text-white leading-tight tracking-tight">{selectedTicket.eventId?.title}</h2>
+                                    <p className="text-[10px] text-gray-500 font-mono tracking-widest">#{selectedTicket._id.toUpperCase()}</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-y-10 border-t border-b border-white/10 py-10 relative font-sans">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Attendee</p>
+                                        <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
+                                    </div>
+                                    <div className="space-y-1.5 text-right">
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date</p>
+                                        <p className="text-sm font-bold text-white">{new Date(selectedTicket.eventId?.eventDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Location</p>
+                                        <p className="text-xs font-bold text-gray-300 break-words">{selectedTicket.eventId?.location}</p>
+                                    </div>
+                                    <div className="space-y-1.5 text-right">
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>
+                                        <p className="text-sm font-bold text-purple-400 font-mono">${selectedTicket.price.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-6 pb-2">
+                                <div className="bg-white p-4 rounded-[32px] shadow-2xl w-36 h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/10">
+                                    <QRCodeSVG
+                                        value={`${window.location.origin}/ticket/${selectedTicket._id}`}
+                                        size={110}
+                                        level="H"
+                                        includeMargin={false}
+                                        className="w-full h-full"
+                                    />
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.4em]">Official Digital Pass</p>
+                                    <div className="flex items-center justify-center gap-4 text-[7px] text-gray-700 uppercase tracking-widest font-bold">
+                                        <span>Secure Entry</span>
+                                        <div className="w-1.5 h-1.5 bg-gray-800 rounded-full" />
+                                        <span>Non-Transferable</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

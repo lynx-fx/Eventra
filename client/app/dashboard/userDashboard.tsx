@@ -120,7 +120,7 @@ export default function UserDashboard({ user, setUser }: Props) {
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30 overflow-hidden">
-      <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
         {/* Background Decorative Elements */}
@@ -167,13 +167,6 @@ export default function UserDashboard({ user, setUser }: Props) {
                     user.name.charAt(0).toUpperCase()
                   )}
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                  title="Logout"
-                >
-                  <LogOut size={20} />
-                </button>
               </div>
             </div>
           </div>
@@ -264,7 +257,7 @@ export default function UserDashboard({ user, setUser }: Props) {
             </div>
           )}
 
-          {activeTab === "tickets" && <TicketList />}
+          {activeTab === "tickets" && <TicketList user={user} />}
           {activeTab === "gallery" && <EventGallery />}
           {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
