@@ -135,7 +135,7 @@ export default function AdminEventsView() {
                                             <span className="text-sm font-medium text-gray-200 group-hover:text-white">{event.title}</span>
                                             <span className="text-[11px] text-gray-600 flex items-center gap-1 mt-1">
                                                 <Calendar size={10} />
-                                                {new Date(event.startDate).toLocaleDateString()}
+                                                {new Date(event.eventDate || event.startDate).toLocaleDateString()}
                                             </span>
                                         </div>
                                     </td>

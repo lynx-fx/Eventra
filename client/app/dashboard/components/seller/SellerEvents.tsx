@@ -95,7 +95,7 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
                                                     <Calendar size={12} className="text-purple-500" />
-                                                    {new Date(event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    {new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[10px] text-gray-600">
                                                     <MapPin size={10} />

@@ -11,5 +11,6 @@ router.post("/login", authController.login);
 router.post("/google-login", authController.googleLogin);
 router.post("/signup", authController.signup);
 router.post("/reset-password", authController.resetPassword);
+router.put("/update-profile", protect, authController.updateProfile);
 
 module.exports = router;

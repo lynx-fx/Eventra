@@ -1,11 +1,11 @@
 const Event = require("../model/Events.js");
 
 exports.getAllEvents = async () => {
-    return await Event.find().sort({ startDate: 1 });
+    return await Event.find().sort({ eventDate: 1 });
 };
 
 exports.getEventsByQuery = async (query) => {
-    return await Event.find(query).sort({ startDate: 1 });
+    return await Event.find(query).sort({ eventDate: 1 });
 };
 
 exports.getUpcomingEvents = async () => {
@@ -13,7 +13,7 @@ exports.getUpcomingEvents = async () => {
     const now = new Date();
     const future = new Date();
     future.setDate(future.getDate() + 30);
-    return await Event.find({ startDate: { $gte: now, $lte: future } }).sort({ startDate: 1 });
+    return await Event.find({ eventDate: { $gte: now, $lte: future } }).sort({ eventDate: 1 });
 };
 
 exports.getEventById = async (eventId) => {

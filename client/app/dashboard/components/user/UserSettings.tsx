@@ -1,11 +1,45 @@
 "use client"
 
 import React from "react";
-import { User, Mail, Lock, Save, Camera, Shield, Bell, Layout } from "lucide-react";
+import { User, Mail, Lock, Save, Camera, Shield, Bell, Layout, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { User as UserType } from "../../page";
+import axiosInstance from "../../../../service/axiosInstance";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
-export default function UserSettings() {
+interface Props {
+    user: UserType;
+    setUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+}
+
+export default function UserSettings({ user, setUser }: Props) {
+    const [name, setName] = React.useState(user.name);
+    const [email, setEmail] = React.useState(user.email);
+    const [bio, setBio] = React.useState(user.bio || "");
+    const [isSaving, setIsSaving] = React.useState(false);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const token = Cookies.get("auth");
+            const { data } = await axiosInstance.put("/api/auth/update-profile",
+                { name, bio },
+                { headers: { auth: token } }
+            );
+
+            if (data.success) {
+                toast.success("Profile updated successfully");
+                setUser(data.user);
+            }
+        } catch (error) {
+            toast.error("Failed to update profile");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -29,8 +63,8 @@ export default function UserSettings() {
                         <button
                             key={i}
                             className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all border ${item.active
-                                    ? "bg-purple-600/10 border-purple-500/30 text-white font-bold"
-                                    : "bg-[#111113] border-white/5 text-gray-500 hover:text-white hover:border-white/10"
+                                ? "bg-purple-600/10 border-purple-500/30 text-white font-bold"
+                                : "bg-[#111113] border-white/5 text-gray-500 hover:text-white hover:border-white/10"
                                 }`}
                         >
                             <item.icon size={20} className={item.active ? "text-purple-500" : ""} />
@@ -74,7 +108,8 @@ export default function UserSettings() {
                                             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition-colors w-4 h-4" />
                                             <input
                                                 type="text"
-                                                defaultValue="The Collector"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
                                                 className="w-full bg-[#0a0a0c] border border-white/5 text-white pl-12 pr-4 py-3.5 rounded-2xl focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder-gray-700 text-sm"
                                             />
                                         </div>
@@ -85,8 +120,9 @@ export default function UserSettings() {
                                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition-colors w-4 h-4" />
                                             <input
                                                 type="email"
-                                                defaultValue="collector@nexus.eventra"
-                                                className="w-full bg-[#0a0a0c] border border-white/5 text-white pl-12 pr-4 py-3.5 rounded-2xl focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder-gray-700 text-sm"
+                                                value={email}
+                                                disabled
+                                                className="w-full bg-[#0a0a0c] border border-white/5 text-gray-500 pl-12 pr-4 py-3.5 rounded-2xl focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder-gray-700 text-sm cursor-not-allowed"
                                             />
                                         </div>
                                     </div>
@@ -95,6 +131,8 @@ export default function UserSettings() {
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Bio</label>
                                     <textarea
                                         rows={3}
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
                                         placeholder="Tell the community who you are..."
                                         className="w-full bg-[#0a0a0c] border border-white/5 text-white p-4 rounded-2xl focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder-gray-700 text-sm resize-none"
                                     />
@@ -108,9 +146,13 @@ export default function UserSettings() {
                             <p className="text-white text-sm font-bold">Secure Environment</p>
                             <p className="text-gray-600 text-[10px] uppercase tracking-widest font-bold mt-1">Last sync: 2 hours ago</p>
                         </div>
-                        <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-white/5 active:scale-95">
-                            <Save size={16} />
-                            <span>Save Identity</span>
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-white/5 active:scale-95 disabled:opacity-50"
+                        >
+                            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                            <span>{isSaving ? "Syncing..." : "Save Identity"}</span>
                         </button>
                     </div>
                 </div>

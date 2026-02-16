@@ -11,12 +11,15 @@ import axiosInstance from "../../service/axiosInstance";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
+import { User } from "./page";
 
 interface EventData {
   _id: string;
   title: string;
   description: string;
   startDate: string;
+  endDate: string;
+  eventDate: string;
   location: string;
   category: string;
   price: number;
@@ -28,7 +31,12 @@ interface EventData {
   status: string;
 }
 
-export default function UserDashboard() {
+interface Props {
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+}
+
+export default function UserDashboard({ user, setUser }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
   const [upcomingEvents, setUpcomingEvents] = useState<EventData[]>([]);
   const [exploreEvents, setExploreEvents] = useState<EventData[]>([]);
@@ -52,8 +60,8 @@ export default function UserDashboard() {
 
         const now = new Date();
         const upcoming = approvedEvents
-          .filter((e: any) => new Date(e.startDate) > now)
-          .sort((a: any, b: any) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+          .filter((e: any) => new Date(e.eventDate || e.startDate) > now)
+          .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime())
           .slice(0, 3);
 
         const explore = approvedEvents.slice(0, 6);
@@ -151,7 +159,7 @@ export default function UserDashboard() {
                             key={event._id}
                             title={event.title}
                             description={event.description}
-                            date={new Date(event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Global"}
                             image={"https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                             onView={() => console.log("View", event._id)}
@@ -184,7 +192,7 @@ export default function UserDashboard() {
                             key={event._id}
                             title={event.title}
                             description={event.description}
-                            date={new Date(event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             location={event.location || "Online"}
                             image={"https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
                             onView={() => console.log("View", event)}
@@ -202,7 +210,7 @@ export default function UserDashboard() {
 
           {activeTab === "tickets" && <TicketList />}
           {activeTab === "gallery" && <EventGallery />}
-          {activeTab === "profile" && <UserSettings />}
+          {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
         </div>
       </main>

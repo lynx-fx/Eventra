@@ -16,6 +16,8 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  bio?: string;
+  profileUrl?: string;
 }
 
 export default function Page() {
@@ -62,11 +64,11 @@ export default function Page() {
 
   switch (user.role) {
     case "user":
-      return <UserDashboard />;
+      return <UserDashboard user={user} setUser={setUser} />;
     case "seller":
-      return <SellerDashboard user={user} />;
+      return <SellerDashboard user={user} setUser={setUser} />;
     case "admin":
-      return <AdminDashboard user={user} />;
+      return <AdminDashboard user={user} setUser={setUser} />;
     default:
       return <div>Invalid role</div>;
   }

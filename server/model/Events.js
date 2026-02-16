@@ -14,6 +14,7 @@ const eventSchema = new mongoose.Schema(
     },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+    eventDate: { type: Date, required: true },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

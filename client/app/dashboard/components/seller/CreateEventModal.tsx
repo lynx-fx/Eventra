@@ -29,6 +29,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
         },
         startDate: "",
         endDate: "",
+        eventDate: "",
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -44,8 +45,8 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                     standard: Number(formData.capacity.standard) || 0,
                     economy: Number(formData.capacity.economy) || 0,
                 }
-            },{
-                headers:{
+            }, {
+                headers: {
                     auth: AUTH_TOKEN
                 }
             });
@@ -67,6 +68,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                     },
                     startDate: "",
                     endDate: "",
+                    eventDate: "",
                 });
             } else {
                 toast.error(data.message || "Failed to create event");
@@ -220,7 +222,22 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Start Date</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 text-purple-400">Actual Event Date</label>
+                                    <div className="relative group">
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 w-4 h-4 group-focus-within:text-purple-400 transition-colors" />
+                                        <input
+                                            required
+                                            type="datetime-local"
+                                            step="60"
+                                            value={formData.eventDate}
+                                            onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                                            className="w-full bg-[#111113] border border-purple-500/30 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Ticket Sales Start</label>
                                     <div className="relative group">
                                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
                                         <input
@@ -235,7 +252,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">End Date</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Ticket Sales End</label>
                                     <div className="relative group">
                                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
                                         <input

@@ -175,3 +175,15 @@ exports.getCurrentUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Error fetching user data" });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, bio, profileUrl } = req.body;
+    const updatedUser = await userService.updateUser(req.user.id, { name, bio, profileUrl });
+    res.status(200).json({ success: true, message: "Profile updated", user: updatedUser });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: "Error updating profile" });
+  }
+};
+

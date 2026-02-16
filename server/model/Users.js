@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     userLocation: { type: String },
     profileUrl: { type: String },
+    bio: { type: String },
     authCode: { type: String }
   },
   { timestamps: true }
