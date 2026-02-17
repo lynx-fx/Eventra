@@ -5,6 +5,77 @@ const Image = require("../model/Images");
 const EventRoom = require("../model/EventRooms");
 const Event = require("../model/Events");
 
+const Ticket = require("../model/Tickets");
+const userService = require("../service/userService");
+
+exports.getAnalytics = async (req, res) => {
+    try {
+        const totalEvents = await Event.countDocuments();
+        const pendingEvents = await Event.countDocuments({ status: "pending" });
+        const approvedEvents = await Event.countDocuments({ status: "approved" });
+
+        const totalUsers = await User.countDocuments();
+        const activeUsers = await User.countDocuments({ isActive: true });
+
+        const totalRevenue = await Ticket.aggregate([
+            { $match: { status: "active" } },
+            { $group: { _id: null, total: { $sum: "$price" } } }
+        ]);
+
+        const totalRev = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+
+        res.status(200).json({
+            success: true,
+            analytics: {
+                totalEvents,
+                pendingEvents,
+                approvedEvents,
+                totalUsers,
+                activeUsers,
+                totalRevenue: totalRev
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Error fetching analytics" });
+    }
+};
+
+exports.addAdmin = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        // Basic validation
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: "Please provide all required fields" });
+        }
+
+        // Create user with admin role
+        const result = await userService.signup(name, email, password, "admin");
+
+        res.status(201).json({
+            success: true,
+            message: "New admin added successfully",
+        });
+    } catch (err) {
+        console.error(err);
+        if (err.message.includes("already exists")) {
+            return res.status(400).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error adding admin" });
+    }
+};
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().sort({ createdAt: -1 });
+        res.status(200).json({ success: true, users });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Error fetching users" });
+    }
+};
+
 exports.getAllReports = async (req, res) => {
     try {
         const reports = await Report.find()
@@ -59,6 +130,10 @@ exports.banUser = async (req, res) => {
         const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.role === "admin") {
+            return res.status(403).json({ success: false, message: "Cannot ban admin accounts" });
         }
 
         user.isActive = !user.isActive;

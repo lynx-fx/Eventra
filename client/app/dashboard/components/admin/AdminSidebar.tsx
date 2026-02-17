@@ -5,14 +5,10 @@ import {
     LayoutDashboard,
     Calendar,
     Users,
-    ShoppingBag,
     Settings,
     ShieldCheck,
-    HelpCircle,
-    LogOut,
     ChevronRight,
     TrendingUp,
-    Mail
 } from "lucide-react"
 import Image from "next/image"
 
@@ -27,12 +23,10 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
         { id: "events", label: "Events", icon: Calendar },
         { id: "users", label: "Users", icon: Users },
         { id: "reports", label: "Reports", icon: ShieldCheck },
-        { id: "sellers", label: "Sellers", icon: ShoppingBag },
         { id: "transactions", label: "Transactions", icon: TrendingUp },
     ]
 
     const bottomItems = [
-        { id: "support", label: "Support", icon: HelpCircle },
         { id: "settings", label: "Settings", icon: Settings },
     ]
 
@@ -100,7 +94,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#111113] rounded-full" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-white truncate">Admin Head</p>
+                            <p className="text-xs font-bold text-white truncate">Admin</p>
                             <p className="text-[10px] text-gray-500 truncate">System Manager</p>
                         </div>
                         <button title="Help" className="p-2 text-gray-500 hover:text-white transition-colors">

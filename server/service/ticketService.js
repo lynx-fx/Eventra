@@ -76,3 +76,16 @@ exports.cancelTicket = async (ticketId, userId) => {
     await ticket.save();
     return ticket;
 }
+
+exports.getTicketsBySeller = async (sellerId) => {
+    // 1. Find all events created by this seller
+    const events = await Event.find({ seller: sellerId });
+    const eventIds = events.map(event => event._id);
+
+    // 2. Find all tickets for these events
+    const tickets = await Ticket.find({ eventId: { $in: eventIds } })
+        .populate('userId', 'name email profileUrl') // Get buyer details
+        .populate('eventId', 'title eventDate price'); // Get event details
+
+    return tickets;
+};

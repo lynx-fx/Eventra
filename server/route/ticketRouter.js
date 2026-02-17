@@ -5,5 +5,6 @@ const { protect } = require("../middleware/authMiddleware.js");
 router.get("/", protect, ticketController.getUserTickets);
 router.post("/buy", protect, ticketController.buyTicket);
 router.post("/cancel", protect, ticketController.cancelTicket);
+router.get("/seller/sales", protect, ticketController.getSellerTickets);
 
 module.exports = router;

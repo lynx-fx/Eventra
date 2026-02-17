@@ -27,32 +27,24 @@ export default function AdminOverview() {
         setIsLoading(true)
         try {
             const token = Cookies.get("auth")
-            const { data } = await axiosInstance.get("/api/events", {
-                headers: { auth: token }
-            })
-            if (data.success) {
-                const totalEvents = data.events.length
-                const pending = data.events.filter((e: any) => e.status === "pending")
-                const approvedCount = data.events.filter((e: any) => e.status === "approved").length
-                const totalRev = data.events.reduce((acc: number, curr: any) => {
-                    const soldPremium = curr.soldTickets?.premium || 0;
-                    const soldStandard = curr.soldTickets?.standard || 0;
-                    const soldEconomy = curr.soldTickets?.economy || 0;
-                    const eventRev = ((curr.price?.premium || 0) * soldPremium) +
-                        ((curr.price?.standard || 0) * soldStandard) +
-                        ((curr.price?.economy || 0) * soldEconomy);
-                    return acc + eventRev;
-                }, 0)
 
-                setStatsData({
-                    totalEvents,
-                    pendingCount: pending.length,
-                    approvedCount,
-                    totalRev: totalRev.toLocaleString(),
-                })
+            // Parallel fetch for better performance
+            const [analyticsRes, eventsRes] = await Promise.all([
+                axiosInstance.get("/api/admin/analytics", { headers: { auth: token } }),
+                axiosInstance.get("/api/events", { headers: { auth: token } })
+            ]);
+
+            if (analyticsRes.data.success) {
+                setStatsData(analyticsRes.data.analytics);
+            }
+
+            if (eventsRes.data.success) {
+                const pending = eventsRes.data.events.filter((e: any) => e.status === "pending")
                 setPendingEvents(pending.slice(0, 5))
             }
+
         } catch (error) {
+            console.error(error);
             toast.error("Failed to load dashboard data")
         } finally {
             setIsLoading(false)
@@ -65,10 +57,10 @@ export default function AdminOverview() {
     }, [])
 
     const stats = [
-        { label: "Total Revenue", value: `$${statsData?.totalRev || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
-        { label: "Active Users", value: "24.5k", change: "+4.2%", trend: "up", icon: Users, color: "text-blue-400" },
+        { label: "Total Revenue", value: `$${statsData?.totalRevenue?.toLocaleString() || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
+        { label: "Total Users", value: statsData?.totalUsers || "0", change: "+4.2%", trend: "up", icon: Users, color: "text-blue-400" },
         { label: "Total Events", value: statsData?.totalEvents || "0", change: "+8.1%", trend: "up", icon: Calendar, color: "text-purple-400" },
-        { label: "Pending Approvals", value: statsData?.pendingCount || "0", change: "-2", trend: "down", icon: ShieldAlert, color: "text-orange-400" },
+        { label: "Pending Approvals", value: statsData?.pendingEvents || "0", change: "-2", trend: "down", icon: ShieldAlert, color: "text-orange-400" },
     ]
 
     const container = {
