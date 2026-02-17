@@ -268,15 +268,25 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEd
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Category</label>
                                                 <div className="relative group">
-                                                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                                    <input
+                                                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors z-10" />
+                                                    <select
                                                         required
-                                                        type="text"
                                                         value={formData.category}
                                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                                        placeholder="e.g. Music"
-                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                                    />
+                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>Select a category</option>
+                                                        {["Music", "Sports", "Theatre", "Festival", "Concert", "Workshop", "Other"].map((cat) => (
+                                                            <option key={cat} value={cat}>
+                                                                {cat}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
 

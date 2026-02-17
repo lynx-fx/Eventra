@@ -36,9 +36,12 @@ const EventCategories = () => {
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
                             />
                             <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors flex flex-col justify-end p-8">
+                            <a href="/events">
+                            
                                 <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 text-white group-hover:bg-purple-600 group-hover:scale-110 transition-all duration-300">
                                     →
                                 </div>
+                            </a>
                                 <h3 className="text-2xl font-bold text-white">{cat.title}</h3>
                                 <p className="text-gray-300 text-sm mt-1">{cat.desc}</p>
                             </div>
