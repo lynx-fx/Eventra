@@ -33,3 +33,7 @@ exports.deleteEvent = async (eventId) => {
 exports.updateEventStatus = async (eventId, status) => {
     return await Event.findByIdAndUpdate(eventId, { status }, { new: true });
 };
+
+exports.updateEvent = async (eventId, eventData) => {
+    return await Event.findByIdAndUpdate(eventId, eventData, { new: true });
+};
