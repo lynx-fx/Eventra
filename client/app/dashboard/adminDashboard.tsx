@@ -6,6 +6,7 @@ import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminOverview from "./components/admin/AdminOverview";
 import AdminEventsView from "./components/admin/AdminEventsView";
 import AdminUsersView from "./components/admin/AdminUsersView";
+import AdminReportsView from "./components/admin/AdminReportsView";
 import UserSettings from "./components/user/UserSettings";
 import { Search, Bell, LogOut, ChevronDown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -109,6 +110,7 @@ export default function AdminDashboard({ user, setUser }: Props) {
             {activeTab === "overview" && <AdminOverview />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
+            {activeTab === "reports" && <AdminReportsView />}
             {(activeTab === "profile" || activeTab === "settings") && <UserSettings user={user} setUser={setUser} />}
 
             {activeTab === "sellers" && (

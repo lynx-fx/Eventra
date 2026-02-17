@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import axiosInstance from "../../../service/axiosInstance"; // Adjust path as needed
-import NavBar from "../../../component/navBar"; // Adjust path
-import BookingModal from "../../dashboard/components/user/BookingModal"; // Adjust path
+import axiosInstance from "../../../service/axiosInstance";
+import BookingModal from "../../dashboard/components/user/BookingModal";
 import { Calendar, MapPin, Share2, ArrowLeft, Clock, Ticket, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
@@ -101,8 +100,6 @@ export default function EventDetailsPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-            <NavBar />
-
             <main className="container mx-auto px-4 py-8 mt-20">
                 <button
                     onClick={() => router.back()}

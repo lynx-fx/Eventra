@@ -157,12 +157,16 @@ export default function EventGallery() {
                 setReportingImageId(null);
                 setReportReason("");
             } else {
-                toast.info("Error reporting content")
+                toast.error(response.data.message || "Error reporting content");
                 setReportingImageId(null);
                 setReportReason("");
             }
-        } catch (error) {
-            toast.error("Failed to report image");
+        } catch (error: any) {
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("Failed to report image");
+            }
         } finally {
             setIsReporting(false);
         }
