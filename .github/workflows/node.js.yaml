@@ -3,8 +3,6 @@ name: Node.js CI
 on:
   push:
     branches: ["*"] # any branch
-  pull_request:
-    branches: ["*"] # PRs targeting any branch
     
 jobs:
   build:
@@ -18,7 +16,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: client/package-lock.json   # ← points cache to client
+          cache-dependency-path: client/package-lock.json
 
       - name: Install dependencies (client)
         run: npm ci
