@@ -32,3 +32,13 @@ exports.cancelTicket = async (req, res) => {
     }
 }
 
+exports.getSellerTickets = async (req, res) => {
+    try {
+        const sellerId = req.user.id;
+        const tickets = await ticketService.getTicketsBySeller(sellerId);
+        res.status(200).json({ success: true, tickets });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+

@@ -14,7 +14,7 @@ import axiosInstance from "../../../service/axiosInstance";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-// TODO: Fix the validation crash issue
+// DONE: Fix the validation crash issue
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");

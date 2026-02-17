@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from "next/link";
-import { ModeToggle } from "./ThemeToggle";
+import { ModeToggle } from './ThemeToggle';
 
 export default function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,6 +46,7 @@ export default function NavBar() {
         </nav>
 
         <div className="flex items-center gap-4">
+          <ModeToggle />
           <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
             Sign In
           </Link>
@@ -54,7 +55,6 @@ export default function NavBar() {
               Join Us
             </button>
           </Link>
-          <ModeToggle />
         </div>
       </div>
     </header>

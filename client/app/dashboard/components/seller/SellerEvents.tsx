@@ -4,7 +4,10 @@ import React, { useState } from "react";
 import { Search, Plus, Calendar, Edit2, Trash2, Eye, Loader2, MapPin, Users } from "lucide-react";
 import axiosInstance from "../../../../service/axiosInstance";
 import CreateEventModal from "./CreateEventModal";
+import DeleteEventModal from "./DeleteEventModal";
 import { toast } from "sonner";
+
+import Cookies from "js-cookie";
 
 interface Props {
     events: any[];
@@ -14,18 +17,34 @@ interface Props {
 
 export default function SellerEvents({ events, isLoading, fetchEvents }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this event?")) return;
+    const openDeleteModal = (event: any) => {
+        setSelectedEvent(event);
+        setIsDeleteModalOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!selectedEvent) return;
+        setIsDeleting(true);
         try {
-            const { data } = await axiosInstance.delete(`/api/events/${id}`);
+            const { data } = await axiosInstance.delete(`/api/events/${selectedEvent._id}`, {
+                headers: {
+                    auth: Cookies.get("auth")
+                }
+            });
             if (data.success) {
                 toast.success("Event deleted");
                 fetchEvents();
             }
         } catch (error) {
             toast.error("Failed to delete event");
+        } finally {
+            setIsDeleting(false);
+            setIsDeleteModalOpen(false);
+            setSelectedEvent(null);
         }
     };
 
@@ -37,7 +56,10 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                     <p className="text-gray-500 text-sm mt-1">Manage and track your published events.</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setSelectedEvent(null);
+                        setIsModalOpen(true);
+                    }}
                     className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-purple-600/20 active:scale-95"
                 >
                     <Plus size={20} />
@@ -137,14 +159,23 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                                <button
+                                                    onClick={() => window.open(`/events/${event._id}`, '_blank')}
+                                                    className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                                                >
                                                     <Eye size={18} />
                                                 </button>
-                                                <button className="p-2 text-gray-500 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedEvent(event);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                    className="p-2 text-gray-500 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all"
+                                                >
                                                     <Edit2 size={18} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(event._id)}
+                                                    onClick={() => openDeleteModal(event)}
                                                     className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                                                 >
                                                     <Trash2 size={18} />
@@ -161,8 +192,19 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
 
             <CreateEventModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedEvent(null);
+                }}
                 onSuccess={fetchEvents}
+                eventToEdit={selectedEvent}
+            />
+
+            <DeleteEventModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                isDeleting={isDeleting}
             />
         </div>
     );

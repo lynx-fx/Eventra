@@ -6,6 +6,7 @@ import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminOverview from "./components/admin/AdminOverview";
 import AdminEventsView from "./components/admin/AdminEventsView";
 import AdminUsersView from "./components/admin/AdminUsersView";
+import AdminReportsView from "./components/admin/AdminReportsView";
 import UserSettings from "./components/user/UserSettings";
 import { Search, Bell, LogOut, ChevronDown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -51,17 +52,10 @@ export default function AdminDashboard({ user, setUser }: Props) {
             </div>
 
             <div className="flex items-center gap-6 w-full md:w-auto justify-end">
-              <div className="flex items-center gap-2">
-                <button className="p-3 bg-[#111113] border border-white/5 rounded-2xl text-gray-500 hover:text-white hover:border-white/10 transition-all relative">
-                  <Bell size={20} />
-                  <span className="absolute top-3 right-3 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#111113]" />
-                </button>
-              </div>
-
               <div className="flex items-center gap-4 pl-6 border-l border-white/10">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-bold text-white leading-none">{user.name}</p>
-                  <p className="text-[10px] text-purple-500 font-bold uppercase tracking-widest mt-1">Super Admin</p>
+                  <p className="text-[10px] text-purple-500 font-bold uppercase tracking-widest mt-1">Admin</p>
                 </div>
 
                 <div className="group relative">
@@ -109,17 +103,10 @@ export default function AdminDashboard({ user, setUser }: Props) {
             {activeTab === "overview" && <AdminOverview />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
+            {activeTab === "reports" && <AdminReportsView />}
             {(activeTab === "profile" || activeTab === "settings") && <UserSettings user={user} setUser={setUser} />}
 
-            {activeTab === "sellers" && (
-              <div className="flex flex-col items-center justify-center py-24 bg-[#111113] rounded-4xl border border-dashed border-white/10">
-                <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center text-gray-600 mb-6">
-                  <Users size={32} />
-                </div>
-                <p className="text-gray-400 font-serif text-2xl">Sellers Verification</p>
-                <p className="text-gray-600 text-sm mt-3 max-w-sm text-center px-4">This module is being optimized for high-volume seller verification. Full access will be restored shortly.</p>
-              </div>
-            )}
+
 
             {activeTab === "transactions" && (
               <div className="flex flex-col items-center justify-center py-24 bg-[#111113] rounded-4xl border border-dashed border-white/10">

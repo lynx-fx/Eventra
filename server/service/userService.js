@@ -39,6 +39,10 @@ exports.login = async (email, password) => {
         throw new Error("Try google login");
     }
 
+    if (!existingUser.isActive) {
+        throw new Error("Your account has been banned. Please contact support.");
+    }
+
     const result = await compare(password, existingUser.password);
     if (!result) {
         throw new Error("Incorrect username or password");
@@ -95,6 +99,10 @@ exports.googleLogin = async (code) => {
         );
         return { token, isNewUser: true };
     } else {
+        if (!user.isActive) {
+            throw new Error("Your account has been banned. Please contact support.");
+        }
+
         // If user exists but has no profileUrl, update it with google picture
         if (!user.profileUrl && picture) {
             user.profileUrl = picture;

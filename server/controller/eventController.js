@@ -108,3 +108,34 @@ exports.updateEventStatus = async (req, res) => {
     }
 }
 
+
+exports.updateEvent = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const eventData = { ...req.body };
+
+        // Handle File Upload
+        if (req.file) {
+            // Using path.posix.join or similar to ensure forward slashes for URLs
+            eventData.bannerImage = `/images/${req.file.filename}`;
+        }
+
+        // Handle parsing of price and capacity if they come as JSON strings from FormData
+        if (typeof eventData.price === 'string') {
+            try { eventData.price = JSON.parse(eventData.price); } catch (e) { }
+        }
+        if (typeof eventData.capacity === 'string') {
+            try { eventData.capacity = JSON.parse(eventData.capacity); } catch (e) { }
+        }
+
+        const event = await eventService.updateEvent(req.params.id, eventData);
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
+
+        res.status(200).json({ success: true, event });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+

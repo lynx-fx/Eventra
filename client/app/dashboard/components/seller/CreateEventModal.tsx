@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, DollarSign, Type, AlignLeft, Tag, Loader2, MapPin, Users } from "lucide-react";
 import axiosInstance from "../../../../service/axiosInstance";
@@ -11,9 +11,10 @@ interface Props {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    eventToEdit?: any;
 }
 
-export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) {
+export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEdit }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const AUTH_TOKEN = Cookies.get("auth");
     const [step, setStep] = useState(1);
@@ -37,6 +38,55 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
         eventDate: "",
         bannerImage: null as File | null,
     });
+
+    useEffect(() => {
+        if (eventToEdit) {
+            // Helper to format date for datetime-local
+            const formatDate = (dateString: string) => {
+                if (!dateString) return "";
+                const date = new Date(dateString);
+                // Adjust for local timezone offset manually or use simple slice if string is ISO
+                // Using simplistic approach:
+                return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            };
+
+            setFormData({
+                title: eventToEdit.title || "",
+                description: eventToEdit.description || "",
+                category: eventToEdit.category || "",
+                location: eventToEdit.location || "",
+                price: {
+                    premium: eventToEdit.price?.premium || "",
+                    standard: eventToEdit.price?.standard || "",
+                    economy: eventToEdit.price?.economy || "",
+                },
+                capacity: {
+                    premium: eventToEdit.capacity?.premium || "",
+                    standard: eventToEdit.capacity?.standard || "",
+                    economy: eventToEdit.capacity?.economy || "",
+                },
+                startDate: formatDate(eventToEdit.startDate),
+                endDate: formatDate(eventToEdit.endDate),
+                eventDate: formatDate(eventToEdit.eventDate),
+                bannerImage: null, // Keep null, only update if user selects new
+            });
+        } else {
+            // Reset form
+            setFormData({
+                title: "",
+                description: "",
+                category: "",
+                location: "",
+                price: { premium: "", standard: "", economy: "" },
+                capacity: { premium: "", standard: "", economy: "" },
+                startDate: "",
+                endDate: "",
+                eventDate: "",
+                bannerImage: null,
+            });
+        }
+        setStep(1);
+    }, [eventToEdit, isOpen]);
 
     const nextStep = () => {
         if (step === 1) {
@@ -82,40 +132,30 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                 formDataToSend.append("bannerImage", formData.bannerImage);
             }
 
-            const { data } = await axiosInstance.post("/api/events", formDataToSend, {
-                headers: {
-                    auth: AUTH_TOKEN,
-                    "Content-Type": "multipart/form-data",
-                }
-            });
-
-            if (data.success) {
-                toast.success("Event created successfully!");
-                onSuccess();
-                onClose();
-                setStep(1);
-                setFormData({
-                    title: "",
-                    description: "",
-                    category: "",
-                    location: "",
-                    price: {
-                        premium: "",
-                        standard: "",
-                        economy: "",
-                    },
-                    capacity: {
-                        premium: "",
-                        standard: "",
-                        economy: "",
-                    },
-                    startDate: "",
-                    endDate: "",
-                    eventDate: "",
-                    bannerImage: null,
+            let response;
+            if (eventToEdit) {
+                response = await axiosInstance.put(`/api/events/${eventToEdit._id}`, formDataToSend, {
+                    headers: {
+                        auth: AUTH_TOKEN,
+                        "Content-Type": "multipart/form-data",
+                    }
                 });
             } else {
-                toast.error(data.message || "Failed to create event");
+                response = await axiosInstance.post("/api/events", formDataToSend, {
+                    headers: {
+                        auth: AUTH_TOKEN,
+                        "Content-Type": "multipart/form-data",
+                    }
+                });
+            }
+
+
+            if (response.data.success) {
+                toast.success(eventToEdit ? "Event updated successfully!" : "Event created successfully!");
+                onSuccess();
+                onClose();
+            } else {
+                toast.error(response.data.message || "Failed to save event");
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "An error occurred");
@@ -144,7 +184,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                     >
                         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-linear-to-r from-purple-600/5 to-transparent">
                             <div>
-                                <h3 className="text-xl font-serif text-white">Create New Event</h3>
+                                <h3 className="text-xl font-serif text-white">{eventToEdit ? "Edit Event" : "Create New Event"}</h3>
                                 <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
                                     Step {step} of 2 — {step === 1 ? "Basics" : "Logistics & Pricing"}
                                 </p>
@@ -208,10 +248,15 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                                     </span>
                                                 </label>
                                             </div>
-                                            {formData.bannerImage && (
+                                            {/* Preview Logic */}
+                                            {(formData.bannerImage || eventToEdit?.bannerImage) && (
                                                 <div className="mt-4 relative h-32 w-full rounded-2xl overflow-hidden border border-white/10">
                                                     <img
-                                                        src={URL.createObjectURL(formData.bannerImage)}
+                                                        src={formData.bannerImage ? URL.createObjectURL(formData.bannerImage) :
+                                                            (eventToEdit?.bannerImage?.startsWith("/images")
+                                                                ? `${process.env.NEXT_PUBLIC_NODE_ENV === "production" ? process.env.NEXT_PUBLIC_BACKEND_HOSTED : process.env.NEXT_PUBLIC_BACKEND_LOCAL}${eventToEdit.bannerImage}`
+                                                                : eventToEdit?.bannerImage)
+                                                        }
                                                         alt="Preview"
                                                         className="w-full h-full object-cover"
                                                     />
@@ -223,15 +268,25 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Category</label>
                                                 <div className="relative group">
-                                                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors" />
-                                                    <input
+                                                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-purple-500 transition-colors z-10" />
+                                                    <select
                                                         required
-                                                        type="text"
                                                         value={formData.category}
                                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                                        placeholder="e.g. Music"
-                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                                                    />
+                                                        className="w-full bg-[#111113] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>Select a category</option>
+                                                        {["Music", "Sports", "Theatre", "Festival", "Concert", "Workshop", "Other"].map((cat) => (
+                                                            <option key={cat} value={cat}>
+                                                                {cat}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -445,7 +500,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: Props) 
                                             disabled={isLoading}
                                             className="flex-1 px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all shadow-xl shadow-purple-600/20 flex items-center justify-center gap-2 text-sm"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <span>Publish Event</span>}
+                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <span>{eventToEdit ? "Update Event" : "Publish Event"}</span>}
                                         </button>
                                     </>
                                 )}

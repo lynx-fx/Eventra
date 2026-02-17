@@ -13,6 +13,10 @@ exports.saveImage = async (imageData) => {
     return image;
 };
 
+exports.checkExistingReport = async (userId, imageId) => {
+    return await Report.findOne({ reporterId: userId, imageId });
+};
+
 exports.reportImage = async (reportData) => {
     const report = new Report(reportData);
     await report.save();

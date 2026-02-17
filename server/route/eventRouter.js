@@ -13,5 +13,6 @@ router.get("/:id", eventController.getEventById);
 router.post("/", protect, upload.single("bannerImage"), eventController.createEvent);
 router.delete("/:id", protect, eventController.deleteEvent);
 router.patch("/:id/status", protect, eventController.updateEventStatus);
+router.put("/:id", protect, upload.single("bannerImage"), eventController.updateEvent);
 
 module.exports = router;

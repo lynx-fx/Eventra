@@ -54,6 +54,10 @@ exports.login = async (req, res) => {
         .json({ success: false, message: err.message });
     }
 
+    if (err.message.includes("Your account has been banned")) {
+      return res.status(403).json({ success: false, message: err.message });
+    }
+
     return res
       .status(500)
       .json({ success: false, message: "Error while logging in." });
@@ -77,6 +81,10 @@ exports.googleLogin = async (req, res) => {
 
   } catch (err) {
     console.log(err.message);
+    if (err.message.includes("Your account has been banned")) {
+      return res.status(403).json({ success: false, message: err.message });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Error while logging in",
