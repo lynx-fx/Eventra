@@ -48,9 +48,11 @@ const EventRoom = () => {
                             </div>
                         </div>
 
-                        <button className="bg-primary text-primary-foreground px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
-                            Explore Event Rooms
-                        </button>
+                        <Link href="/dashboard">
+                            <button className="bg-primary text-primary-foreground px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                                Explore Event Rooms
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="relative">
