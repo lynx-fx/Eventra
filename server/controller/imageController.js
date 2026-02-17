@@ -46,6 +46,11 @@ exports.reportImage = async (req, res) => {
             reporterId: userId
         };
 
+        const existingReport = await imageService.checkExistingReport(userId, imageId);
+        if (existingReport) {
+            return res.status(400).json({ success: false, message: "You have already reported this image." });
+        }
+
         const report = await imageService.reportImage(reportData);
         res.status(201).json({ success: true, report });
     } catch (err) {

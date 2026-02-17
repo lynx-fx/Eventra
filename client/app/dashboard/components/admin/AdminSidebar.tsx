@@ -26,6 +26,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "events", label: "Events", icon: Calendar },
         { id: "users", label: "Users", icon: Users },
+        { id: "reports", label: "Reports", icon: ShieldCheck },
         { id: "sellers", label: "Sellers", icon: ShoppingBag },
         { id: "transactions", label: "Transactions", icon: TrendingUp },
     ]
@@ -58,8 +59,8 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
                         className={`w-full group flex items-center justify-between px-6 py-3.5 rounded-2xl transition-all duration-300 ${activeTab === item.id
-                                ? "bg-white/5 text-white shadow-xl shadow-black/20 border border-white/10"
-                                : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]"
+                            ? "bg-white/5 text-white shadow-xl shadow-black/20 border border-white/10"
+                            : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]"
                             }`}
                     >
                         <div className="flex items-center gap-4">
@@ -78,8 +79,8 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
                         className={`w-full group flex items-center gap-4 px-6 py-3.5 rounded-2xl transition-all duration-300 ${activeTab === item.id
-                                ? "bg-white/5 text-white border border-white/10"
-                                : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]"
+                            ? "bg-white/5 text-white border border-white/10"
+                            : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02]"
                             }`}
                     >
                         <item.icon size={20} className={`${activeTab === item.id ? "text-purple-500" : "group-hover:text-gray-300"}`} />

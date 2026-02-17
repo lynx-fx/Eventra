@@ -45,6 +45,7 @@ const PORT = process.env.PORT || 3000;
 app.use("/api/auth", authRouter);
 app.use("/api/events", require("./route/eventRouter"));
 app.use("/api/tickets", require("./route/ticketRouter"));
+app.use("/api/admin", require("./route/adminRouter"));
 app.use("/api/images", require("./route/imageRouter"));
 
 mongoose

@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from "next/link";
-import { ModeToggle } from "./ThemeToggle";
 
 export default function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,7 +53,6 @@ export default function NavBar() {
               Join Us
             </button>
           </Link>
-          <ModeToggle />
         </div>
       </div>
     </header>
