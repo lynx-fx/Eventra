@@ -21,7 +21,7 @@ const categories = [
 
 const EventCategories = () => {
     return (
-        <section className="py-20 bg-[#141416]">
+        <section className="py-20 relative z-10">
             <div className="container mx-auto px-4">
                 <SectionHeading
                     title="Browse by Category"
