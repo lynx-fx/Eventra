@@ -25,7 +25,7 @@ interface Report {
     reportType: string;
     reportReason: string;
     reportedDate: string;
-    reportStatus: "pending" | "banned" | "reviewed";
+    reportStatus: "pending" | "banned" | "reviewed" | "removed";
     reporterId: {
         _id: string;
         name: string;
@@ -42,12 +42,10 @@ interface Report {
             profileUrl?: string;
             isActive: boolean;
         };
-        eventRoomId: {
-            eventId: {
-                name: string;
-                location: string;
-                date: string;
-            };
+        eventId: {
+            title: string;
+            location: string;
+            eventDate: string;
         };
     };
 }
@@ -73,6 +71,7 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
         history: UserHistory | null;
         loading: boolean;
     } | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const backendUrl = process.env.NEXT_PUBLIC_NODE_ENV === "production"
         ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
@@ -190,13 +189,19 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                 setReports((prev) =>
                     prev.map((r) => {
                         if (r.imageId?._id === imageId) {
+                            // Determine new report status based on image active status
+                            let newReportStatus = r.reportStatus;
+                            if (!data.isActive && (r.reportStatus === 'pending' || r.reportStatus === 'reviewed')) {
+                                newReportStatus = 'removed';
+                            } else if (data.isActive && r.reportStatus === 'removed') {
+                                newReportStatus = 'reviewed';
+                            }
+
                             return {
                                 ...r,
+                                reportStatus: newReportStatus,
                                 imageId: {
                                     ...r.imageId,
-                                    // We are assuming the schema has isActive on imageId, if not added in frontend interface yet, it's fine as JS is loose.
-                                    // However, for TS we might need to update the interface but let's cast or ignore for simplicity if interface update is complex
-                                    // Actually let's assume imageId returned has isActive now or we update it in local state
                                     isActive: data.isActive
                                 } as any
                             };
@@ -279,7 +284,10 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                 >
                                     <div className="flex flex-col lg:flex-row gap-6">
                                         {/* Image Section */}
-                                        <div className="w-full lg:w-48 h-48 rounded-2xl overflow-hidden bg-black/50 relative shrink-0 group-hover:scale-[1.02] transition-transform">
+                                        <div
+                                            className="w-full lg:w-48 h-48 rounded-2xl overflow-hidden bg-black/50 relative shrink-0 group-hover:scale-[1.02] transition-transform cursor-pointer"
+                                            onClick={() => report.imageId && setSelectedImage(report.imageId.imageUrl)}
+                                        >
                                             {report.imageId ? (
                                                 <>
                                                     <img
@@ -318,10 +326,13 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                                                 ? 'bg-green-500/10 text-green-400'
                                                                 : report.reportStatus === 'banned'
                                                                     ? 'bg-red-500/10 text-red-400'
-                                                                    : 'bg-yellow-500/10 text-yellow-400'
+                                                                    : report.reportStatus === 'removed'
+                                                                        ? 'bg-gray-500/10 text-gray-400'
+                                                                        : 'bg-yellow-500/10 text-yellow-400'
                                                                 }`}>
                                                                 {report.reportStatus === 'reviewed' && <CheckCircle size={12} />}
                                                                 {report.reportStatus === 'banned' && <Ban size={12} />}
+                                                                {report.reportStatus === 'removed' && <X size={12} />}
                                                                 {report.reportStatus === 'pending' && <ShieldAlert size={12} />}
                                                                 {report.reportStatus}
                                                             </span>
@@ -329,14 +340,14 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                                     </div>
 
                                                     <p className="text-gray-400 text-sm font-medium mb-1">
-                                                        Event: <span className="text-purple-400">{report.imageId?.eventRoomId?.eventId?.name || "Unknown Event"}</span>
+                                                        Event: <span className="text-purple-400">{report.imageId?.eventId?.title || "Unknown Event"}</span>
                                                     </p>
                                                     <p className="text-gray-500 text-xs flex items-center gap-1">
                                                         <Calendar size={12} />
                                                         {new Date(report.reportedDate).toLocaleDateString()} at {new Date(report.reportedDate).toLocaleTimeString()}
                                                     </p>
                                                 </div>
-                                                {report.reportStatus === 'pending' && currentUser.role === 'admin' && (
+                                                {report.reportStatus === 'pending' && (currentUser.role === 'admin' || currentUser.role === 'seller') && (
                                                     <div className="flex gap-2">
                                                         <button
                                                             onClick={() => handleResolve(report._id, 'reviewed')}
@@ -421,7 +432,7 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                                                         }`}
                                                                     title={(report.imageId as any).isActive === false ? "Restore Image" : "Remove Image"}
                                                                 >
-                                                                    {(report.imageId as any).isActive === false ? <CheckCircle size={14} /> : <ImageIcon size={14} />}
+                                                                    {(report.imageId as any).isActive === false ? <ImageIcon size={14} /> : <ImageIcon size={14} />}
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -438,7 +449,42 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                 </div>
             )}
 
-            {/* History Modal */}
+            {/* Image Preview Modal */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedImage(null)}
+                                className="absolute -top-12 right-0 p-2 text-white/50 hover:text-white transition-colors bg-white/10 rounded-full"
+                            >
+                                <X size={24} />
+                            </button>
+                            <img
+                                src={`${process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                    : process.env.NEXT_PUBLIC_BACKEND_LOCAL
+                                    }${selectedImage}`}
+                                alt="Reported Content Full"
+                                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {selectedUserHistory && (
                     <motion.div
@@ -499,7 +545,8 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                                                     <p className="text-sm font-medium text-white">{r.reportReason}</p>
                                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${r.reportStatus === 'reviewed' ? 'bg-green-500/20 text-green-400' :
                                                                         r.reportStatus === 'banned' ? 'bg-red-500/20 text-red-400' :
-                                                                            'bg-yellow-500/20 text-yellow-400'
+                                                                            r.reportStatus === 'removed' ? 'bg-gray-500/20 text-gray-400' :
+                                                                                'bg-yellow-500/20 text-yellow-400'
                                                                         }`}>{r.reportStatus}</span>
                                                                 </div>
                                                                 <p className="text-xs text-gray-500 mt-1">{new Date(r.reportedDate).toLocaleDateString()}</p>
@@ -535,7 +582,8 @@ export default function AdminReportsView({ currentUser }: AdminReportsViewProps)
                                                                     <p className="text-sm font-medium text-white">{r.reportReason}</p>
                                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${r.reportStatus === 'reviewed' ? 'bg-green-500/20 text-green-400' :
                                                                         r.reportStatus === 'banned' ? 'bg-red-500/20 text-red-400' :
-                                                                            'bg-yellow-500/20 text-yellow-400'
+                                                                            r.reportStatus === 'removed' ? 'bg-gray-500/20 text-gray-400' :
+                                                                                'bg-yellow-500/20 text-yellow-400'
                                                                         }`}>{r.reportStatus}</span>
                                                                 </div>
                                                                 <p className="text-xs text-gray-500 mt-1">{new Date(r.reportedDate).toLocaleDateString()}</p>

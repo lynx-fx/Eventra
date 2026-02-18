@@ -9,10 +9,10 @@ router.get("/users", protect, adminOnly, adminController.getAllUsers);
 // Reports - Allow Admin and Seller
 router.get("/reports", protect, adminOrSeller, adminController.getAllReports);
 // Update report status - Admin only (Subject to clarification, assuming admin resolves)
-router.patch("/reports/:id", protect, adminOnly, adminController.resolveReport);
+router.patch("/reports/:id", protect, adminOrSeller, adminController.resolveReport);
 
 router.patch("/users/:id/ban", protect, adminOnly, adminController.banUser);
-router.get("/users/:id/history", protect, adminOnly, adminController.getUserReportHistory);
+router.get("/users/:id/history", protect, adminOrSeller, adminController.getUserReportHistory);
 
 // Add new admin
 router.post("/users/admin", protect, adminOnly, adminController.addAdmin);

@@ -85,11 +85,8 @@ exports.getAllReports = async (req, res) => {
                 populate: [
                     { path: "userId", select: "name email profileUrl isActive" },
                     {
-                        path: "eventRoomId",
-                        populate: {
-                            path: "eventId",
-                            select: "name location date",
-                        },
+                        path: "eventId",
+                        select: "title location eventDate",
                     },
                 ],
             })
@@ -161,12 +158,20 @@ exports.removeImage = async (req, res) => {
             return res.status(404).json({ success: false, message: "Image not found" });
         }
 
-        // If user is a seller, we might want to check ownership here, 
-        // but for now we follow the instruction to allow sellers to remove images.
-        // Assuming 'adminOrSeller' middleware allows access here.
-
         image.isActive = isActive;
         await image.save();
+
+        if (!isActive) {
+            await Report.updateMany(
+                { imageId: id, reportStatus: { $in: ["pending", "reviewed"] } },
+                { $set: { reportStatus: "removed" } }
+            );
+        } else {
+            await Report.updateMany(
+                { imageId: id, reportStatus: "removed" },
+                { $set: { reportStatus: "reviewed" } }
+            );
+        }
 
         res.status(200).json({
             success: true,
@@ -175,7 +180,7 @@ exports.removeImage = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error updating image status" });
+        res.status(500).json({ success: false, message: "Error updupating image status" });
     }
 };
 

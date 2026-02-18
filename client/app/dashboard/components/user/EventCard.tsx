@@ -90,7 +90,7 @@ export default function EventCard({
               disabled={isSalesEnded}
               className={`flex-1 ${isSalesEnded ? 'bg-gray-600 cursor-not-allowed opacity-50' : 'bg-purple-600 hover:bg-purple-500'} text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 ${!isSalesEnded && 'active:scale-95'}`}
             >
-              {isSalesEnded ? "Sales Ended" : "Get Ticket"}
+              {isSalesEnded ? "Sales Ended" : "Buy another"}
             </button>
           )}
         </div>

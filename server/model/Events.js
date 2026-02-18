@@ -6,7 +6,7 @@ const eventSchema = new mongoose.Schema(
     description: { type: String },
     category: { type: String, required: true, enum: ["Music", "Sports", "Theatre", "Festival", "Concert", "Workshop", "Other"] },
     location: { type: String, required: true }, // TODO: udpate it to city
-    venue: { type: String, required: true },
+    // venue: { type: String, required: true },
     price: {
       premium: { type: Number, default: 0 },
       standard: { type: Number, default: 0 },

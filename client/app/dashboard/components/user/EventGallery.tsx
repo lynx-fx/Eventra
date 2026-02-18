@@ -107,7 +107,7 @@ export default function EventGallery() {
         setIsUploading(true);
         const formData = new FormData();
         formData.append("image", file);
-        formData.append("eventRoomId", selectedEvent._id);
+        formData.append("eventId", selectedEvent._id);
 
         try {
             const response = await axiosInstance.post("/api/images/upload", formData, {
