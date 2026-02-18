@@ -9,6 +9,7 @@ interface EventCardProps {
   date: string;
   location: string;
   image: string;
+  salesEndDate?: string | Date;
   onView: () => void;
   onJoin?: () => void;
 }
@@ -19,6 +20,7 @@ export default function EventCard({
   date,
   location,
   image,
+  salesEndDate,
   onView,
   onJoin,
 }: EventCardProps) {
@@ -30,6 +32,8 @@ export default function EventCard({
   const imageUrl = isRelative
     ? `${BACKEND}${image?.startsWith("/") ? image : `/${image}`}`
     : image;
+
+  const isSalesEnded = salesEndDate ? new Date(salesEndDate) < new Date() : false;
 
   return (
     <motion.div
@@ -82,10 +86,11 @@ export default function EventCard({
           </button>
           {onJoin && (
             <button
-              onClick={onJoin}
-              className="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95"
+              onClick={isSalesEnded ? undefined : onJoin}
+              disabled={isSalesEnded}
+              className={`flex-1 ${isSalesEnded ? 'bg-gray-600 cursor-not-allowed opacity-50' : 'bg-purple-600 hover:bg-purple-500'} text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 ${!isSalesEnded && 'active:scale-95'}`}
             >
-              Get Ticket
+              {isSalesEnded ? "Sales Ended" : "Get Ticket"}
             </button>
           )}
         </div>

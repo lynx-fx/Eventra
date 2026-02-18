@@ -103,7 +103,7 @@ export default function AdminDashboard({ user, setUser }: Props) {
             {activeTab === "overview" && <AdminOverview />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
-            {activeTab === "reports" && <AdminReportsView />}
+            {activeTab === "reports" && <AdminReportsView currentUser={user} />}
             {(activeTab === "profile" || activeTab === "settings") && <UserSettings user={user} setUser={setUser} />}
 
 

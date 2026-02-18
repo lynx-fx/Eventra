@@ -58,10 +58,6 @@ export default function SellerSales() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-serif text-white">Sales & Revenue</h2>
-                <button className="text-sm text-gray-400 hover:text-white flex items-center gap-2 bg-[#1c1c1e] px-4 py-2 rounded-xl border border-white/5 transition-colors">
-                    <Download size={16} />
-                    <span>Export CSV</span>
-                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

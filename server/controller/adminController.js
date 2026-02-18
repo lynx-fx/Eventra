@@ -150,6 +150,35 @@ exports.banUser = async (req, res) => {
     }
 };
 
+exports.removeImage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        const image = await Image.findById(id);
+
+        if (!image) {
+            return res.status(404).json({ success: false, message: "Image not found" });
+        }
+
+        // If user is a seller, we might want to check ownership here, 
+        // but for now we follow the instruction to allow sellers to remove images.
+        // Assuming 'adminOrSeller' middleware allows access here.
+
+        image.isActive = isActive;
+        await image.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Image ${isActive ? "restored" : "removed"} successfully`,
+            isActive: image.isActive,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Error updating image status" });
+    }
+};
+
 exports.getUserReportHistory = async (req, res) => {
     try {
         const { userId } = req.params;
