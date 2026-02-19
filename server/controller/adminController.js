@@ -85,11 +85,8 @@ exports.getAllReports = async (req, res) => {
                 populate: [
                     { path: "userId", select: "name email profileUrl isActive" },
                     {
-                        path: "eventRoomId",
-                        populate: {
-                            path: "eventId",
-                            select: "name location date",
-                        },
+                        path: "eventId",
+                        select: "title city venue eventDate",
                     },
                 ],
             })
@@ -147,6 +144,43 @@ exports.banUser = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Error updating user status" });
+    }
+};
+
+exports.removeImage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        const image = await Image.findById(id);
+
+        if (!image) {
+            return res.status(404).json({ success: false, message: "Image not found" });
+        }
+
+        image.isActive = isActive;
+        await image.save();
+
+        if (!isActive) {
+            await Report.updateMany(
+                { imageId: id, reportStatus: { $in: ["pending", "reviewed"] } },
+                { $set: { reportStatus: "removed" } }
+            );
+        } else {
+            await Report.updateMany(
+                { imageId: id, reportStatus: "removed" },
+                { $set: { reportStatus: "reviewed" } }
+            );
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Image ${isActive ? "restored" : "removed"} successfully`,
+            isActive: image.isActive,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Error updupating image status" });
     }
 };
 

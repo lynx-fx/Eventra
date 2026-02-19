@@ -134,7 +134,7 @@ export default function SellerEvents({ events, isLoading, fetchEvents }: Props) 
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[10px] text-gray-600">
                                                     <MapPin size={10} />
-                                                    {event.location || "Global"}
+                                                    {event.venue}, {event.city}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[10px] text-purple-500/50 mt-1">
                                                     <Users size={10} />

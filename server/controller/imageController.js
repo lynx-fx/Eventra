@@ -12,7 +12,7 @@ exports.getGallery = async (req, res) => {
 
 exports.uploadImage = async (req, res) => {
     try {
-        const { eventRoomId } = req.body;
+        const { eventId } = req.body;
         const userId = req.user.id;
 
         if (!req.file) {
@@ -23,7 +23,7 @@ exports.uploadImage = async (req, res) => {
         const imageData = {
             imageUrl,
             userId,
-            eventRoomId
+            eventId
         };
 
         let image = await imageService.saveImage(imageData);

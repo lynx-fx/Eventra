@@ -156,29 +156,38 @@ export default function AdminOverview() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {pendingEvents.map((req) => (
-                                        <tr key={req._id} className="group hover:bg-white/[0.02] transition-colors">
-                                            <td className="py-5 px-4">
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{req.title}</p>
-                                                    <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-widest font-bold">
-                                                        <Clock size={10} /> {new Date(req.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td className="py-5 px-4 text-center">
-                                                <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-500">
-                                                    Pending
-                                                </span>
-                                            </td>
-                                            <td className="py-5 px-4 text-sm text-gray-300 font-mono tracking-tighter">${req.price?.toFixed(2) || "0.00"}</td>
-                                            <td className="py-5 text-right pr-4">
-                                                <button className="p-2 text-gray-600 hover:text-white transition-colors">
-                                                    <MoreHorizontal size={18} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {pendingEvents.map((req) => {
+                                        const estRevenue =
+                                            ((req.price?.premium || 0) * (req.capacity?.premium || 0)) +
+                                            ((req.price?.standard || 0) * (req.capacity?.standard || 0)) +
+                                            ((req.price?.economy || 0) * (req.capacity?.economy || 0));
+
+                                        return (
+                                            <tr key={req._id} className="group hover:bg-white/[0.02] transition-colors">
+                                                <td className="py-5 px-4">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{req.title}</p>
+                                                        <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-widest font-bold">
+                                                            <Clock size={10} /> {new Date(req.createdAt).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-5 px-4 text-center">
+                                                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-500">
+                                                        Pending
+                                                    </span>
+                                                </td>
+                                                <td className="py-5 px-4 text-sm text-gray-300 font-mono tracking-tighter">
+                                                    ${estRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="py-5 text-right pr-4">
+                                                    <button className="p-2 text-gray-600 hover:text-white transition-colors">
+                                                        <MoreHorizontal size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         )}

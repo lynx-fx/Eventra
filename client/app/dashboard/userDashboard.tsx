@@ -22,7 +22,8 @@ interface EventData {
   startDate: string;
   endDate: string;
   eventDate: string;
-  location: string;
+  city: string;
+  venue: string;
   category: string;
   price: {
     premium: number;
@@ -55,6 +56,9 @@ export default function UserDashboard({ user, setUser }: Props) {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("All");
   const router = useRouter();
 
   const fetchEvents = async () => {
@@ -92,11 +96,12 @@ export default function UserDashboard({ user, setUser }: Props) {
             new Date(e.eventDate || e.startDate) > now &&
             purchasedEventIds.includes(e._id)
           )
-          .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime())
-          .slice(0, 3);
+          .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime());
 
         // Explore can be any approved events the user MIGHT want to join
-        const explore = approvedEvents.slice(0, 6);
+        const explore = approvedEvents
+          .filter((e: any) => !purchasedEventIds.includes(e._id))
+          .sort((a: any, b: any) => new Date(a.eventDate || a.startDate).getTime() - new Date(b.eventDate || b.startDate).getTime());
 
         setUpcomingEvents(upcoming);
         setExploreEvents(explore);
@@ -119,6 +124,33 @@ export default function UserDashboard({ user, setUser }: Props) {
     router.push("/");
   };
 
+  const categories = ["All", ...Array.from(new Set(exploreEvents.map(e => e.category).filter(Boolean)))];
+  const cities = ["All", ...Array.from(new Set(exploreEvents.map(e => e.city).filter(Boolean)))];
+
+  const filteredUpcoming = upcomingEvents.filter(event =>
+    (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.city?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.venue?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.category?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  );
+
+  const filteredExplore = exploreEvents.filter(event => {
+    const matchesSearch = (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.city?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.venue?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.category?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+
+    const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
+    const matchesLocation = selectedLocation === "All" || event.city === selectedLocation;
+
+    return matchesSearch && matchesCategory && matchesLocation;
+  });
+
+  const displayedUpcoming = searchQuery ? filteredUpcoming : filteredUpcoming.slice(0, 3);
+  const displayedExplore = (searchQuery || selectedCategory !== "All" || selectedLocation !== "All") ? filteredExplore : filteredExplore.slice(0, 6);
+
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden">
       <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
@@ -135,6 +167,8 @@ export default function UserDashboard({ user, setUser }: Props) {
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 w-5 h-5 pointer-events-none transition-colors" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events, organizers or vibes..."
                 className="w-full bg-card border border-border text-foreground rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none placeholder-muted-foreground transition-all font-light shadow-2xl"
               />
@@ -142,11 +176,6 @@ export default function UserDashboard({ user, setUser }: Props) {
 
             <div className="flex items-center gap-6 w-full md:w-auto justify-end">
               <ModeToggle />
-              <button className="p-3 bg-card border border-border rounded-2xl text-muted-foreground hover:text-foreground hover:border-border/80 transition-all relative">
-                <Bell size={20} />
-                <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-card" />
-              </button>
-
               <div className="flex items-center gap-4 pl-6 border-l border-border">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-foreground">{user.name}</p>
@@ -196,16 +225,18 @@ export default function UserDashboard({ user, setUser }: Props) {
                       </div>
                     </div>
 
-                    {upcomingEvents.length > 0 ? (
+                    {displayedUpcoming.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {upcomingEvents.map((event) => (
+                        {displayedUpcoming.map((event) => (
                           <EventCard
                             key={event._id}
                             title={event.title}
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            location={event.location || "Global"}
+                            city={event.city}
+                            venue={event.venue}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
+                            salesEndDate={event.endDate}
                             onView={() => router.push(`/events/${event._id}`)}
                             onJoin={() => {
                               setSelectedEvent(event);
@@ -225,23 +256,50 @@ export default function UserDashboard({ user, setUser }: Props) {
 
                   {/* Explore New Events */}
                   <section>
-                    <div className="flex justify-between items-end mb-8">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                       <div>
                         <h2 className="text-2xl font-serif text-foreground">Explore New Events</h2>
                         <p className="text-muted-foreground text-sm mt-1">Recommended for you based on your vibes.</p>
                       </div>
+
+                      <div className="flex gap-3">
+                        <select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          className="bg-card border border-border text-foreground text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                        >
+                          {categories.map((c) => (
+                            <option key={c} value={c}>
+                              {c === "All" ? "All Categories" : c}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={selectedLocation}
+                          onChange={(e) => setSelectedLocation(e.target.value)}
+                          className="bg-card border border-border text-foreground text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                        >
+                          {cities.map((l) => (
+                            <option key={l} value={l}>
+                              {l === "All" ? "All Cities" : l}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    {exploreEvents.length > 0 ? (
+                    {displayedExplore.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {exploreEvents.map((event) => (
+                        {displayedExplore.map((event) => (
                           <EventCard
                             key={event._id}
                             title={event.title}
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            location={event.location || "Online"}
+                            city={event.city}
+                            venue={event.venue}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
+                            salesEndDate={event.endDate}
                             onView={() => router.push(`/events/${event._id}`)}
                             onJoin={() => {
                               setSelectedEvent(event);

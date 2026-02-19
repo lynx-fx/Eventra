@@ -9,10 +9,14 @@ const imageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    eventRoomId: {
+    eventId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "EventRoom",
+      ref: "Event",
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    }
   },
   { timestamps: true }
 );

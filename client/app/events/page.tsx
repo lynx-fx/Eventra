@@ -42,7 +42,8 @@ export default function EventsPage() {
 
     const filteredEvents = events.filter(event => {
         const matchesSearch = (event.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-            (event.location?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+            (event.city?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+            (event.venue?.toLowerCase() || "").includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
 
         return matchesSearch && matchesCategory;
@@ -145,7 +146,7 @@ export default function EventsPage() {
 
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <MapPin className="w-4 h-4" />
-                                        <span className="line-clamp-1">{event.location}</span>
+                                        <span className="line-clamp-1">{event.venue}, {event.city}</span>
                                     </div>
 
                                     <div className="pt-4 border-t border-border flex items-center justify-between">

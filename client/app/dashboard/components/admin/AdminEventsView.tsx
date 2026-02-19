@@ -157,7 +157,7 @@ export default function AdminEventsView() {
                                             <span className="text-sm text-gray-400">{event.category || "General"}</span>
                                             <span className="text-[10px] text-gray-600 flex items-center gap-1">
                                                 <MapPin size={10} />
-                                                {event.location || "Global"}
+                                                {event.venue}, {event.city}
                                             </span>
                                             <span className="text-[10px] text-purple-500/50 flex items-center gap-1 mt-0.5">
                                                 <Users size={10} />

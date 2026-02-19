@@ -42,3 +42,28 @@ exports.getSellerTickets = async (req, res) => {
     }
 }
 
+
+exports.getTicketById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ticket = await ticketService.getTicketById(id);
+        if (!ticket) {
+            return res.status(404).json({ success: false, message: "Ticket not found" });
+        }
+        res.status(200).json({ success: true, ticket });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+exports.useTicket = async (req, res) => {
+    try {
+        const { ticketId } = req.body;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        const ticket = await ticketService.useTicket(ticketId, userId, userRole);
+        res.status(200).json({ success: true, message: "Ticket used successfully", ticket });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}

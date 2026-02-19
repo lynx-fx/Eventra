@@ -13,7 +13,8 @@ interface EventData {
     title: string;
     description: string;
     startDate: string;
-    location: string;
+    city: string;
+    venue: string;
     status: string;
 }
 
@@ -107,7 +108,7 @@ export default function EventGallery() {
         setIsUploading(true);
         const formData = new FormData();
         formData.append("image", file);
-        formData.append("eventRoomId", selectedEvent._id);
+        formData.append("eventId", selectedEvent._id);
 
         try {
             const response = await axiosInstance.post("/api/images/upload", formData, {
@@ -251,7 +252,7 @@ export default function EventGallery() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <MapPin size={14} className="text-primary" />
-                                                <span>{event.location || "Earth"}</span>
+                                                <span>{event.venue}, {event.city}</span>
                                             </div>
                                         </div>
                                         <div className="mt-6 text-primary text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
