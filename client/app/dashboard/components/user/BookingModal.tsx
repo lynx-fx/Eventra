@@ -12,7 +12,8 @@ interface EventData {
     title: string;
     description: string;
     eventDate: string;
-    location: string;
+    city: string;
+    venue: string;
     category: string;
     price: {
         premium: number;
@@ -143,7 +144,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                         </div>
                                         <div>
                                             <p className="text-[10px] uppercase tracking-widest text-gray-600 font-bold">Location</p>
-                                            <p className="text-sm font-medium">{event.location}</p>
+                                            <p className="text-sm font-medium">{event.venue}, {event.city}</p>
                                         </div>
                                     </div>
                                 </div>

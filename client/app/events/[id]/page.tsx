@@ -15,7 +15,8 @@ interface EventData {
     description: string;
     eventDate: string;
     endDate: string;
-    location: string;
+    city: string;
+    venue: string;
     category: string;
     bannerImage: string;
     price: {
@@ -182,7 +183,7 @@ export default function EventDetailsPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Location</p>
-                                        <p className="font-semibold">{event.location}</p>
+                                        <p className="font-semibold">{event.venue}, {event.city}</p>
                                     </div>
                                 </div>
                             </div>

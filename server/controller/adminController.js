@@ -86,7 +86,7 @@ exports.getAllReports = async (req, res) => {
                     { path: "userId", select: "name email profileUrl isActive" },
                     {
                         path: "eventId",
-                        select: "title location eventDate",
+                        select: "title city venue eventDate",
                     },
                 ],
             })

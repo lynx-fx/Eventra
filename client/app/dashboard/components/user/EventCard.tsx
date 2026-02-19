@@ -7,7 +7,8 @@ interface EventCardProps {
   title: string;
   description: string;
   date: string;
-  location: string;
+  city: string;
+  venue: string;
   image: string;
   salesEndDate?: string | Date;
   onView: () => void;
@@ -18,7 +19,8 @@ export default function EventCard({
   title,
   description,
   date,
-  location,
+  city,
+  venue,
   image,
   salesEndDate,
   onView,
@@ -73,7 +75,7 @@ export default function EventCard({
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
               <MapPin className="w-4 h-4 text-purple-500" />
             </div>
-            <span>{location}</span>
+            <span>{venue}, {city}</span>
           </div>
         </div>
 
@@ -90,7 +92,7 @@ export default function EventCard({
               disabled={isSalesEnded}
               className={`flex-1 ${isSalesEnded ? 'bg-gray-600 cursor-not-allowed opacity-50' : 'bg-purple-600 hover:bg-purple-500'} text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 ${!isSalesEnded && 'active:scale-95'}`}
             >
-              {isSalesEnded ? "Sales Ended" : "Buy another"}
+              {isSalesEnded ? "Sales Ended" : "Get Ticket"}
             </button>
           )}
         </div>

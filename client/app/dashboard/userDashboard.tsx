@@ -22,7 +22,8 @@ interface EventData {
   startDate: string;
   endDate: string;
   eventDate: string;
-  location: string;
+  city: string;
+  venue: string;
   category: string;
   price: {
     premium: number;
@@ -124,23 +125,25 @@ export default function UserDashboard({ user, setUser }: Props) {
   };
 
   const categories = ["All", ...Array.from(new Set(exploreEvents.map(e => e.category).filter(Boolean)))];
-  const locations = ["All", ...Array.from(new Set(exploreEvents.map(e => e.location).filter(Boolean)))];
+  const cities = ["All", ...Array.from(new Set(exploreEvents.map(e => e.city).filter(Boolean)))];
 
   const filteredUpcoming = upcomingEvents.filter(event =>
     (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (event.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-    (event.location?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.city?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (event.venue?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (event.category?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   const filteredExplore = exploreEvents.filter(event => {
     const matchesSearch = (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
       (event.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (event.location?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.city?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (event.venue?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
       (event.category?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
     const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
-    const matchesLocation = selectedLocation === "All" || event.location === selectedLocation;
+    const matchesLocation = selectedLocation === "All" || event.city === selectedLocation;
 
     return matchesSearch && matchesCategory && matchesLocation;
   });
@@ -230,7 +233,8 @@ export default function UserDashboard({ user, setUser }: Props) {
                             title={event.title}
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            location={event.location || "Global"}
+                            city={event.city}
+                            venue={event.venue}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                             salesEndDate={event.endDate}
                             onView={() => router.push(`/events/${event._id}`)}
@@ -275,9 +279,9 @@ export default function UserDashboard({ user, setUser }: Props) {
                           onChange={(e) => setSelectedLocation(e.target.value)}
                           className="bg-card border border-border text-foreground text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                         >
-                          {locations.map((l) => (
+                          {cities.map((l) => (
                             <option key={l} value={l}>
-                              {l === "All" ? "All Locations" : l}
+                              {l === "All" ? "All Cities" : l}
                             </option>
                           ))}
                         </select>
@@ -292,7 +296,8 @@ export default function UserDashboard({ user, setUser }: Props) {
                             title={event.title}
                             description={event.description}
                             date={new Date(event.eventDate || event.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            location={event.location || "Online"}
+                            city={event.city}
+                            venue={event.venue}
                             image={event.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop"}
                             salesEndDate={event.endDate}
                             onView={() => router.push(`/events/${event._id}`)}

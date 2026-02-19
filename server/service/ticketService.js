@@ -89,3 +89,29 @@ exports.getTicketsBySeller = async (sellerId) => {
 
     return tickets;
 };
+
+exports.getTicketById = async (ticketId) => {
+    return await Ticket.findById(ticketId)
+        .populate('eventId')
+        .populate('userId', 'name email profileUrl');
+};
+
+exports.useTicket = async (ticketId, userId, userRole) => {
+    const ticket = await Ticket.findById(ticketId).populate('eventId');
+    if (!ticket) {
+        throw new Error("Ticket not found");
+    }
+
+    if (ticket.status !== 'active') {
+        throw new Error(`Ticket is already ${ticket.status}`);
+    }
+
+    // Check if user is the seller of this event
+    if (ticket.eventId.seller.toString() !== userId) {
+        throw new Error("Unauthorized: Only the event seller can mark this ticket as used");
+    }
+
+    ticket.status = 'used';
+    await ticket.save();
+    return ticket;
+};

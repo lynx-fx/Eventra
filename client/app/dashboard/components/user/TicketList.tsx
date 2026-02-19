@@ -22,7 +22,8 @@ interface TicketData {
         _id: string;
         title: string;
         eventDate: string;
-        location: string;
+        city: string;
+        venue: string;
         bannerImage?: string;
     };
     ticketType: string;
@@ -183,7 +184,7 @@ export default function TicketList({ user }: Props) {
                                         </div>
                                         <div className="flex items-center gap-3 text-gray-400">
                                             <MapPin size={14} className="text-purple-500" />
-                                            <span className="text-xs font-medium text-nowrap overflow-hidden text-ellipsis">{ticket.eventId?.location || "TBA"}</span>
+                                            <span className="text-xs font-medium text-nowrap overflow-hidden text-ellipsis">{ticket.eventId?.venue}, {ticket.eventId?.city}</span>
                                         </div>
                                     </div>
 
@@ -313,7 +314,7 @@ export default function TicketList({ user }: Props) {
                                         </div>
                                         <div className="space-y-1 md:text-right">
                                             <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Location</p>
-                                            <p className="text-sm font-bold text-gray-200 break-words">{selectedTicket.eventId?.location}</p>
+                                            <p className="text-sm font-bold text-gray-200 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -406,7 +407,7 @@ export default function TicketList({ user }: Props) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Location</p>
-                                        <p className="text-xs font-bold text-gray-300 break-words">{selectedTicket.eventId?.location}</p>
+                                        <p className="text-xs font-bold text-gray-300 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
                                     </div>
                                     <div className="space-y-1.5 text-right">
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>

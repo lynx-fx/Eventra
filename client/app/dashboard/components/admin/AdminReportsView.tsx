@@ -44,7 +44,8 @@ interface Report {
         };
         eventId: {
             title: string;
-            location: string;
+            city: string;
+            venue: string;
             eventDate: string;
         };
     };
