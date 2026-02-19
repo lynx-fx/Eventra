@@ -111,6 +111,22 @@ exports.useTicket = async (ticketId, userId, userRole) => {
         throw new Error("Unauthorized: Only the event seller can mark this ticket as used");
     }
 
+    const now = new Date();
+    const startDate = new Date(ticket.eventId.startDate);
+    const endDate = new Date(ticket.eventId.endDate);
+
+    // Normalize to compare dates only (ignore time)
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const eventStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const eventEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+    if (currentDate < eventStartDate) {
+        throw new Error("Cannot use ticket: Event has not started yet");
+    }
+    if (currentDate > eventEndDate) {
+        throw new Error("Cannot use ticket: Event has already ended");
+    }
+
     ticket.status = 'used';
     await ticket.save();
     return ticket;
