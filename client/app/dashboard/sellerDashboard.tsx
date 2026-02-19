@@ -9,6 +9,7 @@ import SellerAttendees from "./components/seller/SellerAttendees";
 import SellerAnalytics from "./components/seller/SellerAnalytics";
 import AdminReportsView from "./components/admin/AdminReportsView";
 import UserSettings from "./components/user/UserSettings";
+import EventGallery from "./components/user/EventGallery";
 import { Search, Plus, Calendar, Users, DollarSign, Eye, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../../service/axiosInstance";
@@ -242,6 +243,7 @@ export default function SellerDashboard({ user, setUser }: Props) {
           {activeTab === "events" && <SellerEvents events={events} isLoading={isLoading} fetchEvents={fetchEvents} />}
           {activeTab === "sales" && <SellerSales />}
           {activeTab === "attendees" && <SellerAttendees />}
+          {activeTab === "gallery" && <EventGallery user={user} />}
           {activeTab === "analytics" && <SellerAnalytics />}
           {activeTab === "reports" && <AdminReportsView currentUser={user} />}
           {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
