@@ -319,7 +319,7 @@ export default function UserDashboard({ user, setUser }: Props) {
           )}
 
           {activeTab === "tickets" && <TicketList user={user} />}
-          {activeTab === "gallery" && <EventGallery />}
+          {activeTab === "gallery" && <EventGallery user={user} />}
           {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
         </div>

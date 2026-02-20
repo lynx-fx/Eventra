@@ -10,25 +10,29 @@ exports.getGallery = async (req, res) => {
     }
 };
 
-exports.uploadImage = async (req, res) => {
+exports.uploadImages = async (req, res) => {
     try {
         const { eventId } = req.body;
         const userId = req.user.id;
 
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: "No image file provided" });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: "No image files provided" });
         }
 
-        const imageUrl = `/images/${req.file.filename}`;
-        const imageData = {
-            imageUrl,
-            userId,
-            eventId
-        };
+        const uploadPromises = req.files.map(async (file) => {
+            const imageUrl = `/images/${file.filename}`;
+            const imageData = {
+                imageUrl,
+                userId,
+                eventId
+            };
 
-        let image = await imageService.saveImage(imageData);
-        image = await image.populate('userId', 'name');
-        res.status(201).json({ success: true, image });
+            let image = await imageService.saveImage(imageData);
+            return await image.populate('userId', 'name');
+        });
+
+        const images = await Promise.all(uploadPromises);
+        res.status(201).json({ success: true, images });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

@@ -6,7 +6,8 @@ import {
     User,
     LogOut,
     BarChart3,
-    Flag
+    Flag,
+    Image as ImageIcon
 } from "lucide-react";
 
 interface SidebarProps {
@@ -21,6 +22,7 @@ export default function SellerSidebar({ activeTab, setActiveTab, onLogout }: Sid
         { id: "events", label: "My Events", icon: Calendar },
         { id: "sales", label: "Sales", icon: DollarSign },
         { id: "attendees", label: "Attendees", icon: User },
+        { id: "gallery", label: "Gallery", icon: ImageIcon },
         { id: "analytics", label: "Analytics", icon: BarChart3 },
         { id: "reports", label: "Reports", icon: Flag },
     ];

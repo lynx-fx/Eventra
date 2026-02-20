@@ -8,6 +8,14 @@ import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 
+interface User {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    profileUrl?: string;
+}
+
 interface EventData {
     _id: string;
     title: string;
@@ -16,6 +24,7 @@ interface EventData {
     city: string;
     venue: string;
     status: string;
+    seller: string;
 }
 
 interface ImageData {
@@ -26,7 +35,11 @@ interface ImageData {
     };
 }
 
-export default function EventGallery() {
+interface Props {
+    user?: User;
+}
+
+export default function EventGallery({ user }: Props) {
     const [eventRooms, setEventRooms] = useState<EventData[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
     const [galleryImages, setGalleryImages] = useState<ImageData[]>([]);
@@ -62,9 +75,11 @@ export default function EventGallery() {
                 // 2. Fetch all events
                 const eventsResponse = await axiosInstance.get("/api/events");
                 if (eventsResponse.data.success) {
-                    // 3. Filter only approved events that the user has purchased
+                    // 3. Filter rooms: 
+                    // - Approved events the user purchased OR
+                    // - Events the user created themselves (if they are a seller)
                     const filteredRooms = eventsResponse.data.events.filter((e: any) =>
-                        e.status === "approved" && purchasedEventIds.includes(e._id)
+                        e.status === "approved" && (purchasedEventIds.includes(e._id) || (user?.role === "seller" && e.seller === user?._id))
                     );
                     setEventRooms(filteredRooms);
                 }
@@ -102,12 +117,19 @@ export default function EventGallery() {
     }, [selectedEvent]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !selectedEvent) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0 || !selectedEvent) return;
+
+        if (files.length > 10) {
+            toast.error("You can only upload up to 10 pictures at a time.");
+            return;
+        }
 
         setIsUploading(true);
         const formData = new FormData();
-        formData.append("image", file);
+        files.forEach(file => {
+            formData.append("images", file);
+        });
         formData.append("eventId", selectedEvent._id);
 
         try {
@@ -119,12 +141,12 @@ export default function EventGallery() {
             });
 
             if (response.data.success) {
-                toast.success("Moment uploaded to archives");
-                setGalleryImages(prev => [response.data.image, ...prev]);
+                toast.success(`${response.data.images.length} moments uploaded to archives`);
+                setGalleryImages(prev => [...response.data.images, ...prev]);
             }
         } catch (error) {
             console.error("Upload failed", error);
-            toast.error("Failed to upload image");
+            toast.error("Failed to upload images");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
@@ -290,16 +312,19 @@ export default function EventGallery() {
                         className="hidden"
                         ref={fileInputRef}
                         accept="image/*"
+                        multiple
                         onChange={handleImageUpload}
                     />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
-                    >
-                        {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
-                        {isUploading ? "Uploading..." : "Upload Moment"}
-                    </button>
+                    {user?.role !== "seller" && (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
+                        >
+                            {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+                            {isUploading ? "Uploading..." : "Upload Moment"}
+                        </button>
+                    )}
                 </div>
             </div>
 
