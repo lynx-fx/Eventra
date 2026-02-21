@@ -299,6 +299,20 @@ export default function TicketValidationPage() {
                                         );
                                     }
 
+                                    const now = new Date();
+                                    const eventDate = new Date(ticket.eventId.eventDate);
+                                    const currentDateVal = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                    const eventDateVal = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate()).getTime();
+
+                                    if (currentDateVal !== eventDateVal) {
+                                        return (
+                                            <div className="p-6 bg-orange-500/5 border border-orange-500/10 rounded-3xl flex items-center gap-4 text-orange-400">
+                                                <AlertCircle size={20} className="shrink-0" />
+                                                <p className="text-xs font-bold uppercase tracking-tight">Check-in Unavailable: Tickets can only be validated on the exact event date.</p>
+                                            </div>
+                                        );
+                                    }
+
                                     return (
                                         <button
                                             onClick={handleUseTicket}
