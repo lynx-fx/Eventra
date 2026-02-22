@@ -10,7 +10,7 @@ exports.getUserTickets = async (req, res) => {
     }
 };
 
-// TODO: verify
+// DONE: verify
 exports.buyTicket = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -24,11 +24,11 @@ exports.buyTicket = async (req, res) => {
 
 exports.verifyTicket = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const { eventId } = req.body;
-        const ticket = await ticketService.verifyTicket(userId, eventId);
+        const { data } = req.body;
+        const ticket = await ticketService.verifyTicket(data);
         res.status(200).json({ success: true, ticket });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ success: false, message: err.message });
     }
 }

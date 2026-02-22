@@ -1,11 +1,49 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import axiosInstance from "@/service/axiosInstance";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 // TODO: payment verification and status update, else redirect to payment faliure page
 export default function PaymentSuccessPage() {
+    const searchParams = useSearchParams();
+    const dataQuery = searchParams.get("data");
+    const AUTH_TOKEN = Cookies.get("auth");
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!dataQuery) return;
+        handleVerifyPayment();
+    }, [searchParams]);
+
+    const handleVerifyPayment = async () => {
+        try {
+            const { data } = await axiosInstance.post("/api/tickets/verify", {
+                data: dataQuery
+            }, {
+                headers: {
+                    auth: AUTH_TOKEN,
+                }
+            })
+
+            if (data.success){
+                toast.success(data.message || "Redirecting");
+                router.push("/dashboard")
+            } else{
+                router.push("/payment/faliure")
+                toast.info(data.message || "Error while verifying")
+            }
+        } catch {
+            toast.error("Error while verifying")
+            router.push("/payment/faliure")
+        }
+    }
+
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-background text-foreground relative overflow-hidden font-sans">
             {/* App Theme Ambient Background from page.tsx */}

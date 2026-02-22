@@ -24,6 +24,14 @@ const ticketSchema = new mongoose.Schema(
       default: "pending",
     },
     purchaseDate: { type: Date, default: Date.now },
+    transaction_uuid: {
+      type: String, required: true,
+    },
+    transaction_code: {
+      type: String, required: function (){
+        this.status == "active";
+      }
+    }
   },
   { timestamps: true }
 );
