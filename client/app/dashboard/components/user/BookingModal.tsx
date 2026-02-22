@@ -53,7 +53,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
             name: "Premium Experience",
             price: event.price?.premium || 0,
             available: (event.capacity?.premium || 0) - (event.soldTickets?.premium || 0),
-            features: ["Front row access", "Meet & Greet", "Complimentary drink", "Digital certificate"],
+            features: ["Front row access", "Meet & Greet", "Complimentary drink"],
             color: "from-purple-600 to-indigo-600"
         },
         {
@@ -74,6 +74,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
         }
     ];
 
+    // TODO: add payment integration here
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
@@ -152,13 +153,13 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
 
                             <div className="mt-12 p-6 bg-white/5 rounded-3xl border border-white/5">
                                 <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Summary</p>
-                                <div className="flex justify-between items-end">
+                                <div className="flex flex-col xl:flex-row xl:justify-between items-start xl:items-end gap-2">
                                     <div>
                                         <p className="text-white font-medium">{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Pass</p>
                                         <p className="text-[10px] text-gray-500">1x Ticket</p>
                                     </div>
                                     <p className="text-2xl font-bold font-mono text-purple-400">
-                                        ${ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}
+                                        NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}
                                     </p>
                                 </div>
                             </div>
@@ -190,12 +191,12 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                                     : 'border-white/5 bg-[#161618] hover:border-white/10'
                                                     } ${type.available <= 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                             >
-                                                <div className="flex justify-between items-start mb-4 relative z-10">
+                                                <div className="flex justify-between items-start mb-4 relative z-10 pr-6">
                                                     <div>
                                                         <h5 className="font-bold text-lg text-white group-hover:text-purple-400 transition-colors">{type.name}</h5>
                                                         <p className="text-xs text-gray-500">{type.available} seats remaining</p>
                                                     </div>
-                                                    <p className="text-xl font-bold font-mono text-white">${type.price.toFixed(2)}</p>
+                                                    <p className="text-xl font-bold font-mono text-white text-right">NPR {type.price.toFixed(2)}</p>
                                                 </div>
 
                                                 <div className="flex flex-wrap gap-x-4 gap-y-2 relative z-10">
@@ -230,42 +231,34 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                     <h4 className="text-xl font-serif text-white mb-6">Payment Method</h4>
 
                                     <div className="space-y-4 mb-10">
-                                        <div className="p-6 bg-purple-600/10 border border-purple-500/30 rounded-3xl flex items-center justify-between">
+                                        <div className="p-6 bg-green-600/10 border border-green-500/30 rounded-3xl flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-8 bg-black/40 rounded-lg flex items-center justify-center">
-                                                    <div className="flex gap-0.5">
-                                                        <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                                                        <div className="w-3 h-3 rounded-full bg-yellow-500/80 ml-[-4px]" />
-                                                    </div>
+                                                <div className="w-12 h-10 bg-white rounded-lg flex items-center justify-center p-1.5">
+                                                    <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" className="w-full h-full object-contain" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-white">Mastercard ending in 4242</p>
-                                                    <p className="text-xs text-gray-500">Expires 12/26</p>
+                                                    <p className="text-sm font-medium text-white">eSewa Mobile Wallet</p>
+                                                    <p className="text-xs text-gray-500">Pay securely via eSewa</p>
                                                 </div>
                                             </div>
-                                            <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center">
+                                            <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
                                                 <Check size={12} className="text-white" />
                                             </div>
                                         </div>
-
-                                        <button className="w-full p-4 border border-white/5 rounded-2xl flex items-center gap-4 text-gray-500 hover:text-white hover:bg-white/5 transition-all outline-none italic text-sm">
-                                            <CreditCard size={18} />
-                                            Add new payment method
-                                        </button>
                                     </div>
 
                                     <div className="mt-auto space-y-4">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-500">Ticket Subtotal</span>
-                                            <span className="text-white">${ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
+                                            <span className="text-white">NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-500">Service Fee</span>
-                                            <span className="text-white">$0.00</span>
+                                            <span className="text-white">NPR 0.00</span>
                                         </div>
                                         <div className="pt-4 border-t border-white/5 flex justify-between items-end">
                                             <span className="text-gray-300 font-medium">Total Amount</span>
-                                            <span className="text-3xl font-bold font-mono text-white">${ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
+                                            <span className="text-3xl font-bold font-mono text-white">NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
                                         </div>
 
                                         <div className="flex gap-4 pt-6">
@@ -279,7 +272,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                             <button
                                                 onClick={handleSubmit}
                                                 disabled={isLoading}
-                                                className="flex-[2] py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl shadow-purple-600/20"
+                                                className="flex-[2] py-4 bg-[#60BB46] hover:bg-[#4d9738] text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl shadow-[#60BB46]/20"
                                             >
                                                 {isLoading ? (
                                                     <>
@@ -288,8 +281,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Ticket size={20} />
-                                                        <span>Book Now</span>
+                                                        <span>Pay with eSewa</span>
                                                     </>
                                                 )}
                                             </button>

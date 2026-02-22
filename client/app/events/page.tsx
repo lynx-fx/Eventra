@@ -152,12 +152,11 @@ export default function EventsPage() {
                                     <div className="pt-4 border-t border-border flex items-center justify-between">
                                         <div className="flex flex-col">
                                             <span className="text-xs text-muted-foreground">Starting from</span>
-                                            <span className="font-bold text-primary">
-                                                {typeof event.price === 'object'
-                                                    ? `Rs. ${event.price.general || event.price.standard || 0}`
-                                                    : `Rs. ${event.price || 0}`
-                                                }
-                                            </span>
+                                            <p className="text-xl font-bold font-mono text-purple-400">
+                                                {event.price && typeof event.price === 'object'
+                                                    ? `NPR ${event.price.general || event.price.standard || 0}`
+                                                    : `NPR ${event.price || 0}`}
+                                            </p>
                                         </div>
                                         <button className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                             View Details

@@ -196,7 +196,7 @@ export default function TicketList({ user }: Props) {
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-lg font-black font-mono text-white/90">${ticket.price?.toFixed(2)}</p>
+                                        <p className="text-lg font-black font-mono text-white/90">NPR {ticket.price?.toFixed(2)}</p>
                                     </div>
                                 </div>
 
@@ -411,7 +411,7 @@ export default function TicketList({ user }: Props) {
                                     </div>
                                     <div className="space-y-1.5 text-right">
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>
-                                        <p className="text-sm font-bold text-purple-400 font-mono">${selectedTicket.price.toFixed(2)}</p>
+                                        <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
                                     </div>
                                 </div>
                             </div>

@@ -109,6 +109,38 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEd
             nextStep();
             return;
         }
+
+        const start = new Date(formData.startDate);
+        const end = new Date(formData.endDate);
+        const eventDateObj = new Date(formData.eventDate);
+        const now = new Date();
+
+        if (!eventToEdit && eventDateObj <= now) {
+            toast.error("Event date must be in the future");
+            return;
+        }
+
+        if (!eventToEdit && start < now) {
+            toast.error("Sales start date must be in the future");
+            return;
+        }
+
+        if (end >= eventDateObj) {
+            toast.error("Sales end date must be before the selected event date");
+            return;
+        }
+
+        if (end <= start) {
+            toast.error("Sales end date must be after the sales start date");
+            return;
+        }
+
+        const eventDateMinusOneDay = new Date(eventDateObj.getTime() - 24 * 60 * 60 * 1000);
+        if (start > eventDateMinusOneDay) {
+            toast.error("Sales start date must be at least 1 day before the event date");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -449,6 +481,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEd
                                                         required
                                                         type="datetime-local"
                                                         value={formData.eventDate}
+                                                        min={!eventToEdit ? new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : undefined}
                                                         onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                                                         className="w-full bg-[#111113] border border-purple-500/30 rounded-xl py-3 pl-12 pr-4 text-gray-200 focus:ring-1 focus:ring-purple-500 outline-none transition-all [color-scheme:dark]"
                                                     />
@@ -464,6 +497,8 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEd
                                                             required
                                                             type="datetime-local"
                                                             value={formData.startDate}
+                                                            min={!eventToEdit ? new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : undefined}
+                                                            max={formData.eventDate ? new Date(new Date(formData.eventDate).getTime() - 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : undefined}
                                                             onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                                                             className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-11 pr-3 text-xs text-gray-200 outline-none [color-scheme:dark]"
                                                         />
@@ -477,6 +512,8 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess, eventToEd
                                                             required
                                                             type="datetime-local"
                                                             value={formData.endDate}
+                                                            min={formData.startDate || (!eventToEdit ? new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : undefined)}
+                                                            max={formData.eventDate || undefined}
                                                             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                                                             className="w-full bg-[#111113] border border-white/5 rounded-xl py-2.5 pl-11 pr-3 text-xs text-gray-200 outline-none [color-scheme:dark]"
                                                         />

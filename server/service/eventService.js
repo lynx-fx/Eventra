@@ -13,7 +13,15 @@ exports.getUpcomingEvents = async () => {
     const now = new Date();
     const future = new Date();
     future.setDate(future.getDate() + 30);
-    return await Event.find({ eventDate: { $gte: now, $lte: future } }).sort({ eventDate: 1 });
+    return await Event.find({
+        status: "approved",
+        eventDate: { $gte: now, $lte: future },
+        $or: [
+            { startDate: { $exists: false } },
+            { startDate: null },
+            { startDate: { $lte: now } }
+        ]
+    }).sort({ eventDate: 1 });
 };
 
 exports.getEventById = async (eventId) => {

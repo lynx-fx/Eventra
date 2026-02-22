@@ -100,7 +100,7 @@ export default function AdminDashboard({ user, setUser }: Props) {
 
           {/* Section Rendering */}
           <div className="min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {activeTab === "overview" && <AdminOverview />}
+            {activeTab === "overview" && <AdminOverview setActiveTab={setActiveTab} />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
             {activeTab === "reports" && <AdminReportsView currentUser={user} />}

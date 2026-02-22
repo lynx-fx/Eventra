@@ -14,6 +14,10 @@ exports.buyTicket = async (userId, eventId, ticketType = 'standard') => {
 
     // Check if ticket sales have started/ended
     const now = new Date();
+    console.log(now);
+    console.log(event.startDate);
+    console.log(event.endDate);
+    
     if (now < event.startDate) {
         throw new Error("Ticket sales have not started yet");
     }

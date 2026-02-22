@@ -81,7 +81,7 @@ export default function SellerDashboard({ user, setUser }: Props) {
   const stats = [
     { label: "Total Events", value: events.length.toString(), icon: Calendar },
     { label: "Tickets Sold", value: totalTickets.toLocaleString(), icon: Users },
-    { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign },
+    { label: "Total Revenue", value: `NPR ${totalRevenue.toLocaleString()}`, icon: DollarSign },
     { label: "Total Views", value: "0", icon: Eye }, // Placeholder for views
   ];
 
