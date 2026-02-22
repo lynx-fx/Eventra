@@ -88,7 +88,25 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
             });
 
             if (data.success) {
-                toast.success("Ticket booked successfully!");
+                const paymentData = data.paymentData;
+                
+                // esewa doesnt accept normal calls so it has to a action call from form
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+                
+                Object.entries(paymentData).forEach(([key, value]) => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = value as string;
+                    form.appendChild(input);
+                });
+                console.log(form);
+                
+                document.body.appendChild(form);
+                form.submit();
+                // toast.success("Ticket booked successfully!");
                 onSuccess();
                 onClose();
                 setStep(1);
@@ -96,6 +114,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                 toast.error(data.message || "Failed to book ticket");
             }
         } catch (error: any) {
+            console.log(error.message);
             toast.error(error.response?.data?.message || "An error occurred during booking");
         } finally {
             setIsLoading(false);
