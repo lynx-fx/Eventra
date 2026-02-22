@@ -76,11 +76,6 @@ export default function AdminEventsView() {
                     <h2 className="text-3xl font-serif text-white">Event <span className="text-purple-500">Moderation</span></h2>
                     <p className="text-gray-500 mt-1 text-sm">Review, approve, or manage all system-wide events.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-[#111113] border border-white/5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-all">
-                        <Download size={14} /> Export CSV
-                    </button>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

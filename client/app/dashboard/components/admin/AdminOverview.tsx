@@ -18,7 +18,11 @@ import axiosInstance from "../../../../service/axiosInstance"
 import { toast } from "sonner"
 import Cookies from "js-cookie"
 
-export default function AdminOverview() {
+interface Props {
+    setActiveTab?: (tab: string) => void
+}
+
+export default function AdminOverview({ setActiveTab }: Props) {
     const [statsData, setStatsData] = useState<any>(null)
     const [pendingEvents, setPendingEvents] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -57,7 +61,7 @@ export default function AdminOverview() {
     }, [])
 
     const stats = [
-        { label: "Total Revenue", value: `$${statsData?.totalRevenue?.toLocaleString() || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
+        { label: "Total Revenue", value: `NPR ${statsData?.totalRevenue?.toLocaleString() || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
         { label: "Total Users", value: statsData?.totalUsers || "0", change: "+4.2%", trend: "up", icon: Users, color: "text-blue-400" },
         { label: "Total Events", value: statsData?.totalEvents || "0", change: "+8.1%", trend: "up", icon: Calendar, color: "text-purple-400" },
         { label: "Pending Approvals", value: statsData?.pendingEvents || "0", change: "-2", trend: "down", icon: ShieldAlert, color: "text-orange-400" },
@@ -151,17 +155,11 @@ export default function AdminOverview() {
                                     <tr className="text-[10px] uppercase tracking-widest text-gray-500 border-b border-white/5 font-bold">
                                         <th className="pb-4 px-4 font-bold">Event Details</th>
                                         <th className="pb-4 px-4 font-bold text-center">Status</th>
-                                        <th className="pb-4 px-4 font-bold">Estimated Rev</th>
                                         <th className="pb-4 text-right pr-4 font-bold">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {pendingEvents.map((req) => {
-                                        const estRevenue =
-                                            ((req.price?.premium || 0) * (req.capacity?.premium || 0)) +
-                                            ((req.price?.standard || 0) * (req.capacity?.standard || 0)) +
-                                            ((req.price?.economy || 0) * (req.capacity?.economy || 0));
-
                                         return (
                                             <tr key={req._id} className="group hover:bg-white/[0.02] transition-colors">
                                                 <td className="py-5 px-4">
@@ -177,11 +175,11 @@ export default function AdminOverview() {
                                                         Pending
                                                     </span>
                                                 </td>
-                                                <td className="py-5 px-4 text-sm text-gray-300 font-mono tracking-tighter">
-                                                    ${estRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
                                                 <td className="py-5 text-right pr-4">
-                                                    <button className="p-2 text-gray-600 hover:text-white transition-colors">
+                                                    <button
+                                                        onClick={() => setActiveTab && setActiveTab("events")}
+                                                        className="p-2 text-gray-600 hover:text-white transition-colors"
+                                                    >
                                                         <MoreHorizontal size={18} />
                                                     </button>
                                                 </td>

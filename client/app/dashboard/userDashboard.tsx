@@ -85,10 +85,10 @@ export default function UserDashboard({ user, setUser }: Props) {
       if (response.data.success) {
         const allEvents = response.data.events;
 
-        // Filter only approved events for users
-        const approvedEvents = allEvents.filter((e: any) => e.status === "approved");
-
         const now = new Date();
+
+        // Filter only approved events for users and those where sales have started
+        const approvedEvents = allEvents.filter((e: any) => e.status === "approved" && (!e.startDate || new Date(e.startDate) <= now));
 
         // Filter upcoming events that the user HAS BOUGHT TICKETS for
         const upcoming = approvedEvents

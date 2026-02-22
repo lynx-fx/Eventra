@@ -40,9 +40,9 @@ const TrendingEvents = () => {
 
     const formatPrice = (price: any) => {
         if (typeof price === 'object') {
-            return `Rs. ${price.general || price.standard || 0}`;
+            return `NPR ${price.general || price.standard || 0}`;
         }
-        return `Rs. ${price || 0}`;
+        return `NPR ${price || 0}`;
     };
 
     return (

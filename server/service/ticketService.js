@@ -14,6 +14,10 @@ exports.buyTicket = async (userId, eventId, ticketType = 'standard') => {
 
     // Check if ticket sales have started/ended
     const now = new Date();
+    console.log(now);
+    console.log(event.startDate);
+    console.log(event.endDate);
+    
     if (now < event.startDate) {
         throw new Error("Ticket sales have not started yet");
     }
@@ -112,19 +116,14 @@ exports.useTicket = async (ticketId, userId, userRole) => {
     }
 
     const now = new Date();
-    const startDate = new Date(ticket.eventId.startDate);
-    const endDate = new Date(ticket.eventId.endDate);
+    const eventDate = new Date(ticket.eventId.eventDate);
 
     // Normalize to compare dates only (ignore time)
     const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const eventStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    const eventEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    const normalizedEventDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
-    if (currentDate < eventStartDate) {
-        throw new Error("Cannot use ticket: Event has not started yet");
-    }
-    if (currentDate > eventEndDate) {
-        throw new Error("Cannot use ticket: Event has already ended");
+    if (currentDate.getTime() !== normalizedEventDate.getTime()) {
+        throw new Error("Cannot use ticket: Event date does not match current date");
     }
 
     ticket.status = 'used';

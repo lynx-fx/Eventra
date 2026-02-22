@@ -80,6 +80,15 @@ export default function EventDetailsPage() {
         setIsBookingModalOpen(true);
     };
 
+    const handleShare = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied to clipboard!");
+        } catch (err) {
+            toast.error("Failed to copy link");
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -151,7 +160,7 @@ export default function EventDetailsPage() {
                                     <h3 className="text-xl font-bold">Event Details</h3>
                                     <p className="text-sm text-muted-foreground">Secure your spot now</p>
                                 </div>
-                                <button className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors">
+                                <button onClick={handleShare} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors">
                                     <Share2 size={20} className="text-foreground" />
                                 </button>
                             </div>
@@ -193,7 +202,7 @@ export default function EventDetailsPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">Starting from</p>
                                         <p className="text-3xl font-bold font-mono text-primary">
-                                            ${Math.min(event.price.economy, event.price.standard, event.price.premium).toFixed(2)}
+                                            NPR {Math.min(event.price.economy, event.price.standard, event.price.premium).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>

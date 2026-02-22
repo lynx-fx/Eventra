@@ -52,7 +52,7 @@ export default function EventCard({
         />
         <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
         <div className="absolute top-4 right-4">
-          <div className="bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-opacity" onClick={onView}>
             <ArrowUpRight size={18} />
           </div>
         </div>
