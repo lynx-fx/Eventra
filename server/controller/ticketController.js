@@ -44,6 +44,17 @@ exports.cancelTicket = async (req, res) => {
     }
 }
 
+exports.completePurchase = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { ticketId } = req.body;
+        const { paymentData } = await ticketService.completePurchase(ticketId, userId);
+        res.status(200).json({ success: true, paymentData });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
 exports.getSellerTickets = async (req, res) => {
     try {
         const sellerId = req.user.id;
