@@ -31,10 +31,12 @@ export default function PaymentSuccessPage() {
                 }
             })
 
-            if (data.success){
+            if (data.success) {
                 toast.success(data.message || "Redirecting");
-                router.push("/dashboard")
-            } else{
+                setTimeout(() => {
+                    router.push("/dashboard")
+                }, 3000)
+            } else {
                 router.push("/payment/faliure")
                 toast.info(data.message || "Error while verifying")
             }

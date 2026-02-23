@@ -165,6 +165,62 @@ exports.getTicketsBySeller = async (sellerId) => {
     return tickets;
 };
 
+exports.completePurchase = async (ticketId, userId) => {
+    const ticket = await Ticket.findOne({ _id: ticketId, userId });
+    if (!ticket) {
+        throw new Error("Ticket not found or unauthorized");
+    }
+
+    if (ticket.status !== 'pending') {
+        throw new Error("Only pending tickets can be completed");
+    }
+
+    // Generate new transaction UUID for the retry attempt
+    const new_transaction_uuid = uuidv4();
+    ticket.transaction_uuid = new_transaction_uuid;
+    await ticket.save();
+
+    // eSewa fields
+    const amount = ticket.price;
+    const tax_amount = 0;
+    const product_service_charge = 0;
+    const product_delivery_charge = 0;
+
+    const total_amount =
+        amount + tax_amount + product_service_charge + product_delivery_charge;
+
+    const product_code = process.env.ESEWA_PRODUCT_CODE;
+    const secretKey = process.env.ESEWA_SECRET_KEY;
+
+    const success_url = `${frontend}/payment/success`;
+    const failure_url = `${frontend}/payment/failure`;
+
+    const signed_field_names = "total_amount,transaction_uuid,product_code";
+
+    const message = `total_amount=${total_amount},transaction_uuid=${new_transaction_uuid},product_code=${product_code}`;
+
+    const signature = crypto
+        .createHmac("sha256", secretKey)
+        .update(message)
+        .digest("base64");
+
+    const paymentData = {
+        amount: amount.toString(),
+        tax_amount: tax_amount.toString(),
+        total_amount: total_amount.toString(),
+        transaction_uuid: new_transaction_uuid,
+        product_code,
+        product_service_charge: product_service_charge.toString(),
+        product_delivery_charge: product_delivery_charge.toString(),
+        success_url,
+        failure_url,
+        signed_field_names,
+        signature,
+    };
+
+    return { paymentData };
+}
+
 exports.getTicketById = async (ticketId) => {
     return await Ticket.findById(ticketId)
         .populate('eventId')

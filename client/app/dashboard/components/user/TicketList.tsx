@@ -37,6 +37,7 @@ export default function TicketList({ user }: Props) {
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [isCompleting, setIsCompleting] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);
     const pdfRef = useRef<HTMLDivElement>(null);
@@ -84,6 +85,40 @@ export default function TicketList({ user }: Props) {
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setIsCancelling(false);
+        }
+    };
+
+    const handleCompletePurchase = async (ticketId: string) => {
+        setIsCompleting(true);
+        try {
+            const { data } = await axiosInstance.post("/api/tickets/complete", { ticketId }, {
+                headers: { auth: AUTH_TOKEN }
+            });
+            if (data.success) {
+                const paymentData = data.paymentData;
+
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+
+                Object.entries(paymentData).forEach(([key, value]) => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = value as string;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+                toast.success("Redirecting to eSewa...");
+            } else {
+                toast.error(data.message || "Failed to complete purchase");
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "An error occurred");
+        } finally {
+            setIsCompleting(false);
         }
     };
 
@@ -202,7 +237,7 @@ export default function TicketList({ user }: Props) {
 
                                 {/* QR Preview */}
                                 <div className="md:border-l border-dashed border-white/10 md:pl-8 flex flex-col items-center justify-center bg-white/5 md:bg-transparent p-6 md:pr-10">
-                                    <div className="bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500 overflow-hidden w-16 h-16 flex items-center justify-center">
+                                    <div className={`bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500 overflow-hidden w-16 h-16 flex items-center justify-center ${ticket.status === 'pending' ? 'blur-sm opacity-50' : ''}`}>
                                         <QRCodeSVG
                                             value={`${window.location.origin}/ticket/${ticket._id}`}
                                             size={48}
@@ -286,7 +321,7 @@ export default function TicketList({ user }: Props) {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-center gap-3 shrink-0">
-                                            <div className="bg-white p-3 md:p-4 rounded-[28px] md:rounded-[32px] shadow-2xl w-32 h-32 md:w-36 md:h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/20">
+                                            <div className={`bg-white p-3 md:p-4 rounded-[28px] md:rounded-[32px] shadow-2xl w-32 h-32 md:w-36 md:h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/20 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
                                                 <QRCodeSVG
                                                     value={`${window.location.origin}/ticket/${selectedTicket._id}`}
                                                     size={110}
@@ -305,26 +340,45 @@ export default function TicketList({ user }: Props) {
                                         <div className="border-t border-dashed border-white/20 w-full" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-y-8 gap-x-12 py-6 relative">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Event Date</p>
+                                    <div className="grid grid-cols-2 gap-y-6 md:gap-y-8 gap-x-4 md:gap-x-12 py-6 relative">
+                                        <div className="space-y-1 col-span-2 md:col-span-1">
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Date & Time</p>
                                             <p className="text-sm font-bold text-gray-200">
-                                                {new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                                {new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(selectedTicket.eventId?.eventDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1 col-span-2 md:col-span-1 md:text-right">
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Location</p>
+                                            <p className="text-sm font-bold text-gray-200 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Status</p>
+                                            <p className={`text-sm font-bold uppercase ${selectedTicket.status === 'active' ? 'text-green-400' : selectedTicket.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}`}>
+                                                {selectedTicket.status}
                                             </p>
                                         </div>
                                         <div className="space-y-1 md:text-right">
-                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Location</p>
-                                            <p className="text-sm font-bold text-gray-200 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
+                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Price</p>
+                                            <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="px-8 pb-8 space-y-4">
+                                {selectedTicket.status === 'pending' && (
+                                    <button
+                                        onClick={() => handleCompletePurchase(selectedTicket._id)}
+                                        disabled={isCompleting}
+                                        className="w-full py-4 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-purple-900/20"
+                                    >
+                                        {isCompleting ? <Loader2 className="animate-spin" size={14} /> : "Complete Purchase"}
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleDownloadPDF}
-                                    disabled={isDownloading}
-                                    className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-100 transition-all flex items-center justify-center gap-2 shadow-xl"
+                                    disabled={isDownloading || selectedTicket.status === 'pending'}
+                                    className={`w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl ${selectedTicket.status === 'pending' ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}
                                 >
                                     {isDownloading ? <Loader2 className="animate-spin" size={12} /> : (
                                         <>
@@ -396,14 +450,14 @@ export default function TicketList({ user }: Props) {
                                     <p className="text-[10px] text-gray-500 font-mono tracking-widest">#{selectedTicket._id.toUpperCase()}</p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-y-10 border-t border-b border-white/10 py-10 relative font-sans">
+                                <div className="grid grid-cols-2 gap-y-7 border-t border-b border-white/10 py-8 relative font-sans">
                                     <div className="space-y-1.5">
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Attendee</p>
                                         <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
                                     </div>
                                     <div className="space-y-1.5 text-right">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date</p>
-                                        <p className="text-sm font-bold text-white">{new Date(selectedTicket.eventId?.eventDate).toLocaleDateString()}</p>
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date & Time</p>
+                                        <p className="text-sm font-bold text-white">{new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(selectedTicket.eventId?.eventDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Location</p>
@@ -413,11 +467,15 @@ export default function TicketList({ user }: Props) {
                                         <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>
                                         <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
                                     </div>
+                                    <div className="space-y-1.5 col-span-2 text-center pt-2">
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Status</p>
+                                        <p className={`text-[11px] font-black uppercase tracking-[0.4em] ${selectedTicket.status === 'active' ? 'text-green-400' : selectedTicket.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}`}>{selectedTicket.status}</p>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col items-center gap-6 pb-2">
-                                <div className="bg-white p-4 rounded-[32px] shadow-2xl w-36 h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/10">
+                                <div className={`bg-white p-4 rounded-[32px] shadow-2xl w-36 h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/10 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
                                     <QRCodeSVG
                                         value={`${window.location.origin}/ticket/${selectedTicket._id}`}
                                         size={110}
