@@ -5,6 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const authRouter = require("./route/authRouter");
+require("./job/cron");
 
 const frontend =
   process.env.NODE_ENV === "production"

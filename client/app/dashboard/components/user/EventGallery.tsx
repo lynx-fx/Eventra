@@ -21,6 +21,7 @@ interface EventData {
     title: string;
     description: string;
     startDate: string;
+    eventDate: string;
     city: string;
     venue: string;
     status: string;
@@ -315,16 +316,27 @@ export default function EventGallery({ user }: Props) {
                         multiple
                         onChange={handleImageUpload}
                     />
-                    {user?.role !== "seller" && (
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
-                        >
-                            {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
-                            {isUploading ? "Uploading..." : "Upload Moment"}
-                        </button>
-                    )}
+                    {user?.role !== "seller" && (() => {
+                        if (!selectedEvent?.eventDate) return null;
+                        const now = new Date();
+                        const eventDate = new Date(selectedEvent.eventDate);
+                        const eventEndDate = new Date(selectedEvent.eventDate);
+                        eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+                        const canUpload = now >= eventDate && now <= eventEndDate;
+                        if (!canUpload) return null;
+
+                        return (
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
+                            >
+                                {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+                                {isUploading ? "Uploading..." : "Upload Moment"}
+                            </button>
+                        );
+                    })()}
                 </div>
             </div>
 
@@ -335,7 +347,23 @@ export default function EventGallery({ user }: Props) {
                 </div>
             ) : galleryImages.length === 0 ? (
                 <div className="bg-card rounded-4xl p-20 text-center border border-border border-dashed">
-                    <p className="text-muted-foreground font-serif italic mb-6">"Visual evidence for this event has been restricted or not yet processed."</p>
+                    <p className="text-muted-foreground font-serif italic mb-6">
+                        {(() => {
+                            if (!selectedEvent?.eventDate) return `"Visual evidence for this event has been restricted or not yet processed."`;
+                            const now = new Date();
+                            const eventDate = new Date(selectedEvent.eventDate);
+                            const eventEndDate = new Date(selectedEvent.eventDate);
+                            eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+                            if (now < eventDate) {
+                                return `"This event room hasn't started yet. The gallery will unlock on ${eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at ${eventDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}."`;
+                            } else if (now > eventEndDate) {
+                                return `"This event gallery is now closed. No visual evidence was captured."`;
+                            } else {
+                                return `"No moments have been uploaded yet. Be the first to share your experience!"`;
+                            }
+                        })()}
+                    </p>
                     <button
                         onClick={() => setSelectedEvent(null)}
                         className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"

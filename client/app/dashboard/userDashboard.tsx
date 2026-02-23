@@ -9,10 +9,10 @@ import BookingModal from "./components/user/BookingModal";
 import UserSettings from "./components/user/UserSettings";
 import { Search, LogOut, Bell, User as UserIcon, Loader2, Calendar } from "lucide-react";
 import axiosInstance from "../../service/axiosInstance";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
-import { User } from "./page";
+import { User } from "./[[...slug]]/page";
 import { ModeToggle } from "../../component/ThemeToggle";
 
 interface EventData {
@@ -50,7 +50,6 @@ interface Props {
 }
 
 export default function UserDashboard({ user, setUser }: Props) {
-  const [activeTab, setActiveTab] = useState("overview");
   const [upcomingEvents, setUpcomingEvents] = useState<EventData[]>([]);
   const [exploreEvents, setExploreEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +59,12 @@ export default function UserDashboard({ user, setUser }: Props) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLocation, setSelectedLocation] = useState("All");
   const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = pathname.split('/')[2] || "overview";
+  const setActiveTab = (tab: string) => {
+    if (tab === "overview") router.push("/dashboard");
+    else router.push(`/dashboard/${tab}`);
+  };
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -152,7 +157,7 @@ export default function UserDashboard({ user, setUser }: Props) {
   const displayedExplore = (searchQuery || selectedCategory !== "All" || selectedLocation !== "All") ? filteredExplore : filteredExplore.slice(0, 6);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden">
+    <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden">
       <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
