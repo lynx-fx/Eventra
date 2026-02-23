@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { User } from "../../page";
+import { User } from "../../[[...slug]]/page";
 
 interface Props {
     user?: User;
@@ -30,7 +30,47 @@ interface TicketData {
     price: number;
     status: string;
     purchaseDate: string;
+    createdAt?: string;
 }
+
+const CountdownTimer = ({ createdAt, onExpire }: { createdAt: string; onExpire?: () => void }) => {
+    const expiredRef = useRef(false);
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const diff = 15 * 60 * 1000 - (Date.now() - new Date(createdAt).getTime());
+        return Math.max(0, Math.floor(diff / 1000));
+    });
+
+    useEffect(() => {
+        if (timeLeft <= 0 && !expiredRef.current && onExpire) {
+            expiredRef.current = true;
+            onExpire();
+        }
+
+        const interval = setInterval(() => {
+            const diff = 15 * 60 * 1000 - (Date.now() - new Date(createdAt).getTime());
+            const seconds = Math.floor(diff / 1000);
+
+            if (seconds <= 0) {
+                setTimeLeft(0);
+                clearInterval(interval);
+                if (!expiredRef.current && onExpire) {
+                    expiredRef.current = true;
+                    onExpire();
+                }
+            } else {
+                setTimeLeft(seconds);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [createdAt, onExpire, timeLeft]);
+
+    if (timeLeft <= 0) return <span className="text-red-500 font-bold uppercase tracking-widest">Expired</span>;
+
+    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    return <span className="font-mono">{m}:{s}</span>;
+};
 
 export default function TicketList({ user }: Props) {
     const [tickets, setTickets] = useState<TicketData[]>([]);
@@ -111,7 +151,6 @@ export default function TicketList({ user }: Props) {
 
                 document.body.appendChild(form);
                 form.submit();
-                toast.success("Redirecting to eSewa...");
             } else {
                 toast.error(data.message || "Failed to complete purchase");
             }
@@ -178,7 +217,7 @@ export default function TicketList({ user }: Props) {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    {tickets.map((ticket) => {
+                    {[...tickets].sort((a, b) => new Date(a.eventId?.eventDate || 0).getTime() - new Date(b.eventId?.eventDate || 0).getTime()).map((ticket) => {
                         const isPast = ticket.eventId?.eventDate && new Date(ticket.eventId.eventDate) < new Date();
                         const isActive = ticket.status === 'active' && !isPast;
 
@@ -189,26 +228,32 @@ export default function TicketList({ user }: Props) {
                                 className="bg-[#111113] rounded-[32px] border border-white/5 flex flex-col md:flex-row hover:border-purple-500/40 transition-all group cursor-pointer overflow-hidden shadow-2xl relative"
                             >
                                 {/* Left Side - Mini Banner & Type */}
-                                <div className="md:w-32 bg-linear-to-br from-purple-600 to-indigo-800 flex flex-col items-center justify-center py-6 md:py-0 relative">
+                                <div className="md:w-28 bg-linear-to-br from-purple-600 to-indigo-800 flex flex-col items-center justify-center py-4 md:py-0 relative">
                                     <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                                        <Sparkles className="w-full h-full p-6 text-white" />
+                                        <Sparkles className="w-full h-full p-4 text-white" />
                                     </div>
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] vertical-text md:-rotate-90 text-white/80">
                                         {ticket.ticketType} Pass
                                     </span>
                                 </div>
 
-                                <div className="flex-1 p-8 space-y-6">
+                                <div className="flex-1 p-6 space-y-4">
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1">
                                             <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">{ticket.eventId?.title || "Unknown Experience"}</h3>
                                             <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase font-bold">Token ID: #{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                        <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                                             ticket.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                'bg-gray-500/10 text-gray-500 border border-white/5'
+                                                ticket.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
+                                                    'bg-gray-500/10 text-gray-500 border border-white/5'
                                             }`}>
                                             {isPast && ticket.status === 'active' ? "Expired" : ticket.status}
+                                            {ticket.status === 'pending' && ticket.createdAt && (
+                                                <span className="opacity-80">
+                                                    (<CountdownTimer createdAt={ticket.createdAt} />)
+                                                </span>
+                                            )}
                                         </span>
                                     </div>
 
@@ -223,7 +268,7 @@ export default function TicketList({ user }: Props) {
                                         </div>
                                     </div>
 
-                                    <div className="pt-6 border-t border-white/5 flex justify-between items-end">
+                                    <div className="pt-4 border-t border-white/5 flex justify-between items-end">
                                         <div className="flex gap-2">
                                             {isActive && (
                                                 <button className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors">
@@ -236,7 +281,7 @@ export default function TicketList({ user }: Props) {
                                 </div>
 
                                 {/* QR Preview */}
-                                <div className="md:border-l border-dashed border-white/10 md:pl-8 flex flex-col items-center justify-center bg-white/5 md:bg-transparent p-6 md:pr-10">
+                                <div className="md:border-l border-dashed border-white/10 md:pl-6 flex flex-col items-center justify-center bg-white/5 md:bg-transparent p-4 md:pr-8">
                                     <div className={`bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500 overflow-hidden w-16 h-16 flex items-center justify-center ${ticket.status === 'pending' ? 'blur-sm opacity-50' : ''}`}>
                                         <QRCodeSVG
                                             value={`${window.location.origin}/ticket/${ticket._id}`}
@@ -258,7 +303,7 @@ export default function TicketList({ user }: Props) {
             {/* Full Ticket Modal */}
             <AnimatePresence>
                 {selectedTicket && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 mb-10 h-[100vh] overflow-y-hidden">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -270,15 +315,15 @@ export default function TicketList({ user }: Props) {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-[400px] bg-[#0a0a0c] rounded-[40px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]"
+                            className="relative w-full max-w-[400px] max-h-[90vh] overflow-y-auto bg-[#0a0a0c] rounded-[40px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         >
-                            <div ref={ticketRef} className="bg-[#0a0a0c] w-full aspect-[9/16] flex flex-col relative overflow-hidden">
+                            <div ref={ticketRef} className="bg-[#0a0a0c] w-full flex flex-col relative overflow-hidden">
                                 {/* Decorative Ticket Cutouts */}
                                 <div className="absolute top-[65%] -left-4 w-8 h-8 bg-black rounded-full z-20 border-r border-white/10" />
                                 <div className="absolute top-[65%] -right-4 w-8 h-8 bg-black rounded-full z-20 border-l border-white/10" />
 
                                 {/* Ticket Header Image */}
-                                <div className="h-48 w-full relative">
+                                <div className="h-32 md:h-40 w-full relative">
                                     {(() => {
                                         const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
                                             ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
@@ -297,13 +342,10 @@ export default function TicketList({ user }: Props) {
                                             />
                                         );
                                     })()}
-                                    <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-[#111113]/40 to-transparent" />
-                                    <div className="absolute top-6 right-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white/70 border border-white/10">
-                                        <Sparkles size={20} className="animate-pulse" />
-                                    </div>
+                                    <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0c] via-[#0a0a0c]/80 to-transparent" />
                                 </div>
 
-                                <div className="px-6 md:px-10 pb-10 -mt-10 relative space-y-10">
+                                <div className="px-6 md:px-10 pb-8 -mt-8 relative space-y-6 md:space-y-8">
                                     <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-0 mt-6 md:mt-0">
                                         <div className="space-y-4 text-center md:text-left w-full">
                                             <div className="space-y-2">
@@ -321,10 +363,10 @@ export default function TicketList({ user }: Props) {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-center gap-3 shrink-0">
-                                            <div className={`bg-white p-3 md:p-4 rounded-[28px] md:rounded-[32px] shadow-2xl w-32 h-32 md:w-36 md:h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/20 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
+                                            <div className={`bg-white p-3 md:p-4 rounded-[24px] md:rounded-[28px] shadow-2xl w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden border-4 border-purple-500/20 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
                                                 <QRCodeSVG
                                                     value={`${window.location.origin}/ticket/${selectedTicket._id}`}
-                                                    size={110}
+                                                    size={100}
                                                     level="H"
                                                     includeMargin={false}
                                                     className="w-full h-full"
@@ -365,15 +407,22 @@ export default function TicketList({ user }: Props) {
                                 </div>
                             </div>
 
-                            <div className="px-8 pb-8 space-y-4">
+                            <div className="px-8 pb-6 space-y-3">
                                 {selectedTicket.status === 'pending' && (
-                                    <button
-                                        onClick={() => handleCompletePurchase(selectedTicket._id)}
-                                        disabled={isCompleting}
-                                        className="w-full py-4 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-purple-900/20"
-                                    >
-                                        {isCompleting ? <Loader2 className="animate-spin" size={14} /> : "Complete Purchase"}
-                                    </button>
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={() => handleCompletePurchase(selectedTicket._id)}
+                                            disabled={isCompleting || (!!selectedTicket.createdAt && new Date(Date.now() - new Date(selectedTicket.createdAt).getTime()).getTime() >= 15 * 60 * 1000)}
+                                            className="w-full py-4 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isCompleting ? <Loader2 className="animate-spin" size={14} /> : "Complete Purchase"}
+                                        </button>
+                                        {selectedTicket.createdAt && (
+                                            <p className="text-center text-gray-500 text-[10px] uppercase font-bold tracking-widest">
+                                                Time remaining: <CountdownTimer createdAt={selectedTicket.createdAt} onExpire={() => { setSelectedTicket(null); fetchTickets(); }} />
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
                                 <button
                                     onClick={handleDownloadPDF}
@@ -387,16 +436,6 @@ export default function TicketList({ user }: Props) {
                                         </>
                                     )}
                                 </button>
-
-                                {selectedTicket.status === 'active' && new Date(selectedTicket.eventId?.eventDate) > new Date() && (
-                                    <button
-                                        onClick={() => handleCancelTicket(selectedTicket._id)}
-                                        disabled={isCancelling}
-                                        className="w-full py-2 text-[9px] font-black uppercase tracking-[0.2em] text-red-500/40 hover:text-red-500 transition-colors"
-                                    >
-                                        {isCancelling ? <Loader2 className="animate-spin" size={10} /> : "Cancel Booking"}
-                                    </button>
-                                )}
                             </div>
                         </motion.div>
                     </div>
@@ -406,90 +445,88 @@ export default function TicketList({ user }: Props) {
             {/* Hidden High-Fidelity PDF pass (State B refined version) */}
             {selectedTicket && (
                 <div
-                    ref={pdfRef}
-                    className="fixed -left-[1000px] top-0 pointer-events-none"
+                    className="fixed -left-[2000px] top-0 pointer-events-none"
                     style={{ zIndex: -1 }}
                 >
-                    <div className="bg-[#0a0a0c] w-[400px] aspect-[9/16] flex flex-col relative overflow-hidden border border-white/10">
-                        <div className="absolute top-[62%] -left-5 w-10 h-10 bg-black rounded-full z-10 border-r border-white/5" />
-                        <div className="absolute top-[62%] -right-5 w-10 h-10 bg-black rounded-full z-10 border-l border-white/5" />
+                    <div ref={pdfRef} className="bg-[#111113] p-8 md:p-12">
+                        <div className="bg-[#0a0a0c] w-[400px] rounded-3xl min-h-[720px] flex flex-col relative overflow-hidden border border-white/10 shadow-2xl">
+                            <div className="absolute top-[62%] -left-5 w-10 h-10 bg-[#111113] rounded-full z-10 border-r border-white/5" />
+                            <div className="absolute top-[62%] -right-5 w-10 h-10 bg-[#111113] rounded-full z-10 border-l border-white/5" />
 
-                        <div className="h-[35%] w-full relative shrink-0">
-                            {(() => {
-                                const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
-                                    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
-                                    : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
+                            <div className="h-[260px] w-full relative shrink-0">
+                                {(() => {
+                                    const BACKEND = process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                        ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                        : process.env.NEXT_PUBLIC_BACKEND_LOCAL;
 
-                                const isRelative = selectedTicket.eventId?.bannerImage?.startsWith("/images") || selectedTicket.eventId?.bannerImage?.startsWith("images");
-                                const imageUrl = isRelative
-                                    ? `${BACKEND}${selectedTicket.eventId?.bannerImage?.startsWith("/") ? selectedTicket.eventId.bannerImage : `/${selectedTicket.eventId?.bannerImage}`}`
-                                    : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
-                                return (
-                                    <img
-                                        src={imageUrl}
-                                        className="w-full h-full object-cover"
-                                        alt="Event"
-                                    />
-                                );
-                            })()}
-                            <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0c] via-transparent to-transparent" />
-                            <div className="absolute top-8 right-8 p-3 bg-black/40 backdrop-blur-md rounded-full text-white/70 border border-white/10">
-                                <Sparkles size={18} className="animate-pulse text-purple-400" />
-                            </div>
-                            <div className="absolute bottom-6 left-8">
-                                <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-purple-900/40">
-                                    {selectedTicket.ticketType} PASS
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 px-10 pt-4 pb-10 flex flex-col justify-between relative bg-[#0a0a0c]">
-                            <div className="space-y-8">
-                                <div className="space-y-2 text-center">
-                                    <h2 className="text-3xl font-bold text-white leading-tight tracking-tight">{selectedTicket.eventId?.title}</h2>
-                                    <p className="text-[10px] text-gray-500 font-mono tracking-widest">#{selectedTicket._id.toUpperCase()}</p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-y-7 border-t border-b border-white/10 py-8 relative font-sans">
-                                    <div className="space-y-1.5">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Attendee</p>
-                                        <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
-                                    </div>
-                                    <div className="space-y-1.5 text-right">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date & Time</p>
-                                        <p className="text-sm font-bold text-white">{new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(selectedTicket.eventId?.eventDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</p>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Location</p>
-                                        <p className="text-xs font-bold text-gray-300 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
-                                    </div>
-                                    <div className="space-y-1.5 text-right">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>
-                                        <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
-                                    </div>
-                                    <div className="space-y-1.5 col-span-2 text-center pt-2">
-                                        <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Status</p>
-                                        <p className={`text-[11px] font-black uppercase tracking-[0.4em] ${selectedTicket.status === 'active' ? 'text-green-400' : selectedTicket.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}`}>{selectedTicket.status}</p>
-                                    </div>
+                                    const isRelative = selectedTicket.eventId?.bannerImage?.startsWith("/images") || selectedTicket.eventId?.bannerImage?.startsWith("images");
+                                    const imageUrl = isRelative
+                                        ? `${BACKEND}${selectedTicket.eventId?.bannerImage?.startsWith("/") ? selectedTicket.eventId.bannerImage : `/${selectedTicket.eventId?.bannerImage}`}`
+                                        : (selectedTicket.eventId?.bannerImage || "https://images.unsplash.com/photo-1540575861501-7ad0582371f4?q=80&w=2070&auto=format&fit=crop");
+                                    return (
+                                        <img
+                                            src={imageUrl}
+                                            className="w-full h-full object-cover"
+                                            alt="Event"
+                                        />
+                                    );
+                                })()}
+                                <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                                <div className="absolute bottom-6 left-8">
+                                    <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-purple-900/40">
+                                        {selectedTicket.ticketType} PASS
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-center gap-6 pb-2">
-                                <div className={`bg-white p-4 rounded-[32px] shadow-2xl w-36 h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/10 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
-                                    <QRCodeSVG
-                                        value={`${window.location.origin}/ticket/${selectedTicket._id}`}
-                                        size={110}
-                                        level="H"
-                                        includeMargin={false}
-                                        className="w-full h-full"
-                                    />
+                            <div className="flex-1 px-10 pt-4 pb-10 flex flex-col justify-between relative bg-[#0a0a0c]">
+                                <div className="space-y-8">
+                                    <div className="space-y-2 text-center">
+                                        <h2 className="text-3xl font-bold text-white leading-tight tracking-tight">{selectedTicket.eventId?.title}</h2>
+                                        <p className="text-[10px] text-gray-500 font-mono tracking-widest">#{selectedTicket._id.toUpperCase()}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-y-7 border-t border-b border-white/10 py-8 relative font-sans">
+                                        <div className="space-y-1.5">
+                                            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Attendee</p>
+                                            <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
+                                        </div>
+                                        <div className="space-y-1.5 text-right">
+                                            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date & Time</p>
+                                            <p className="text-sm font-bold text-white">{new Date(selectedTicket.eventId?.eventDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(selectedTicket.eventId?.eventDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Location</p>
+                                            <p className="text-xs font-bold text-gray-300 break-words">{selectedTicket.eventId?.venue}, {selectedTicket.eventId?.city}</p>
+                                        </div>
+                                        <div className="space-y-1.5 text-right">
+                                            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Price</p>
+                                            <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
+                                        </div>
+                                        <div className="space-y-1.5 col-span-2 text-center pt-2">
+                                            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Status</p>
+                                            <p className={`text-[11px] font-black uppercase tracking-[0.4em] ${selectedTicket.status === 'active' ? 'text-green-400' : selectedTicket.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}`}>{selectedTicket.status}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="text-center space-y-2">
-                                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.4em]">Official Digital Pass</p>
-                                    <div className="flex items-center justify-center gap-4 text-[7px] text-gray-700 uppercase tracking-widest font-bold">
-                                        <span>Secure Entry</span>
-                                        <div className="w-1.5 h-1.5 bg-gray-800 rounded-full" />
-                                        <span>Non-Transferable</span>
+
+                                <div className="flex flex-col items-center gap-6 pb-2">
+                                    <div className={`bg-white p-4 rounded-[32px] shadow-2xl w-36 h-36 flex items-center justify-center overflow-hidden border-4 border-purple-500/10 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
+                                        <QRCodeSVG
+                                            value={`${window.location.origin}/ticket/${selectedTicket._id}`}
+                                            size={110}
+                                            level="H"
+                                            includeMargin={false}
+                                            className="w-full h-full"
+                                        />
+                                    </div>
+                                    <div className="text-center space-y-2">
+                                        <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.4em]">Official Digital Pass</p>
+                                        <div className="flex items-center justify-center gap-4 text-[7px] text-gray-700 uppercase tracking-widest font-bold">
+                                            <span>Secure Entry</span>
+                                            <div className="w-1.5 h-1.5 bg-gray-800 rounded-full" />
+                                            <span>Non-Transferable</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -4,7 +4,7 @@ import React from "react";
 import { User, Mail, Lock, Save, Camera, Shield, Bell, Layout, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { User as UserType } from "../../page";
+import { User as UserType } from "../../[[...slug]]/page";
 import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";

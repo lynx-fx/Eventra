@@ -28,7 +28,7 @@ export default function SellerSidebar({ activeTab, setActiveTab, onLogout }: Sid
     ];
 
     return (
-        <aside className="w-64 bg-[#050505] min-h-screen p-6 flex flex-col border-r border-gray-900">
+        <aside className="w-64 bg-[#050505] h-screen overflow-y-auto custom-scrollbar p-6 flex flex-col border-r border-gray-900 shrink-0">
             <div className="mb-10 pl-2">
                 <h1 className="text-white text-2xl font-serif">Eventra <span className="text-xs font-sans text-purple-500 block">Seller Hub</span></h1>
             </div>

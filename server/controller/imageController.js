@@ -1,4 +1,5 @@
 const imageService = require("../service/imageService.js");
+const Event = require("../model/Events.js");
 
 exports.getGallery = async (req, res) => {
     try {
@@ -17,6 +18,23 @@ exports.uploadImages = async (req, res) => {
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ success: false, message: "No image files provided" });
+        }
+
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
+
+        const now = new Date();
+        const eventDate = new Date(event.eventDate);
+        const eventEndDate = new Date(event.eventDate);
+        eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+        if (now < eventDate) {
+            return res.status(403).json({ success: false, message: "Cannot post before event start time" });
+        }
+        if (now > eventEndDate) {
+            return res.status(403).json({ success: false, message: "Event room is closed to new posts (3 days passed)" });
         }
 
         const uploadPromises = req.files.map(async (file) => {

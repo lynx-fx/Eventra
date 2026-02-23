@@ -120,10 +120,6 @@ export default function AdminOverview({ setActiveTab }: Props) {
                                 <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
                                     <Icon size={24} />
                                 </div>
-                                <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${stat.trend === "up" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
-                                    {stat.trend === "up" ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                    {stat.change}
-                                </div>
                             </div>
                             <div>
                                 <h3 className="text-3xl font-bold text-white mb-1 uppercase tracking-tight">{stat.value}</h3>
