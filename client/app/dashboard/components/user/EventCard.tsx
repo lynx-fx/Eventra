@@ -40,7 +40,7 @@ export default function EventCard({
   return (
     <motion.div
       whileHover={{ y: -5 }}
-      className="bg-[#111113] rounded-3xl overflow-hidden shadow-2xl flex flex-col h-full border border-white/5 hover:border-purple-500/30 transition-all group"
+      className="bg-card rounded-3xl overflow-hidden shadow-xl sm:shadow-2xl flex flex-col h-full border border-border hover:border-primary/50 transition-all group"
     >
       <div className="relative h-56 w-full overflow-hidden">
         <Image
@@ -50,30 +50,30 @@ export default function EventCard({
           unoptimized
           className="object-cover group-hover:scale-110 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-[#111113] via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-80" />
         <div className="absolute top-4 right-4">
-          <div className="bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-opacity" onClick={onView}>
+          <div className="bg-background/50 backdrop-blur-md border border-border p-2 rounded-xl text-foreground opacity-0 group-hover:opacity-100 transition-opacity" onClick={onView}>
             <ArrowUpRight size={18} />
           </div>
         </div>
       </div>
 
       <div className="p-6 flex flex-col flex-1 relative">
-        <h3 className="text-white font-bold text-xl mb-2 group-hover:text-purple-400 transition-colors leading-tight">{title}</h3>
-        <p className="text-gray-500 text-sm mb-6 line-clamp-2 font-light">
+        <h3 className="text-foreground font-bold text-xl mb-2 group-hover:text-primary transition-colors leading-tight">{title}</h3>
+        <p className="text-muted-foreground text-sm mb-6 line-clamp-2 font-light">
           {description}
         </p>
 
         <div className="mt-auto flex flex-col gap-3">
-          <div className="flex items-center text-gray-400 text-xs font-medium">
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
-              <Calendar className="w-4 h-4 text-purple-500" />
+          <div className="flex items-center text-muted-foreground text-xs font-medium">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3">
+              <Calendar className="w-4 h-4 text-primary" />
             </div>
             <span>{date}</span>
           </div>
-          <div className="flex items-center text-gray-400 text-xs font-medium">
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
-              <MapPin className="w-4 h-4 text-purple-500" />
+          <div className="flex items-center text-muted-foreground text-xs font-medium">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3">
+              <MapPin className="w-4 h-4 text-primary" />
             </div>
             <span>{venue}, {city}</span>
           </div>
@@ -82,7 +82,7 @@ export default function EventCard({
         <div className="flex gap-4 mt-8">
           <button
             onClick={onView}
-            className="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+            className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
           >
             Details
           </button>
@@ -90,7 +90,7 @@ export default function EventCard({
             <button
               onClick={isSalesEnded ? undefined : onJoin}
               disabled={isSalesEnded}
-              className={`flex-1 ${isSalesEnded ? 'bg-gray-600 cursor-not-allowed opacity-50' : 'bg-purple-600 hover:bg-purple-500'} text-white py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 ${!isSalesEnded && 'active:scale-95'}`}
+              className={`flex-1 ${isSalesEnded ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50' : 'bg-primary hover:bg-primary/90 text-primary-foreground'} py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg ${!isSalesEnded && 'shadow-primary/20 active:scale-95'}`}
             >
               {isSalesEnded ? "Sales Ended" : "Get Ticket"}
             </button>

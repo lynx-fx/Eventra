@@ -421,25 +421,25 @@ export default function EventGallery({ user }: Props) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 md:p-10"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-3xl p-4 md:p-10"
                     >
                         <button
                             onClick={() => setSelectedImageIndex(null)}
-                            className="absolute top-6 right-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10"
+                            className="absolute top-6 right-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border"
                         >
                             <X size={24} />
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                            className="absolute left-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10 hidden md:block"
+                            className="absolute left-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border hidden md:block"
                         >
                             <ChevronLeft size={32} />
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                            className="absolute right-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10 hidden md:block"
+                            className="absolute right-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border hidden md:block"
                         >
                             <ChevronRight size={32} />
                         </button>
@@ -461,16 +461,16 @@ export default function EventGallery({ user }: Props) {
                                 const imageUrl = img.imageUrl.startsWith("/images") ? `${BACKEND}${img.imageUrl}` : img.imageUrl;
                                 return (
                                     <>
-                                        <div className="relative w-full h-[80vh] group">
+                                        <div className="relative w-full h-[70vh] group flex items-center justify-center">
                                             <img
                                                 src={imageUrl}
                                                 alt="Enlarged"
-                                                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(168,85,247,0.3)]"
+                                                className="max-w-full max-h-full object-contain rounded-xl drop-shadow-2xl"
                                             />
                                         </div>
                                         <div className="mt-8 text-center space-y-2">
-                                            <p className="text-white font-serif italic text-xl">"{img.userId?.name || "Anonymous"}"</p>
-                                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em]">Official Archive Entry</p>
+                                            <p className="text-foreground font-serif italic text-xl">"{img.userId?.name || "Anonymous"}"</p>
+                                            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.4em]">Official Archive Entry</p>
 
                                             <button
                                                 onClick={() => handleReportImage(img._id)}
@@ -486,8 +486,8 @@ export default function EventGallery({ user }: Props) {
                         </motion.div>
 
                         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 md:hidden">
-                            <button onClick={prevImage} className="p-4 bg-white/10 rounded-full border border-white/10 text-white"><ChevronLeft size={24} /></button>
-                            <button onClick={nextImage} className="p-4 bg-white/10 rounded-full border border-white/10 text-white"><ChevronRight size={24} /></button>
+                            <button onClick={prevImage} className="p-4 bg-background/50 rounded-full border border-border text-foreground"><ChevronLeft size={24} /></button>
+                            <button onClick={nextImage} className="p-4 bg-background/50 rounded-full border border-border text-foreground"><ChevronRight size={24} /></button>
                         </div>
                     </motion.div>
                 )}
@@ -560,6 +560,6 @@ export default function EventGallery({ user }: Props) {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }
