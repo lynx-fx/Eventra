@@ -22,7 +22,7 @@ export default function DashboardSidebar({ activeTab, setActiveTab, onLogout }: 
     ];
 
     return (
-        <aside className="w-64 bg-card min-h-screen p-6 flex flex-col border-r border-border">
+        <aside className="w-64 bg-card h-screen overflow-y-auto custom-scrollbar p-6 flex flex-col border-r border-border shrink-0">
             <div className="mb-10 pl-2">
                 <h1 className="text-foreground text-2xl font-serif">Eventra</h1>
             </div>

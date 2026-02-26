@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState } from "react";
-import { User } from "./page";
+import React from "react";
+import { User } from "./[[...slug]]/page";
 import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminOverview from "./components/admin/AdminOverview";
 import AdminEventsView from "./components/admin/AdminEventsView";
@@ -9,7 +9,7 @@ import AdminUsersView from "./components/admin/AdminUsersView";
 import AdminReportsView from "./components/admin/AdminReportsView";
 import UserSettings from "./components/user/UserSettings";
 import { Search, Bell, LogOut, ChevronDown, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 
@@ -19,8 +19,13 @@ interface Props {
 }
 
 export default function AdminDashboard({ user, setUser }: Props) {
-  const [activeTab, setActiveTab] = useState("overview");
   const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = pathname.split('/')[2] || "overview";
+  const setActiveTab = (tab: string) => {
+    if (tab === "overview") router.push("/dashboard");
+    else router.push(`/dashboard/${tab}`);
+  };
 
   const handleLogout = () => {
     Cookies.remove("auth");
@@ -29,7 +34,7 @@ export default function AdminDashboard({ user, setUser }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30 overflow-hidden text-sm">
+    <div className="flex h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30 overflow-hidden text-sm">
       {/* Sidebar Navigation */}
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -100,30 +105,11 @@ export default function AdminDashboard({ user, setUser }: Props) {
 
           {/* Section Rendering */}
           <div className="min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {activeTab === "overview" && <AdminOverview />}
+            {activeTab === "overview" && <AdminOverview setActiveTab={setActiveTab} />}
             {activeTab === "events" && <AdminEventsView />}
             {activeTab === "users" && <AdminUsersView />}
-            {activeTab === "reports" && <AdminReportsView />}
+            {activeTab === "reports" && <AdminReportsView currentUser={user} />}
             {(activeTab === "profile" || activeTab === "settings") && <UserSettings user={user} setUser={setUser} />}
-
-
-
-            {activeTab === "transactions" && (
-              <div className="flex flex-col items-center justify-center py-24 bg-[#111113] rounded-4xl border border-dashed border-white/10">
-                <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center text-gray-600 mb-6">
-                  <Bell size={32} />
-                </div>
-                <p className="text-gray-400 font-serif text-2xl text-center">Global Ledger Interface</p>
-                <p className="text-gray-600 text-sm mt-3 max-w-sm text-center px-4">Financial auditing tools are undergoing a security audit. Check back in a few minutes.</p>
-              </div>
-            )}
-
-            {activeTab === "settings" && (
-              <div className="flex flex-col items-center justify-center py-24 bg-[#111113] rounded-4xl border border-dashed border-white/10">
-                <p className="text-gray-500 font-serif text-xl italic font-bold">Core System Settings...</p>
-                <p className="text-gray-600 text-sm mt-2 text-center">Configure global variables, security protocols, and API integrations.</p>
-              </div>
-            )}
           </div>
         </div>
       </main>

@@ -5,7 +5,9 @@ import {
     DollarSign,
     User,
     LogOut,
-    BarChart3
+    BarChart3,
+    Flag,
+    Image as ImageIcon
 } from "lucide-react";
 
 interface SidebarProps {
@@ -20,11 +22,13 @@ export default function SellerSidebar({ activeTab, setActiveTab, onLogout }: Sid
         { id: "events", label: "My Events", icon: Calendar },
         { id: "sales", label: "Sales", icon: DollarSign },
         { id: "attendees", label: "Attendees", icon: User },
+        { id: "gallery", label: "Gallery", icon: ImageIcon },
         { id: "analytics", label: "Analytics", icon: BarChart3 },
+        { id: "reports", label: "Reports", icon: Flag },
     ];
 
     return (
-        <aside className="w-64 bg-[#050505] min-h-screen p-6 flex flex-col border-r border-gray-900">
+        <aside className="w-64 bg-[#050505] h-screen overflow-y-auto custom-scrollbar p-6 flex flex-col border-r border-gray-900 shrink-0">
             <div className="mb-10 pl-2">
                 <h1 className="text-white text-2xl font-serif">Eventra <span className="text-xs font-sans text-purple-500 block">Seller Hub</span></h1>
             </div>

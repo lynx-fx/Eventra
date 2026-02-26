@@ -8,13 +8,24 @@ import axiosInstance from "../../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 
+interface User {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    profileUrl?: string;
+}
+
 interface EventData {
     _id: string;
     title: string;
     description: string;
     startDate: string;
-    location: string;
+    eventDate: string;
+    city: string;
+    venue: string;
     status: string;
+    seller: string;
 }
 
 interface ImageData {
@@ -25,7 +36,11 @@ interface ImageData {
     };
 }
 
-export default function EventGallery() {
+interface Props {
+    user?: User;
+}
+
+export default function EventGallery({ user }: Props) {
     const [eventRooms, setEventRooms] = useState<EventData[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
     const [galleryImages, setGalleryImages] = useState<ImageData[]>([]);
@@ -61,9 +76,11 @@ export default function EventGallery() {
                 // 2. Fetch all events
                 const eventsResponse = await axiosInstance.get("/api/events");
                 if (eventsResponse.data.success) {
-                    // 3. Filter only approved events that the user has purchased
+                    // 3. Filter rooms: 
+                    // - Approved events the user purchased OR
+                    // - Events the user created themselves (if they are a seller)
                     const filteredRooms = eventsResponse.data.events.filter((e: any) =>
-                        e.status === "approved" && purchasedEventIds.includes(e._id)
+                        e.status === "approved" && (purchasedEventIds.includes(e._id) || (user?.role === "seller" && e.seller === user?._id))
                     );
                     setEventRooms(filteredRooms);
                 }
@@ -101,13 +118,20 @@ export default function EventGallery() {
     }, [selectedEvent]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !selectedEvent) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0 || !selectedEvent) return;
+
+        if (files.length > 10) {
+            toast.error("You can only upload up to 10 pictures at a time.");
+            return;
+        }
 
         setIsUploading(true);
         const formData = new FormData();
-        formData.append("image", file);
-        formData.append("eventRoomId", selectedEvent._id);
+        files.forEach(file => {
+            formData.append("images", file);
+        });
+        formData.append("eventId", selectedEvent._id);
 
         try {
             const response = await axiosInstance.post("/api/images/upload", formData, {
@@ -118,12 +142,12 @@ export default function EventGallery() {
             });
 
             if (response.data.success) {
-                toast.success("Moment uploaded to archives");
-                setGalleryImages(prev => [response.data.image, ...prev]);
+                toast.success(`${response.data.images.length} moments uploaded to archives`);
+                setGalleryImages(prev => [...response.data.images, ...prev]);
             }
         } catch (error) {
             console.error("Upload failed", error);
-            toast.error("Failed to upload image");
+            toast.error("Failed to upload images");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
@@ -251,7 +275,7 @@ export default function EventGallery() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <MapPin size={14} className="text-primary" />
-                                                <span>{event.location || "Earth"}</span>
+                                                <span>{event.venue}, {event.city}</span>
                                             </div>
                                         </div>
                                         <div className="mt-6 text-primary text-sm font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
@@ -289,16 +313,30 @@ export default function EventGallery() {
                         className="hidden"
                         ref={fileInputRef}
                         accept="image/*"
+                        multiple
                         onChange={handleImageUpload}
                     />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
-                    >
-                        {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
-                        {isUploading ? "Uploading..." : "Upload Moment"}
-                    </button>
+                    {user?.role !== "seller" && (() => {
+                        if (!selectedEvent?.eventDate) return null;
+                        const now = new Date();
+                        const eventDate = new Date(selectedEvent.eventDate);
+                        const eventEndDate = new Date(selectedEvent.eventDate);
+                        eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+                        const canUpload = now >= eventDate && now <= eventEndDate;
+                        if (!canUpload) return null;
+
+                        return (
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 shadow-2xl"
+                            >
+                                {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+                                {isUploading ? "Uploading..." : "Upload Moment"}
+                            </button>
+                        );
+                    })()}
                 </div>
             </div>
 
@@ -309,7 +347,23 @@ export default function EventGallery() {
                 </div>
             ) : galleryImages.length === 0 ? (
                 <div className="bg-card rounded-4xl p-20 text-center border border-border border-dashed">
-                    <p className="text-muted-foreground font-serif italic mb-6">"Visual evidence for this event has been restricted or not yet processed."</p>
+                    <p className="text-muted-foreground font-serif italic mb-6">
+                        {(() => {
+                            if (!selectedEvent?.eventDate) return `"Visual evidence for this event has been restricted or not yet processed."`;
+                            const now = new Date();
+                            const eventDate = new Date(selectedEvent.eventDate);
+                            const eventEndDate = new Date(selectedEvent.eventDate);
+                            eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+                            if (now < eventDate) {
+                                return `"This event room hasn't started yet. The gallery will unlock on ${eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at ${eventDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}."`;
+                            } else if (now > eventEndDate) {
+                                return `"This event gallery is now closed. No visual evidence was captured."`;
+                            } else {
+                                return `"No moments have been uploaded yet. Be the first to share your experience!"`;
+                            }
+                        })()}
+                    </p>
                     <button
                         onClick={() => setSelectedEvent(null)}
                         className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
@@ -367,25 +421,25 @@ export default function EventGallery() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 md:p-10"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-3xl p-4 md:p-10"
                     >
                         <button
                             onClick={() => setSelectedImageIndex(null)}
-                            className="absolute top-6 right-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10"
+                            className="absolute top-6 right-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border"
                         >
                             <X size={24} />
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                            className="absolute left-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10 hidden md:block"
+                            className="absolute left-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border hidden md:block"
                         >
                             <ChevronLeft size={32} />
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                            className="absolute right-6 p-4 text-white/50 hover:text-white transition-colors z-50 bg-white/5 rounded-full backdrop-blur-md border border-white/10 hidden md:block"
+                            className="absolute right-6 p-4 text-muted-foreground hover:text-foreground transition-all z-50 bg-accent/50 hover:bg-accent rounded-full backdrop-blur-md border border-border hidden md:block"
                         >
                             <ChevronRight size={32} />
                         </button>
@@ -407,16 +461,16 @@ export default function EventGallery() {
                                 const imageUrl = img.imageUrl.startsWith("/images") ? `${BACKEND}${img.imageUrl}` : img.imageUrl;
                                 return (
                                     <>
-                                        <div className="relative w-full h-[80vh] group">
+                                        <div className="relative w-full h-[70vh] group flex items-center justify-center">
                                             <img
                                                 src={imageUrl}
                                                 alt="Enlarged"
-                                                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(168,85,247,0.3)]"
+                                                className="max-w-full max-h-full object-contain rounded-xl drop-shadow-2xl"
                                             />
                                         </div>
                                         <div className="mt-8 text-center space-y-2">
-                                            <p className="text-white font-serif italic text-xl">"{img.userId?.name || "Anonymous"}"</p>
-                                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em]">Official Archive Entry</p>
+                                            <p className="text-foreground font-serif italic text-xl">"{img.userId?.name || "Anonymous"}"</p>
+                                            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.4em]">Official Archive Entry</p>
 
                                             <button
                                                 onClick={() => handleReportImage(img._id)}
@@ -432,8 +486,8 @@ export default function EventGallery() {
                         </motion.div>
 
                         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 md:hidden">
-                            <button onClick={prevImage} className="p-4 bg-white/10 rounded-full border border-white/10 text-white"><ChevronLeft size={24} /></button>
-                            <button onClick={nextImage} className="p-4 bg-white/10 rounded-full border border-white/10 text-white"><ChevronRight size={24} /></button>
+                            <button onClick={prevImage} className="p-4 bg-background/50 rounded-full border border-border text-foreground"><ChevronLeft size={24} /></button>
+                            <button onClick={nextImage} className="p-4 bg-background/50 rounded-full border border-border text-foreground"><ChevronRight size={24} /></button>
                         </div>
                     </motion.div>
                 )}
@@ -506,6 +560,6 @@ export default function EventGallery() {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }

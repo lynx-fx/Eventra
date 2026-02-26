@@ -40,9 +40,9 @@ const TrendingEvents = () => {
 
     const formatPrice = (price: any) => {
         if (typeof price === 'object') {
-            return `Rs. ${price.general || price.standard || 0}`;
+            return `NPR ${price.general || price.standard || 0}`;
         }
-        return `Rs. ${price || 0}`;
+        return `NPR ${price || 0}`;
     };
 
     return (
@@ -95,7 +95,7 @@ const TrendingEvents = () => {
                                         {event.title}
                                     </h3>
                                     <div className="text-gray-200 text-sm flex items-center gap-2 mb-1 drop-shadow-sm">
-                                        <MapPin className="w-3 h-3" /> {event.location}
+                                        <MapPin className="w-3 h-3" /> {event.venue}, {event.city}
                                     </div>
                                     <div className="text-gray-300 text-sm flex items-center gap-2 justify-between mt-2 pt-2 border-t border-white/20">
                                         <span className="flex items-center gap-1 text-yellow-400 text-xs font-medium">

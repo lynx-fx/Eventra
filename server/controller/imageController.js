@@ -1,4 +1,5 @@
 const imageService = require("../service/imageService.js");
+const Event = require("../model/Events.js");
 
 exports.getGallery = async (req, res) => {
     try {
@@ -10,25 +11,46 @@ exports.getGallery = async (req, res) => {
     }
 };
 
-exports.uploadImage = async (req, res) => {
+exports.uploadImages = async (req, res) => {
     try {
-        const { eventRoomId } = req.body;
+        const { eventId } = req.body;
         const userId = req.user.id;
 
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: "No image file provided" });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: "No image files provided" });
         }
 
-        const imageUrl = `/images/${req.file.filename}`;
-        const imageData = {
-            imageUrl,
-            userId,
-            eventRoomId
-        };
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
 
-        let image = await imageService.saveImage(imageData);
-        image = await image.populate('userId', 'name');
-        res.status(201).json({ success: true, image });
+        const now = new Date();
+        const eventDate = new Date(event.eventDate);
+        const eventEndDate = new Date(event.eventDate);
+        eventEndDate.setDate(eventEndDate.getDate() + 3);
+
+        if (now < eventDate) {
+            return res.status(403).json({ success: false, message: "Cannot post before event start time" });
+        }
+        if (now > eventEndDate) {
+            return res.status(403).json({ success: false, message: "Event room is closed to new posts (3 days passed)" });
+        }
+
+        const uploadPromises = req.files.map(async (file) => {
+            const imageUrl = `/images/${file.filename}`;
+            const imageData = {
+                imageUrl,
+                userId,
+                eventId
+            };
+
+            let image = await imageService.saveImage(imageData);
+            return await image.populate('userId', 'name');
+        });
+
+        const images = await Promise.all(uploadPromises);
+        res.status(201).json({ success: true, images });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

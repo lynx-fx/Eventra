@@ -23,7 +23,6 @@ export default function AdminSidebar({ activeTab, setActiveTab }: SidebarProps) 
         { id: "events", label: "Events", icon: Calendar },
         { id: "users", label: "Users", icon: Users },
         { id: "reports", label: "Reports", icon: ShieldCheck },
-        { id: "transactions", label: "Transactions", icon: TrendingUp },
     ]
 
     const bottomItems = [

@@ -25,7 +25,7 @@ interface Report {
     reportType: string;
     reportReason: string;
     reportedDate: string;
-    reportStatus: "pending" | "banned" | "reviewed";
+    reportStatus: "pending" | "banned" | "reviewed" | "removed";
     reporterId: {
         _id: string;
         name: string;
@@ -42,12 +42,11 @@ interface Report {
             profileUrl?: string;
             isActive: boolean;
         };
-        eventRoomId: {
-            eventId: {
-                name: string;
-                location: string;
-                date: string;
-            };
+        eventId: {
+            title: string;
+            city: string;
+            venue: string;
+            eventDate: string;
         };
     };
 }
@@ -57,7 +56,15 @@ interface UserHistory {
     reportsAgainst: Report[];
 }
 
-export default function AdminReportsView() {
+interface User {
+    role: string;
+}
+
+interface AdminReportsViewProps {
+    currentUser: User;
+}
+
+export default function AdminReportsView({ currentUser }: AdminReportsViewProps) {
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedUserHistory, setSelectedUserHistory] = useState<{
@@ -65,6 +72,7 @@ export default function AdminReportsView() {
         history: UserHistory | null;
         loading: boolean;
     } | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const backendUrl = process.env.NEXT_PUBLIC_NODE_ENV === "production"
         ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
@@ -163,6 +171,52 @@ export default function AdminReportsView() {
         }
     };
 
+    const handleRemoveImage = async (imageId: string, isActive: boolean) => {
+        try {
+            const token = Cookies.get("auth");
+            const { data } = await axiosInstance.patch(
+                `/api/admin/images/${imageId}/status`,
+                { isActive: !isActive },
+                {
+                    headers: {
+                        auth: token,
+                    },
+                }
+            );
+
+            if (data.success) {
+                toast.success(data.message);
+                // Update local state
+                setReports((prev) =>
+                    prev.map((r) => {
+                        if (r.imageId?._id === imageId) {
+                            // Determine new report status based on image active status
+                            let newReportStatus = r.reportStatus;
+                            if (!data.isActive && (r.reportStatus === 'pending' || r.reportStatus === 'reviewed')) {
+                                newReportStatus = 'removed';
+                            } else if (data.isActive && r.reportStatus === 'removed') {
+                                newReportStatus = 'reviewed';
+                            }
+
+                            return {
+                                ...r,
+                                reportStatus: newReportStatus,
+                                imageId: {
+                                    ...r.imageId,
+                                    isActive: data.isActive
+                                } as any
+                            };
+                        }
+                        return r;
+                    })
+                );
+            }
+        } catch (error) {
+            console.error("Error updating image status:", error);
+            toast.error("Failed to update image status");
+        }
+    };
+
     const handleViewHistory = async (user: any) => {
         setSelectedUserHistory({ user, history: null, loading: true });
         try {
@@ -231,23 +285,33 @@ export default function AdminReportsView() {
                                 >
                                     <div className="flex flex-col lg:flex-row gap-6">
                                         {/* Image Section */}
-                                        <div className="w-full lg:w-48 h-48 rounded-2xl overflow-hidden bg-black/50 relative shrink-0">
+                                        <div
+                                            className="w-full lg:w-48 h-48 rounded-2xl overflow-hidden bg-black/50 relative shrink-0 group-hover:scale-[1.02] transition-transform cursor-pointer"
+                                            onClick={() => report.imageId && setSelectedImage(report.imageId.imageUrl)}
+                                        >
                                             {report.imageId ? (
-                                                <img
-                                                    src={`${process.env.NEXT_PUBLIC_NODE_ENV === "production"
-                                                        ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
-                                                        : process.env.NEXT_PUBLIC_BACKEND_LOCAL
-                                                        }${report.imageId.imageUrl}`}
-                                                    alt="Reported Content"
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
+                                                <>
+                                                    <img
+                                                        src={`${process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                                            ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                                            : process.env.NEXT_PUBLIC_BACKEND_LOCAL
+                                                            }${report.imageId.imageUrl}`}
+                                                        alt="Reported Content"
+                                                        className={`w-full h-full object-cover transition-all duration-500 ${!report.imageId.userId.isActive ? "grayscale blur-sm" : ""
+                                                            }`}
+                                                    />
+                                                    {!report.imageId.userId.isActive && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                                                            <Ban className="text-red-500 w-12 h-12" />
+                                                        </div>
+                                                    )}
+                                                </>
                                             ) : (
                                                 <div className="flex items-center justify-center w-full h-full text-gray-600">
                                                     <ImageIcon size={24} />
                                                     <span className="ml-2 text-xs">Image Deleted</span>
                                                 </div>
                                             )}
-
                                         </div>
 
                                         {/* Details Section */}
@@ -260,13 +324,16 @@ export default function AdminReportsView() {
                                                         </h3>
                                                         <div className="flex gap-2">
                                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${report.reportStatus === 'reviewed'
-                                                                    ? 'bg-green-500/10 text-green-400'
-                                                                    : report.reportStatus === 'banned'
-                                                                        ? 'bg-red-500/10 text-red-400'
+                                                                ? 'bg-green-500/10 text-green-400'
+                                                                : report.reportStatus === 'banned'
+                                                                    ? 'bg-red-500/10 text-red-400'
+                                                                    : report.reportStatus === 'removed'
+                                                                        ? 'bg-gray-500/10 text-gray-400'
                                                                         : 'bg-yellow-500/10 text-yellow-400'
                                                                 }`}>
                                                                 {report.reportStatus === 'reviewed' && <CheckCircle size={12} />}
                                                                 {report.reportStatus === 'banned' && <Ban size={12} />}
+                                                                {report.reportStatus === 'removed' && <X size={12} />}
                                                                 {report.reportStatus === 'pending' && <ShieldAlert size={12} />}
                                                                 {report.reportStatus}
                                                             </span>
@@ -274,14 +341,14 @@ export default function AdminReportsView() {
                                                     </div>
 
                                                     <p className="text-gray-400 text-sm font-medium mb-1">
-                                                        Event: <span className="text-purple-400">{report.imageId?.eventRoomId?.eventId?.name || "Unknown Event"}</span>
+                                                        Event: <span className="text-purple-400">{report.imageId?.eventId?.title || "Unknown Event"}</span>
                                                     </p>
                                                     <p className="text-gray-500 text-xs flex items-center gap-1">
                                                         <Calendar size={12} />
                                                         {new Date(report.reportedDate).toLocaleDateString()} at {new Date(report.reportedDate).toLocaleTimeString()}
                                                     </p>
                                                 </div>
-                                                {report.reportStatus === 'pending' && (
+                                                {report.reportStatus === 'pending' && (currentUser.role === 'admin' || currentUser.role === 'seller') && (
                                                     <div className="flex gap-2">
                                                         <button
                                                             onClick={() => handleResolve(report._id, 'reviewed')}
@@ -341,15 +408,32 @@ export default function AdminReportsView() {
                                                                 >
                                                                     <History size={14} />
                                                                 </button>
+
+                                                                {/* Only Admin can ban users */}
+                                                                {currentUser.role === 'admin' && (
+                                                                    <button
+                                                                        onClick={() => handleBanUser(report.imageId.userId._id, report.imageId.userId.isActive)}
+                                                                        className={`p-1.5 rounded-lg transition-all ${report.imageId.userId.isActive
+                                                                            ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                                                                            : "text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                                                                            }`}
+                                                                        title={report.imageId.userId.isActive ? "Ban User" : "Unban User"}
+                                                                    >
+                                                                        {report.imageId.userId.isActive ? <Ban size={14} /> : <CheckCircle size={14} />}
+                                                                    </button>
+                                                                )}
+
+                                                                {/* Both Admin and Seller can remove images */}
                                                                 <button
-                                                                    onClick={() => handleBanUser(report.imageId.userId._id, report.imageId.userId.isActive)}
-                                                                    className={`p-1.5 rounded-lg transition-all ${report.imageId.userId.isActive
-                                                                        ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                                                                        : "text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                                                                    onClick={() => handleRemoveImage(report.imageId._id, (report.imageId as any).isActive ?? true)}
+                                                                    // Default to true if undefined since images are active by default
+                                                                    className={`p-1.5 rounded-lg transition-all ${(report.imageId as any).isActive === false
+                                                                        ? "text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                                                                        : "text-orange-400 hover:bg-orange-500/10 hover:text-orange-300"
                                                                         }`}
-                                                                    title={report.imageId.userId.isActive ? "Ban User" : "Unban User"}
+                                                                    title={(report.imageId as any).isActive === false ? "Restore Image" : "Remove Image"}
                                                                 >
-                                                                    {report.imageId.userId.isActive ? <Ban size={14} /> : <CheckCircle size={14} />}
+                                                                    {(report.imageId as any).isActive === false ? <ImageIcon size={14} /> : <ImageIcon size={14} />}
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -366,7 +450,42 @@ export default function AdminReportsView() {
                 </div>
             )}
 
-            {/* History Modal */}
+            {/* Image Preview Modal */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedImage(null)}
+                                className="absolute -top-12 right-0 p-2 text-white/50 hover:text-white transition-colors bg-white/10 rounded-full"
+                            >
+                                <X size={24} />
+                            </button>
+                            <img
+                                src={`${process.env.NEXT_PUBLIC_NODE_ENV === "production"
+                                    ? process.env.NEXT_PUBLIC_BACKEND_HOSTED
+                                    : process.env.NEXT_PUBLIC_BACKEND_LOCAL
+                                    }${selectedImage}`}
+                                alt="Reported Content Full"
+                                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {selectedUserHistory && (
                     <motion.div
@@ -427,7 +546,8 @@ export default function AdminReportsView() {
                                                                     <p className="text-sm font-medium text-white">{r.reportReason}</p>
                                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${r.reportStatus === 'reviewed' ? 'bg-green-500/20 text-green-400' :
                                                                         r.reportStatus === 'banned' ? 'bg-red-500/20 text-red-400' :
-                                                                            'bg-yellow-500/20 text-yellow-400'
+                                                                            r.reportStatus === 'removed' ? 'bg-gray-500/20 text-gray-400' :
+                                                                                'bg-yellow-500/20 text-yellow-400'
                                                                         }`}>{r.reportStatus}</span>
                                                                 </div>
                                                                 <p className="text-xs text-gray-500 mt-1">{new Date(r.reportedDate).toLocaleDateString()}</p>
@@ -442,7 +562,7 @@ export default function AdminReportsView() {
                                         {/* Reports MADE BY the user */}
                                         <div>
                                             <h4 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4 flex items-center gap-2">
-                                                <Flag size={14} /> Reports Made ({selectedUserHistory.history?.reportsMade.length || 0})
+                                                <Flag2 size={14} /> Reports Made ({selectedUserHistory.history?.reportsMade.length || 0})
                                             </h4>
                                             <div className="space-y-3">
                                                 {selectedUserHistory.history?.reportsMade.length === 0 ? (
@@ -463,7 +583,8 @@ export default function AdminReportsView() {
                                                                     <p className="text-sm font-medium text-white">{r.reportReason}</p>
                                                                     <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${r.reportStatus === 'reviewed' ? 'bg-green-500/20 text-green-400' :
                                                                         r.reportStatus === 'banned' ? 'bg-red-500/20 text-red-400' :
-                                                                            'bg-yellow-500/20 text-yellow-400'
+                                                                            r.reportStatus === 'removed' ? 'bg-gray-500/20 text-gray-400' :
+                                                                                'bg-yellow-500/20 text-yellow-400'
                                                                         }`}>{r.reportStatus}</span>
                                                                 </div>
                                                                 <p className="text-xs text-gray-500 mt-1">{new Date(r.reportedDate).toLocaleDateString()}</p>
@@ -486,7 +607,7 @@ export default function AdminReportsView() {
 }
 
 // Helper component for icon
-function Flag({ size, className }: { size: number, className?: string }) {
+function Flag2({ size, className }: { size: number, className?: string }) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>

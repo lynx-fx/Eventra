@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User } from "./page";
+import { User } from "./[[...slug]]/page";
 import SellerSidebar from "./components/seller/SellerSidebar";
 import SellerEvents from "./components/seller/SellerEvents";
 import SellerSales from "./components/seller/SellerSales";
 import SellerAttendees from "./components/seller/SellerAttendees";
 import SellerAnalytics from "./components/seller/SellerAnalytics";
+import AdminReportsView from "./components/admin/AdminReportsView";
 import UserSettings from "./components/user/UserSettings";
+import EventGallery from "./components/user/EventGallery";
 import { Search, Plus, Calendar, Users, DollarSign, Eye, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import axiosInstance from "../../service/axiosInstance";
 import CreateEventModal from "./components/seller/CreateEventModal";
 import Cookies from "js-cookie";
@@ -21,11 +23,16 @@ interface Props {
 }
 
 export default function SellerDashboard({ user, setUser }: Props) {
-  const [activeTab, setActiveTab] = useState("overview");
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = pathname.split('/')[2] || "overview";
+  const setActiveTab = (tab: string) => {
+    if (tab === "overview") router.push("/dashboard");
+    else router.push(`/dashboard/${tab}`);
+  };
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -79,17 +86,17 @@ export default function SellerDashboard({ user, setUser }: Props) {
   const stats = [
     { label: "Total Events", value: events.length.toString(), icon: Calendar },
     { label: "Tickets Sold", value: totalTickets.toLocaleString(), icon: Users },
-    { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign },
+    { label: "Total Revenue", value: `NPR ${totalRevenue.toLocaleString()}`, icon: DollarSign },
     { label: "Total Views", value: "0", icon: Eye }, // Placeholder for views
   ];
 
   const recentEvents = [...events].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30">
+    <div className="flex h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500/30 overflow-hidden">
       <SellerSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
         {/* Background Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] pointer-events-none rounded-full" />
 
@@ -241,7 +248,9 @@ export default function SellerDashboard({ user, setUser }: Props) {
           {activeTab === "events" && <SellerEvents events={events} isLoading={isLoading} fetchEvents={fetchEvents} />}
           {activeTab === "sales" && <SellerSales />}
           {activeTab === "attendees" && <SellerAttendees />}
+          {activeTab === "gallery" && <EventGallery user={user} />}
           {activeTab === "analytics" && <SellerAnalytics />}
+          {activeTab === "reports" && <AdminReportsView currentUser={user} />}
           {activeTab === "profile" && <UserSettings user={user} setUser={setUser} />}
 
         </div>

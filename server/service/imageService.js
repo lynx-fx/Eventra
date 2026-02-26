@@ -2,7 +2,7 @@ const Image = require("../model/Images.js");
 const Report = require("../model/Reports.js");
 
 exports.getGalleryImages = async (eventId) => {
-    const query = eventId && eventId !== 'all' ? { eventRoomId: eventId } : {};
+    const query = eventId && eventId !== 'all' ? { eventId: eventId, isActive: true } : { isActive: true };
     // Fetch latest images for gallery
     return await Image.find(query).sort({ uploadedDate: -1 }).populate('userId', 'name').limit(50);
 };

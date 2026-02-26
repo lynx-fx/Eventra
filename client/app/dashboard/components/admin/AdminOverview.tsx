@@ -18,7 +18,11 @@ import axiosInstance from "../../../../service/axiosInstance"
 import { toast } from "sonner"
 import Cookies from "js-cookie"
 
-export default function AdminOverview() {
+interface Props {
+    setActiveTab?: (tab: string) => void
+}
+
+export default function AdminOverview({ setActiveTab }: Props) {
     const [statsData, setStatsData] = useState<any>(null)
     const [pendingEvents, setPendingEvents] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -57,7 +61,7 @@ export default function AdminOverview() {
     }, [])
 
     const stats = [
-        { label: "Total Revenue", value: `$${statsData?.totalRevenue?.toLocaleString() || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
+        { label: "Total Revenue", value: `NPR ${statsData?.totalRevenue?.toLocaleString() || "0"}`, change: "+12.5%", trend: "up", icon: DollarSign, color: "text-green-400" },
         { label: "Total Users", value: statsData?.totalUsers || "0", change: "+4.2%", trend: "up", icon: Users, color: "text-blue-400" },
         { label: "Total Events", value: statsData?.totalEvents || "0", change: "+8.1%", trend: "up", icon: Calendar, color: "text-purple-400" },
         { label: "Pending Approvals", value: statsData?.pendingEvents || "0", change: "-2", trend: "down", icon: ShieldAlert, color: "text-orange-400" },
@@ -116,10 +120,6 @@ export default function AdminOverview() {
                                 <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
                                     <Icon size={24} />
                                 </div>
-                                <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${stat.trend === "up" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
-                                    {stat.trend === "up" ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                    {stat.change}
-                                </div>
                             </div>
                             <div>
                                 <h3 className="text-3xl font-bold text-white mb-1 uppercase tracking-tight">{stat.value}</h3>
@@ -151,34 +151,37 @@ export default function AdminOverview() {
                                     <tr className="text-[10px] uppercase tracking-widest text-gray-500 border-b border-white/5 font-bold">
                                         <th className="pb-4 px-4 font-bold">Event Details</th>
                                         <th className="pb-4 px-4 font-bold text-center">Status</th>
-                                        <th className="pb-4 px-4 font-bold">Estimated Rev</th>
                                         <th className="pb-4 text-right pr-4 font-bold">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {pendingEvents.map((req) => (
-                                        <tr key={req._id} className="group hover:bg-white/[0.02] transition-colors">
-                                            <td className="py-5 px-4">
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{req.title}</p>
-                                                    <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-widest font-bold">
-                                                        <Clock size={10} /> {new Date(req.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td className="py-5 px-4 text-center">
-                                                <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-500">
-                                                    Pending
-                                                </span>
-                                            </td>
-                                            <td className="py-5 px-4 text-sm text-gray-300 font-mono tracking-tighter">${req.price?.toFixed(2) || "0.00"}</td>
-                                            <td className="py-5 text-right pr-4">
-                                                <button className="p-2 text-gray-600 hover:text-white transition-colors">
-                                                    <MoreHorizontal size={18} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {pendingEvents.map((req) => {
+                                        return (
+                                            <tr key={req._id} className="group hover:bg-white/[0.02] transition-colors">
+                                                <td className="py-5 px-4">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{req.title}</p>
+                                                        <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-widest font-bold">
+                                                            <Clock size={10} /> {new Date(req.createdAt).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-5 px-4 text-center">
+                                                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-500">
+                                                        Pending
+                                                    </span>
+                                                </td>
+                                                <td className="py-5 text-right pr-4">
+                                                    <button
+                                                        onClick={() => setActiveTab && setActiveTab("events")}
+                                                        className="p-2 text-gray-600 hover:text-white transition-colors"
+                                                    >
+                                                        <MoreHorizontal size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         )}

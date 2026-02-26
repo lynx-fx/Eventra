@@ -58,17 +58,13 @@ export default function SellerSales() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-serif text-white">Sales & Revenue</h2>
-                <button className="text-sm text-gray-400 hover:text-white flex items-center gap-2 bg-[#1c1c1e] px-4 py-2 rounded-xl border border-white/5 transition-colors">
-                    <Download size={16} />
-                    <span>Export CSV</span>
-                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: "Net Revenue", value: `$${totalRevenue.toLocaleString()}`, grow: "+12.5%", icon: DollarSign, color: "text-green-400" },
-                    { label: "Pending Payouts", value: "$0", grow: "", icon: DollarSign, color: "text-yellow-400" }, // Placeholder for now
-                    { label: "Avg. Ticket Price", value: `$${avgTicketPrice.toFixed(0)}`, grow: "-2.1%", icon: DollarSign, color: "text-purple-400" },
+                    { label: "Net Revenue", value: `NPR ${totalRevenue.toLocaleString()}`, grow: "+12.5%", icon: DollarSign, color: "text-green-400" },
+                    { label: "Pending Payouts", value: "NPR 0", grow: "", icon: DollarSign, color: "text-yellow-400" }, // Placeholder for now
+                    { label: "Avg. Ticket Price", value: `NPR ${avgTicketPrice.toFixed(0)}`, grow: "-2.1%", icon: DollarSign, color: "text-purple-400" },
                 ].map((stat, i) => (
                     <div key={i} className="bg-[#1c1c1e] p-6 rounded-3xl border border-white/5 hover:border-white/10 transition-all">
                         <div className="flex justify-between items-start mb-4">

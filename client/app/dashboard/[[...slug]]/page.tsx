@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import UserDashboard from "./userDashboard";
-import SellerDashboard from "./sellerDashboard";
-import AdminDashboard from "./adminDashboard";
-import axiosInstance from "../../service/axiosInstance";
+import UserDashboard from "../userDashboard";
+import SellerDashboard from "../sellerDashboard";
+import AdminDashboard from "../adminDashboard";
+import axiosInstance from "../../../service/axiosInstance";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";

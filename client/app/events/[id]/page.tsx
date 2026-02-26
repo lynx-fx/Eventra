@@ -14,7 +14,9 @@ interface EventData {
     title: string;
     description: string;
     eventDate: string;
-    location: string;
+    endDate: string;
+    city: string;
+    venue: string;
     category: string;
     bannerImage: string;
     price: {
@@ -78,6 +80,15 @@ export default function EventDetailsPage() {
         setIsBookingModalOpen(true);
     };
 
+    const handleShare = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied to clipboard!");
+        } catch (err) {
+            toast.error("Failed to copy link");
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -97,6 +108,7 @@ export default function EventDetailsPage() {
         ? `${BACKEND}${event.bannerImage?.startsWith("/") ? event.bannerImage : `/${event.bannerImage}`}`
         : (event.bannerImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop");
 
+    const isSalesEnded = event.endDate ? new Date(event.endDate) < new Date() : false;
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
@@ -148,7 +160,7 @@ export default function EventDetailsPage() {
                                     <h3 className="text-xl font-bold">Event Details</h3>
                                     <p className="text-sm text-muted-foreground">Secure your spot now</p>
                                 </div>
-                                <button className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors">
+                                <button onClick={handleShare} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors">
                                     <Share2 size={20} className="text-foreground" />
                                 </button>
                             </div>
@@ -180,7 +192,7 @@ export default function EventDetailsPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Location</p>
-                                        <p className="font-semibold">{event.location}</p>
+                                        <p className="font-semibold">{event.venue}, {event.city}</p>
                                     </div>
                                 </div>
                             </div>
@@ -190,17 +202,18 @@ export default function EventDetailsPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">Starting from</p>
                                         <p className="text-3xl font-bold font-mono text-primary">
-                                            ${Math.min(event.price.economy, event.price.standard, event.price.premium).toFixed(2)}
+                                            NPR {Math.min(event.price.economy, event.price.standard, event.price.premium).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={handleBookClick}
-                                    className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                    onClick={isSalesEnded ? undefined : handleBookClick}
+                                    disabled={isSalesEnded}
+                                    className={`w-full py-4 ${isSalesEnded ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/25 active:scale-[0.98]'} rounded-2xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2`}
                                 >
                                     <Ticket size={20} />
-                                    Get Tickets
+                                    {isSalesEnded ? "Sales Ended" : "Get Tickets"}
                                 </button>
                             </div>
                         </div>
