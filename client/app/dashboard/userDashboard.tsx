@@ -162,14 +162,14 @@ export default function UserDashboard({ user, setUser }: Props) {
 
       <main className="flex-1 overflow-y-auto relative h-screen custom-scrollbar">
         {/* Background Decorative Elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] pointer-events-none rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] pointer-events-none rounded-full" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 blur-[120px] pointer-events-none rounded-full" />
 
         <div className="p-8 lg:p-12 relative z-10 max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8 border-b border-border pb-8">
             <div className="relative w-full max-w-xl group">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 w-5 h-5 pointer-events-none transition-colors" />
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary w-5 h-5 pointer-events-none transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
@@ -188,7 +188,7 @@ export default function UserDashboard({ user, setUser }: Props) {
                 </div>
                 <div
                   onClick={() => setActiveTab("profile")}
-                  className="w-11 h-11 bg-linear-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-xl shadow-purple-600/20 cursor-pointer overflow-hidden relative group"
+                  className="w-11 h-11 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-bold shadow-xl shadow-primary/20 cursor-pointer overflow-hidden relative group"
                 >
                   {user.profileUrl ? (
                     <img
@@ -216,8 +216,8 @@ export default function UserDashboard({ user, setUser }: Props) {
 
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-4">
-                  <Loader2 className="animate-spin text-purple-500" size={40} />
-                  <p className="text-gray-500 font-serif italic">Synchronizing your experience...</p>
+                  <Loader2 className="animate-spin text-primary" size={40} />
+                  <p className="text-muted-foreground font-serif italic">Synchronizing your experience...</p>
                 </div>
               ) : (
                 <>

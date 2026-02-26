@@ -205,15 +205,15 @@ export default function TicketList({ user }: Props) {
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
-                <h2 className="text-4xl font-serif text-white tracking-tight">Your <span className="text-purple-500">Tickets</span></h2>
-                <p className="text-gray-500 mt-2 font-light">Digital entry passes for your upcoming experiences.</p>
+                <h2 className="text-4xl font-serif text-foreground tracking-tight">Your <span className="text-primary">Tickets</span></h2>
+                <p className="text-muted-foreground mt-2 font-light">Digital entry passes for your upcoming experiences.</p>
             </div>
 
             {tickets.length === 0 ? (
-                <div className="bg-[#111113] rounded-4xl p-12 text-center border border-white/5 border-dashed">
-                    <Ticket className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                    <h3 className="text-gray-400 font-medium">No tickets found</h3>
-                    <p className="text-gray-600 text-sm mt-2">Any tickets you purchase will appear here in high fidelity.</p>
+                <div className="bg-card rounded-4xl p-12 text-center border border-border border-dashed">
+                    <Ticket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-muted-foreground font-medium">No tickets found</h3>
+                    <p className="text-muted-foreground text-sm mt-2">Any tickets you purchase will appear here in high fidelity.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -225,10 +225,10 @@ export default function TicketList({ user }: Props) {
                             <div
                                 key={ticket._id}
                                 onClick={() => setSelectedTicket(ticket)}
-                                className="bg-[#111113] rounded-[32px] border border-white/5 flex flex-col md:flex-row hover:border-purple-500/40 transition-all group cursor-pointer overflow-hidden shadow-2xl relative"
+                                className="bg-card rounded-[32px] border border-border flex flex-col md:flex-row hover:border-primary/50 transition-all group cursor-pointer overflow-hidden shadow-2xl relative"
                             >
                                 {/* Left Side - Mini Banner & Type */}
-                                <div className="md:w-28 bg-linear-to-br from-purple-600 to-indigo-800 flex flex-col items-center justify-center py-4 md:py-0 relative">
+                                <div className="md:w-28 bg-primary flex flex-col items-center justify-center py-4 md:py-0 relative">
                                     <div className="absolute top-0 left-0 w-full h-full opacity-20">
                                         <Sparkles className="w-full h-full p-4 text-white" />
                                     </div>
@@ -240,13 +240,13 @@ export default function TicketList({ user }: Props) {
                                 <div className="flex-1 p-6 space-y-4">
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1">
-                                            <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">{ticket.eventId?.title || "Unknown Experience"}</h3>
-                                            <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase font-bold">Token ID: #{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
+                                            <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{ticket.eventId?.title || "Unknown Experience"}</h3>
+                                            <p className="text-[10px] text-muted-foreground font-mono tracking-tighter uppercase font-bold">Token ID: #{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
                                         </div>
                                         <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                                             ticket.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                                                 ticket.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
-                                                    'bg-gray-500/10 text-gray-500 border border-white/5'
+                                                    'bg-gray-500/10 text-gray-500 border border-border'
                                             }`}>
                                             {isPast && ticket.status === 'active' ? "Expired" : ticket.status}
                                             {ticket.status === 'pending' && ticket.createdAt && (
@@ -258,30 +258,30 @@ export default function TicketList({ user }: Props) {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="flex items-center gap-3 text-gray-400">
-                                            <Calendar size={14} className="text-purple-500" />
+                                        <div className="flex items-center gap-3 text-muted-foreground">
+                                            <Calendar size={14} className="text-primary" />
                                             <span className="text-xs font-medium">{ticket.eventId?.eventDate ? new Date(ticket.eventId.eventDate).toLocaleDateString() : "TBA"}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-gray-400">
-                                            <MapPin size={14} className="text-purple-500" />
+                                        <div className="flex items-center gap-3 text-muted-foreground">
+                                            <MapPin size={14} className="text-primary" />
                                             <span className="text-xs font-medium text-nowrap overflow-hidden text-ellipsis">{ticket.eventId?.venue}, {ticket.eventId?.city}</span>
                                         </div>
                                     </div>
 
-                                    <div className="pt-4 border-t border-white/5 flex justify-between items-end">
+                                    <div className="pt-4 border-t border-border flex justify-between items-end">
                                         <div className="flex gap-2">
                                             {isActive && (
-                                                <button className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors">
+                                                <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors">
                                                     View Pass &rarr;
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-lg font-black font-mono text-white/90">NPR {ticket.price?.toFixed(2)}</p>
+                                        <p className="text-lg font-black font-mono text-foreground">NPR {ticket.price?.toFixed(2)}</p>
                                     </div>
                                 </div>
 
                                 {/* QR Preview */}
-                                <div className="md:border-l border-dashed border-white/10 md:pl-6 flex flex-col items-center justify-center bg-white/5 md:bg-transparent p-4 md:pr-8">
+                                <div className="md:border-l border-dashed border-border md:pl-6 flex flex-col items-center justify-center bg-primary/5 md:bg-transparent p-4 md:pr-8">
                                     <div className={`bg-white p-2 rounded-xl shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500 overflow-hidden w-16 h-16 flex items-center justify-center ${ticket.status === 'pending' ? 'blur-sm opacity-50' : ''}`}>
                                         <QRCodeSVG
                                             value={`${window.location.origin}/ticket/${ticket._id}`}
@@ -293,7 +293,7 @@ export default function TicketList({ user }: Props) {
                                 </div>
 
                                 {/* Perforated Line Effect */}
-                                <div className="absolute left-[32px] md:left-[128px] top-0 bottom-0 border-l border-dashed border-white/10 hidden md:block" />
+                                <div className="absolute left-[32px] md:left-[128px] top-0 bottom-0 border-l border-dashed border-border hidden md:block" />
                             </div>
                         );
                     })}
@@ -349,10 +349,10 @@ export default function TicketList({ user }: Props) {
                                     <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-0 mt-6 md:mt-0">
                                         <div className="space-y-4 text-center md:text-left w-full">
                                             <div className="space-y-2">
-                                                <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full inline-block">
+                                                <span className="px-4 py-1.5 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] rounded-full inline-block">
                                                     {selectedTicket.ticketType} Pass
                                                 </span>
-                                                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight break-words">{selectedTicket.eventId?.title}</h2>
+                                                <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight break-words">{selectedTicket.eventId?.title}</h2>
                                                 <p className="text-[10px] text-gray-400 font-mono">#{selectedTicket._id.toUpperCase()}</p>
                                             </div>
 
@@ -363,7 +363,7 @@ export default function TicketList({ user }: Props) {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-center gap-3 shrink-0">
-                                            <div className={`bg-white p-3 md:p-4 rounded-[24px] md:rounded-[28px] shadow-2xl w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden border-4 border-purple-500/20 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
+                                            <div className={`bg-white p-3 md:p-4 rounded-[24px] md:rounded-[28px] shadow-2xl w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden border-4 border-primary/20 ${selectedTicket.status === 'pending' ? 'blur-md opacity-50' : ''}`}>
                                                 <QRCodeSVG
                                                     value={`${window.location.origin}/ticket/${selectedTicket._id}`}
                                                     size={100}
@@ -400,8 +400,8 @@ export default function TicketList({ user }: Props) {
                                             </p>
                                         </div>
                                         <div className="space-y-1 md:text-right">
-                                            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Price</p>
-                                            <p className="text-sm font-bold text-purple-400 font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Price</p>
+                                            <p className="text-sm font-bold text-primary dark:text-primary-foreground font-mono">NPR {selectedTicket.price.toFixed(2)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -413,7 +413,7 @@ export default function TicketList({ user }: Props) {
                                         <button
                                             onClick={() => handleCompletePurchase(selectedTicket._id)}
                                             disabled={isCompleting || (!!selectedTicket.createdAt && new Date(Date.now() - new Date(selectedTicket.createdAt).getTime()).getTime() >= 15 * 60 * 1000)}
-                                            className="w-full py-4 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isCompleting ? <Loader2 className="animate-spin" size={14} /> : "Complete Purchase"}
                                         </button>
@@ -473,7 +473,7 @@ export default function TicketList({ user }: Props) {
                                 })()}
                                 <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0c] via-transparent to-transparent" />
                                 <div className="absolute bottom-6 left-8">
-                                    <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-purple-900/40">
+                                    <span className="px-4 py-1.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-purple-600/40">
                                         {selectedTicket.ticketType} PASS
                                     </span>
                                 </div>
