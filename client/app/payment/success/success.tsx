@@ -34,7 +34,7 @@ export default function PaymentSuccessPage() {
             if (data.success) {
                 toast.success(data.message || "Redirecting");
                 setTimeout(() => {
-                    router.push("/dashboard")
+                    router.push("/dashboard/tickets")
                 }, 3000)
             } else {
                 router.push("/payment/faliure")
@@ -47,7 +47,7 @@ export default function PaymentSuccessPage() {
     }
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-background text-foreground relative overflow-hidden font-sans">
+        <div suppressHydrationWarning className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-background text-foreground relative overflow-hidden font-sans">
             {/* App Theme Ambient Background from page.tsx */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/5 dark:bg-purple-900/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse"></div>
