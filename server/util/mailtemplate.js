@@ -55,3 +55,31 @@ exports.forgotPasswordMail = async (email, link) => {
 
   return mail;
 }
+
+exports.eventReminderMail = async (userName, email, eventName, dateString, location) => {
+  let mail = await transport.sendMail({
+    from: process.env.EMAIL,
+    to: email,
+    subject: `Reminder: ${eventName} is Tomorrow!`,
+    html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
+          <div style="max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"> 
+            <h2 style="color: #333; text-align: center;">Event Reminder</h2>
+            <p style="color: #555;">Hi ${userName},</p>
+            <p style="color: #555;">This is a friendly reminder that <strong>${eventName}</strong> is happening tomorrow!</p>
+            <p style="color: #555;"><strong>Date/Time:</strong> ${dateString}</p>
+            <p style="color: #555;"><strong>Location:</strong> ${location}</p>
+            <p style="color: #555;">We look forward to seeing you there!</p>
+            <hr style="border: none; border-top: 1px solid #ddd;">
+            <p style="color: #777; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} Eventra. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+  });
+
+  if (mail.accepted.length <= 0) {
+    console.log("Reminder mail not sent.");
+  }
+
+  return mail;
+}

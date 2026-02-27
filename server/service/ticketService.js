@@ -27,6 +27,31 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard") => {
         throw new Error(`${ticketType} tickets are sold out`);
     }
 
+    // Find all active or pending tickets for this user
+    const userTickets = await Ticket.find({
+        userId,
+        status: { $in: ["pending", "active"] }
+    }).populate('eventId');
+
+    for (const t of userTickets) {
+        const existingEvent = t.eventId;
+        if (!existingEvent) continue;
+
+        // Check if it's the exact same event
+        if (existingEvent._id.toString() === eventId.toString()) {
+            throw new Error("You have already registered for this event.");
+        }
+
+        // Check for time overlap
+        // Overlap happens if Max(start1, start2) < Min(end1, end2)
+        const maxStart = Math.max(existingEvent.startDate.getTime(), event.startDate.getTime());
+        const minEnd = Math.min(existingEvent.endDate.getTime(), event.endDate.getTime());
+
+        if (maxStart < minEnd) {
+            throw new Error(`Time conflict: You are already registered for an overlapping event '${existingEvent.title}'.`);
+        }
+    }
+
     const finalPrice = event.price[ticketType] || 0;
 
     // Generate transaction UUID
