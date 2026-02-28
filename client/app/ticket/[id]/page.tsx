@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../../../service/axiosInstance";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 interface TicketData {
     _id: string;
@@ -27,6 +28,7 @@ interface TicketData {
     price: number;
     status: "active" | "used" | "cancelled";
     purchaseDate: string;
+    seatCount?: number;
     userId: {
         name: string;
         email: string;
@@ -161,7 +163,7 @@ export default function TicketValidationPage() {
     const isActive = ticket.status === "active";
 
     return (
-        <div suppressHydrationWarning className="min-h-screen bg-[#0a0a0c] text-foreground font-sans selection:bg-purple-500/30 p-6 md:p-12 lg:p-24 relative overflow-hidden flex flex-col items-center">
+        <div suppressHydrationWarning className="min-h-screen bg-[#0a0a0c] text-foreground font-sans selection:bg-purple-500/30 p-6 md:p-12 lg:p-8 relative overflow-hidden flex flex-col items-center">
             {/* Background Orbs */}
             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] blur-[120px] pointer-events-none rounded-full transition-colors duration-1000 ${isUsed ? "bg-blue-600/10" : isCancelled ? "bg-red-600/10" : "bg-purple-600/10"
                 }`} />
@@ -169,12 +171,13 @@ export default function TicketValidationPage() {
             <div className="w-full max-w-xl relative z-10 flex flex-col gap-8">
                 {/* Header Actions */}
                 <div className="flex justify-between items-center">
-                    <button
-                        onClick={() => router.back()}
-                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/10"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
+                    <Link href="/dashboard">
+                        <button
+                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/10"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                    </Link>
                     <div className="flex items-center gap-2">
                         <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-lg ${isActive ? "bg-green-500/10 text-green-400 border-green-500/20 shadow-green-500/10" :
                             isUsed ? "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-blue-500/10" :
@@ -221,7 +224,7 @@ export default function TicketValidationPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-blue-400">Successfully Checked-In</h3>
-                                        <p className="text-xs text-blue-400/60 mt-1 uppercase tracking-widest font-black">Admit 1 Person</p>
+                                        <p className="text-xs text-blue-400/60 mt-1 uppercase tracking-widest font-black">Admit {ticket.seatCount || 1} Person{ticket.seatCount && ticket.seatCount !== 1 ? 's' : ''}</p>
                                     </div>
                                 </motion.div>
                             )}
@@ -241,7 +244,7 @@ export default function TicketValidationPage() {
                                 <p className="text-[10px] uppercase tracking-widest text-gray-600 font-bold flex items-center gap-2">
                                     <Ticket size={12} className="text-purple-500" /> Pass Type
                                 </p>
-                                <p className="text-sm font-bold text-gray-200 uppercase tracking-widest">{ticket.ticketType} PASS</p>
+                                <p className="text-sm font-bold text-gray-200 uppercase tracking-widest">{ticket.ticketType} PASS {ticket.seatCount && ticket.seatCount > 1 && <span className="text-purple-400">({ticket.seatCount} SEATS)</span>}</p>
                                 <p className="text-[10px] text-gray-600 font-mono">ID: #{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
                             </div>
 

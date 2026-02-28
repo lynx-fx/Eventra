@@ -21,7 +21,7 @@ const ticketSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "active", "used", "cancelled"],
+      enum: ["pending", "active", "used", "cancelled", "expired"],
       default: "pending",
     },
     purchaseDate: { type: Date, default: Date.now },

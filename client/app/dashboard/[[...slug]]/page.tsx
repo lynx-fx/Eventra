@@ -46,6 +46,7 @@ export default function Page() {
         }
       } catch (error) {
         console.error("Failed to fetch user details:", error);
+        Cookies.remove("auth");
         router.push("/auth/login");
       }
     };
