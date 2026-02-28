@@ -10,7 +10,7 @@ import BookingSteps from '../component/landing/BookingSteps';
 
 export default function page() {
   return (
-    <div className="min-h-screen font-sans overflow-x-hidden relative bg-background text-foreground transition-colors duration-300">
+    <div suppressHydrationWarning className="min-h-screen font-sans overflow-x-hidden relative bg-background text-foreground transition-colors duration-300">
       {/* Global Ambient Background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/5 dark:bg-purple-900/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse"></div>
