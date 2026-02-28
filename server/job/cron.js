@@ -20,16 +20,18 @@ cron.schedule('* * * * *', async () => {
             const event = await Event.findById(ticket.eventId);
             if (event) {
                 const ticketType = ticket.ticketType || 'standard';
-                if (event.soldTickets[ticketType] > 0) {
-                    event.soldTickets[ticketType] -= 1;
+                const count = ticket.seatCount || 1;
+                if (event.soldTickets[ticketType] >= count) {
+                    event.soldTickets[ticketType] -= count;
                     await event.save();
                 }
             }
-            // Delete the expired pending ticket
-            await Ticket.findByIdAndDelete(ticket._id);
+            // Mark the expired pending ticket as cancelled instead of deleting
+            ticket.status = "cancelled";
+            await ticket.save();
         }
 
-        console.log(`Automatically deleted ${expiredTickets.length} expired pending payment tickets.`);
+        console.log(`Automatically cancelled ${expiredTickets.length} expired pending payment tickets and released seats.`);
     } catch (err) {
         console.error("Pending Tickets Cleanup Cron Error:", err.message);
     }
@@ -44,7 +46,7 @@ cron.schedule('01 17 * * *', async () => {
         tomorrowStart.setHours(0, 0, 0, 0);
         const tomorrowEnd = new Date(tomorrowStart);
         tomorrowEnd.setHours(23, 59, 59, 999);
-        
+
         // Find events that are tomorrow
         const tomorrowEvents = await Event.find({
             status: "approved",
@@ -78,5 +80,38 @@ cron.schedule('01 17 * * *', async () => {
         console.log(`Sent reminder emails for ${tomorrowEvents.length} events happening tomorrow.`);
     } catch (err) {
         console.error("Event Reminder Cron Error:", err.message);
+    }
+});
+
+// Run every day at midnight to mark tickets for past events as expired
+cron.schedule('0 0 * * *', async () => {
+    try {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        // Find events that are in the past
+        const pastEvents = await Event.find({
+            eventDate: { $lt: todayStart }
+        });
+
+        if (pastEvents.length === 0) return;
+
+        let expiredTicketsCount = 0;
+
+        for (const event of pastEvents) {
+            // Find active tickets for these past events
+            const result = await Ticket.updateMany(
+                { eventId: event._id, status: "active" },
+                { $set: { status: "expired" } }
+            );
+
+            expiredTicketsCount += result.modifiedCount;
+        }
+
+        if (expiredTicketsCount > 0) {
+            console.log(`Automatically marked ${expiredTicketsCount} active tickets as expired for past events.`);
+        }
+    } catch (err) {
+        console.error("Ticket Expiration Cron Error:", err.message);
     }
 });

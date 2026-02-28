@@ -248,9 +248,10 @@ export default function TicketList({ user }: Props) {
                                             <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                                                 ticket.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                                                     ticket.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
-                                                        'bg-gray-500/10 text-gray-500 border border-border'
+                                                        ticket.status === 'expired' ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' :
+                                                            'bg-gray-500/10 text-gray-500 border border-border'
                                                 }`}>
-                                                {isPast && ticket.status === 'active' ? "Expired" : ticket.status}
+                                                {ticket.status}
                                                 {ticket.status === 'pending' && ticket.createdAt && (
                                                     <span className="opacity-80">
                                                         (<CountdownTimer createdAt={ticket.createdAt} />)
