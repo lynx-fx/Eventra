@@ -10,9 +10,11 @@ exports.getUserTickets = async (userId) => {
     return await Ticket.find({ userId }).populate('eventId');
 };
 
-exports.buyTicket = async (userId, eventId, ticketType = "standard") => {
+exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount = 1) => {
     const event = await Event.findById(eventId);
     if (!event) throw new Error("Event not found");
+
+    if (seatCount < 1) throw new Error("Seat count must be at least 1");
 
     const now = new Date();
 
@@ -23,11 +25,37 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard") => {
     const capacity = event.capacity[ticketType] || 0;
     const sold = event.soldTickets[ticketType] || 0;
 
-    if (sold >= capacity) {
-        throw new Error(`${ticketType} tickets are sold out`);
+    if (sold + seatCount > capacity) {
+        throw new Error(`Not enough ${ticketType} tickets available. Only ${capacity - sold} left.`);
     }
 
-    const finalPrice = event.price[ticketType] || 0;
+    // Find all active or pending tickets for this user
+    const userTickets = await Ticket.find({
+        userId,
+        status: { $in: ["pending", "active"] }
+    }).populate('eventId');
+
+    for (const t of userTickets) {
+        const existingEvent = t.eventId;
+        if (!existingEvent) continue;
+
+        // Check if it's the exact same event
+        if (existingEvent._id.toString() === eventId.toString()) {
+            throw new Error("You have already registered for this event.");
+        }
+
+        // Check for time overlap
+        // Overlap happens if Max(start1, start2) < Min(end1, end2)
+        const maxStart = Math.max(existingEvent.startDate.getTime(), event.startDate.getTime());
+        const minEnd = Math.min(existingEvent.endDate.getTime(), event.endDate.getTime());
+
+        if (maxStart < minEnd) {
+            throw new Error(`Time conflict: You are already registered for an overlapping event '${existingEvent.title}'.`);
+        }
+    }
+
+    const unitPrice = event.price[ticketType] || 0;
+    const finalPrice = unitPrice * seatCount;
 
     // Generate transaction UUID
     const transaction_uuid = uuidv4();
@@ -37,13 +65,14 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard") => {
         userId,
         eventId,
         ticketType,
+        seatCount,
         price: finalPrice,
         transaction_uuid,
         status: "pending",
     });
 
     // Update sold count
-    event.soldTickets[ticketType] += 1;
+    event.soldTickets[ticketType] += seatCount;
 
     await Promise.all([ticket.save(), event.save()]);
 

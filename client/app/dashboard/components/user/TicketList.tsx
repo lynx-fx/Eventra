@@ -27,6 +27,7 @@ interface TicketData {
         bannerImage?: string;
     };
     ticketType: string;
+    seatCount: number;
     price: number;
     status: string;
     purchaseDate: string;
@@ -243,18 +244,21 @@ export default function TicketList({ user }: Props) {
                                             <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{ticket.eventId?.title || "Unknown Experience"}</h3>
                                             <p className="text-[10px] text-muted-foreground font-mono tracking-tighter uppercase font-bold">Token ID: #{ticket._id.substring(ticket._id.length - 8).toUpperCase()}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                            ticket.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                ticket.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
-                                                    'bg-gray-500/10 text-gray-500 border border-border'
-                                            }`}>
-                                            {isPast && ticket.status === 'active' ? "Expired" : ticket.status}
-                                            {ticket.status === 'pending' && ticket.createdAt && (
-                                                <span className="opacity-80">
-                                                    (<CountdownTimer createdAt={ticket.createdAt} />)
-                                                </span>
-                                            )}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                                ticket.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                    ticket.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
+                                                        'bg-gray-500/10 text-gray-500 border border-border'
+                                                }`}>
+                                                {isPast && ticket.status === 'active' ? "Expired" : ticket.status}
+                                                {ticket.status === 'pending' && ticket.createdAt && (
+                                                    <span className="opacity-80">
+                                                        (<CountdownTimer createdAt={ticket.createdAt} />)
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{ticket.seatCount || 1} {ticket.seatCount === 1 ? 'Admit' : 'Admits'}</span>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
@@ -360,6 +364,7 @@ export default function TicketList({ user }: Props) {
                                                 <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black">Ticket Holder</p>
                                                 <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
                                                 <p className="text-[10px] text-gray-400">{user?.email}</p>
+                                                <p className="text-[10px] text-primary uppercase font-bold tracking-widest mt-1">Admits: {selectedTicket.seatCount || 1}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-center gap-3 shrink-0">
@@ -489,7 +494,7 @@ export default function TicketList({ user }: Props) {
                                     <div className="grid grid-cols-2 gap-y-7 border-t border-b border-white/10 py-8 relative font-sans">
                                         <div className="space-y-1.5">
                                             <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Attendee</p>
-                                            <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"}</p>
+                                            <p className="text-sm font-bold text-white">{user?.name || "Guest Attendee"} <span className="text-gray-500 text-[10px]">({selectedTicket.seatCount || 1} Admits)</span></p>
                                         </div>
                                         <div className="space-y-1.5 text-right">
                                             <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black">Date & Time</p>

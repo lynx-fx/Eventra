@@ -43,19 +43,38 @@ export default function EventDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [alreadyPurchased, setAlreadyPurchased] = useState(false);
 
     useEffect(() => {
         const token = Cookies.get("auth");
         setIsAuthenticated(!!token);
 
-        const fetchEvent = async () => {
+        const fetchEventAndTickets = async () => {
             try {
-                const { data } = await axiosInstance.get(`/api/events/${id}`);
-                if (data.success) {
-                    setEvent(data.event);
+                // 1. Fetch Event
+                const { data: eventData } = await axiosInstance.get(`/api/events/${id}`);
+                if (eventData.success) {
+                    setEvent(eventData.event);
                 } else {
                     toast.error("Event not found");
                     router.push("/dashboard");
+                    return;
+                }
+
+                // 2. Fetch Tickets to see if purchased
+                if (token) {
+                    const { data: ticketsData } = await axiosInstance.get("/api/tickets", {
+                        headers: { auth: token }
+                    });
+                    if (ticketsData.success) {
+                        const purchasedIds = ticketsData.tickets
+                            .map((t: any) => t.eventId && (typeof t.eventId === 'object' ? t.eventId._id : t.eventId))
+                            .filter(Boolean);
+
+                        if (purchasedIds.includes(id)) {
+                            setAlreadyPurchased(true);
+                        }
+                    }
                 }
             } catch (error) {
                 toast.error("Error fetching event details");
@@ -67,7 +86,7 @@ export default function EventDetailsPage() {
         };
 
         if (id) {
-            fetchEvent();
+            fetchEventAndTickets();
         }
     }, [id, router]);
 
@@ -91,7 +110,7 @@ export default function EventDetailsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
+            <div suppressHydrationWarning className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-10 h-10 text-primary animate-spin" />
             </div>
         );
@@ -111,8 +130,8 @@ export default function EventDetailsPage() {
     const isSalesEnded = event.endDate ? new Date(event.endDate) < new Date() : false;
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-            <main className="container mx-auto px-4 py-8 mt-20">
+        <div suppressHydrationWarning className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
+            <main className="container mx-auto px-4 py-8 mt-2">
                 <button
                     onClick={() => router.back()}
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -207,14 +226,20 @@ export default function EventDetailsPage() {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={isSalesEnded ? undefined : handleBookClick}
-                                    disabled={isSalesEnded}
-                                    className={`w-full py-4 ${isSalesEnded ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/25 active:scale-[0.98]'} rounded-2xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2`}
-                                >
-                                    <Ticket size={20} />
-                                    {isSalesEnded ? "Sales Ended" : "Get Tickets"}
-                                </button>
+                                {alreadyPurchased ? (
+                                    <div className="w-full py-4 bg-muted text-muted-foreground opacity-70 rounded-2xl font-bold text-center shadow-lg">
+                                        Already Purchased!
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={isSalesEnded ? undefined : handleBookClick}
+                                        disabled={isSalesEnded}
+                                        className={`w-full py-4 ${isSalesEnded ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/25 active:scale-[0.98]'} rounded-2xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2`}
+                                    >
+                                        <Ticket size={20} />
+                                        {isSalesEnded ? "Sales Ended" : "Get Tickets"}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

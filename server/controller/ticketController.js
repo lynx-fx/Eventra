@@ -14,8 +14,8 @@ exports.getUserTickets = async (req, res) => {
 exports.buyTicket = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { eventId, ticketType } = req.body;
-        const { paymentData } = await ticketService.buyTicket(userId, eventId, ticketType);
+        const { eventId, ticketType, seatCount } = req.body;
+        const { paymentData } = await ticketService.buyTicket(userId, eventId, ticketType, seatCount);
         res.status(200).json({ success: true, paymentData });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

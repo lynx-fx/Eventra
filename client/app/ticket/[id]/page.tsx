@@ -121,7 +121,7 @@ export default function TicketValidationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center gap-6 p-6">
+            <div suppressHydrationWarning className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center gap-6 p-6">
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -137,7 +137,7 @@ export default function TicketValidationPage() {
 
     if (error || !ticket) {
         return (
-            <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center p-6 space-y-8">
+            <div suppressHydrationWarning className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center p-6 space-y-8">
                 <div className="w-24 h-24 rounded-3xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
                     <AlertCircle size={48} />
                 </div>
@@ -161,7 +161,7 @@ export default function TicketValidationPage() {
     const isActive = ticket.status === "active";
 
     return (
-        <div className="min-h-screen bg-[#0a0a0c] text-foreground font-sans selection:bg-purple-500/30 p-6 md:p-12 lg:p-24 relative overflow-hidden flex flex-col items-center">
+        <div suppressHydrationWarning className="min-h-screen bg-[#0a0a0c] text-foreground font-sans selection:bg-purple-500/30 p-6 md:p-12 lg:p-24 relative overflow-hidden flex flex-col items-center">
             {/* Background Orbs */}
             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] blur-[120px] pointer-events-none rounded-full transition-colors duration-1000 ${isUsed ? "bg-blue-600/10" : isCancelled ? "bg-red-600/10" : "bg-purple-600/10"
                 }`} />
