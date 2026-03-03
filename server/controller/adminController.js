@@ -37,7 +37,7 @@ exports.getAnalytics = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error fetching analytics" });
+        res.status(err.status || 500).json({ success: false, message: "Error fetching analytics" });
     }
 };
 
@@ -62,7 +62,7 @@ exports.addAdmin = async (req, res) => {
         if (err.message.includes("already exists")) {
             return res.status(400).json({ success: false, message: err.message });
         }
-        res.status(500).json({ success: false, message: "Error adding admin" });
+        res.status(err.status || 500).json({ success: false, message: "Error adding admin" });
     }
 };
 
@@ -72,7 +72,7 @@ exports.getAllUsers = async (req, res) => {
         res.status(200).json({ success: true, users });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error fetching users" });
+        res.status(err.status || 500).json({ success: false, message: "Error fetching users" });
     }
 };
 
@@ -95,7 +95,7 @@ exports.getAllReports = async (req, res) => {
         res.status(200).json({ success: true, reports });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error fetching reports" });
+        res.status(err.status || 500).json({ success: false, message: "Error fetching reports" });
     }
 };
 
@@ -117,7 +117,7 @@ exports.resolveReport = async (req, res) => {
         res.status(200).json({ success: true, message: `Report marked as ${status || "reviewed"}`, report });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error updating report status" });
+        res.status(err.status || 500).json({ success: false, message: "Error updating report status" });
     }
 };
 
@@ -143,7 +143,7 @@ exports.banUser = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error updating user status" });
+        res.status(err.status || 500).json({ success: false, message: "Error updating user status" });
     }
 };
 
@@ -180,7 +180,7 @@ exports.removeImage = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error updupating image status" });
+        res.status(err.status || 500).json({ success: false, message: "Error updupating image status" });
     }
 };
 
@@ -239,6 +239,6 @@ exports.getUserReportHistory = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Error fetching user history" });
+        res.status(err.status || 500).json({ success: false, message: "Error fetching user history" });
     }
 };

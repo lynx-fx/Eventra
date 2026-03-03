@@ -7,7 +7,7 @@ exports.getGallery = async (req, res) => {
         const images = await imageService.getGalleryImages(eventId);
         res.status(200).json({ success: true, images });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -52,7 +52,7 @@ exports.uploadImages = async (req, res) => {
         const images = await Promise.all(uploadPromises);
         res.status(201).json({ success: true, images });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -77,6 +77,6 @@ exports.reportImage = async (req, res) => {
         res.status(201).json({ success: true, report });
     } catch (err) {
         console.log(err.message);
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };

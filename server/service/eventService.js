@@ -1,5 +1,12 @@
 const Event = require("../model/Events.js");
 
+class ServiceError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.status = status;
+    }
+}
+
 exports.getAllEvents = async () => {
     return await Event.find().sort({ eventDate: 1 });
 };
@@ -25,7 +32,9 @@ exports.getUpcomingEvents = async () => {
 };
 
 exports.getEventById = async (eventId) => {
-    return await Event.findById(eventId);
+    const event = await Event.findById(eventId);
+    if (!event) throw new ServiceError("Event not found", 404);
+    return event;
 };
 
 exports.createEvent = async (eventData) => {
@@ -35,13 +44,19 @@ exports.createEvent = async (eventData) => {
 };
 
 exports.deleteEvent = async (eventId) => {
-    return await Event.findByIdAndDelete(eventId);
+    const event = await Event.findByIdAndDelete(eventId);
+    if (!event) throw new ServiceError("Event not found", 404);
+    return event;
 };
 
 exports.updateEventStatus = async (eventId, status) => {
-    return await Event.findByIdAndUpdate(eventId, { status }, { new: true });
+    const event = await Event.findByIdAndUpdate(eventId, { status }, { new: true });
+    if (!event) throw new ServiceError("Event not found", 404);
+    return event;
 };
 
 exports.updateEvent = async (eventId, eventData) => {
-    return await Event.findByIdAndUpdate(eventId, eventData, { new: true });
+    const event = await Event.findByIdAndUpdate(eventId, eventData, { new: true });
+    if (!event) throw new ServiceError("Event not found", 404);
+    return event;
 };
