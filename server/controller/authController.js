@@ -85,7 +85,7 @@ exports.googleLogin = async (req, res) => {
       return res.status(403).json({ success: false, message: err.message });
     }
 
-    return res.status(500).json({
+    return res.status(err.status || 500).json({
       success: false,
       message: "Error while logging in",
       error: err.message,
@@ -180,7 +180,7 @@ exports.getCurrentUser = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({ success: false, message: "Error fetching user data" });
+    res.status(err.status || 500).json({ success: false, message: "Error fetching user data" });
   }
 };
 
@@ -199,7 +199,7 @@ exports.updateProfile = async (req, res) => {
     res.status(200).json({ success: true, message: "Profile updated", user: updatedUser });
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({ success: false, message: "Error updating profile" });
+    res.status(err.status || 500).json({ success: false, message: "Error updating profile" });
   }
 };
 
