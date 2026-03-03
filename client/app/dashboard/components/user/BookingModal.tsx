@@ -43,6 +43,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
     const [isLoading, setIsLoading] = useState(false);
     const [selectedType, setSelectedType] = useState<"premium" | "standard" | "economy">("standard");
     const [step, setStep] = useState(1);
+    const [seatCount, setSeatCount] = useState(1);
     const AUTH_TOKEN = Cookies.get("auth");
 
     if (!event) return null;
@@ -80,7 +81,8 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
         try {
             const { data } = await axiosInstance.post("/api/tickets/buy", {
                 eventId: event._id,
-                ticketType: selectedType
+                ticketType: selectedType,
+                seatCount
             }, {
                 headers: {
                     auth: AUTH_TOKEN
@@ -110,6 +112,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                 onSuccess();
                 onClose();
                 setStep(1);
+                setSeatCount(1);
             } else {
                 toast.error(data.message || "Failed to book ticket");
             }
@@ -175,10 +178,10 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                 <div className="flex flex-col xl:flex-row xl:justify-between items-start xl:items-end gap-2">
                                     <div>
                                         <p className="text-foreground font-medium">{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Pass</p>
-                                        <p className="text-[10px] text-muted-foreground">1x Ticket</p>
+                                        <p className="text-[10px] text-muted-foreground">{seatCount}x Ticket{seatCount > 1 ? 's' : ''}</p>
                                     </div>
                                     <p className="text-2xl font-bold font-mono text-primary">
-                                        NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}
+                                        NPR {((ticketTypes.find(t => t.id === selectedType)?.price || 0) * seatCount).toFixed(2)}
                                     </p>
                                 </div>
                             </div>
@@ -237,9 +240,31 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                             </button>
                                         ))}
                                     </div>
+                                    <div className="mt-8 mb-4 p-4 border border-border rounded-2xl flex items-center justify-between">
+                                        <span className="font-medium text-foreground text-sm">Number of Tickets</span>
+                                        <div className="flex items-center gap-4 bg-secondary/50 rounded-xl p-1 shadow-inner">
+                                            <button
+                                                onClick={() => setSeatCount(Math.max(1, seatCount - 1))}
+                                                className="w-8 h-8 rounded-lg bg-background shadow-sm flex items-center justify-center hover:bg-muted transition-colors text-foreground disabled:opacity-50"
+                                                disabled={seatCount <= 1}
+                                            >
+                                                -
+                                            </button>
+                                            <span className="w-4 text-center font-bold text-foreground font-mono">{seatCount}</span>
+                                            <button
+                                                onClick={() => setSeatCount(Math.min(ticketTypes.find(t => t.id === selectedType)?.available || 1, seatCount + 1))}
+                                                className="w-8 h-8 rounded-lg bg-background shadow-sm flex items-center justify-center hover:bg-muted transition-colors text-foreground disabled:opacity-50"
+                                                disabled={seatCount >= (ticketTypes.find(t => t.id === selectedType)?.available || 1)}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <button
                                         onClick={() => setStep(2)}
-                                        className="w-full mt-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl shadow-primary/20 active:scale-95"
+                                        className="w-full mt-4 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={!ticketTypes.find(t => t.id === selectedType)?.available}
                                     >
                                         Proceed to Checkout
                                         <ChevronRight size={18} />
@@ -268,8 +293,8 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
 
                                     <div className="mt-auto space-y-4">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Ticket Subtotal</span>
-                                            <span className="text-foreground">NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
+                                            <span className="text-muted-foreground">Ticket Subtotal ({seatCount}x)</span>
+                                            <span className="text-foreground">NPR {((ticketTypes.find(t => t.id === selectedType)?.price || 0) * seatCount).toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
                                             <span className="text-muted-foreground">Service Fee</span>
@@ -277,7 +302,7 @@ export default function BookingModal({ isOpen, onClose, event, onSuccess }: Prop
                                         </div>
                                         <div className="pt-4 border-t border-border flex justify-between items-end">
                                             <span className="text-muted-foreground font-medium">Total Amount</span>
-                                            <span className="text-3xl font-bold font-mono text-foreground">NPR {ticketTypes.find(t => t.id === selectedType)?.price.toFixed(2)}</span>
+                                            <span className="text-3xl font-bold font-mono text-foreground">NPR {((ticketTypes.find(t => t.id === selectedType)?.price || 0) * seatCount).toFixed(2)}</span>
                                         </div>
 
                                         <div className="flex gap-4 pt-6">

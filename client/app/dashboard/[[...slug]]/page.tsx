@@ -46,6 +46,7 @@ export default function Page() {
         }
       } catch (error) {
         console.error("Failed to fetch user details:", error);
+        Cookies.remove("auth");
         router.push("/auth/login");
       }
     };
@@ -55,7 +56,10 @@ export default function Page() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center gap-4">
+      <div
+        className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center gap-4"
+        suppressHydrationWarning
+      >
         <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
         <p className="text-gray-500 font-serif italic">Authenticating your session...</p>
       </div>

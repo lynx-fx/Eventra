@@ -36,7 +36,7 @@ exports.getAllEvents = async (req, res) => {
         const events = await eventService.getEventsByQuery(query);
         res.status(200).json({ success: true, events });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -46,19 +46,16 @@ exports.getUpcoming = async (req, res) => {
         const events = await eventService.getUpcomingEvents();
         res.status(200).json({ success: true, events });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
 exports.getEventById = async (req, res) => {
     try {
         const event = await eventService.getEventById(req.params.id);
-        if (!event) {
-            return res.status(404).json({ success: false, message: "Event not found" });
-        }
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -85,7 +82,7 @@ exports.createEvent = async (req, res) => {
         const event = await eventService.createEvent({ ...eventData, seller: userId });
         res.status(201).json({ success: true, event });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -94,7 +91,7 @@ exports.deleteEvent = async (req, res) => {
         await eventService.deleteEvent(req.params.id);
         res.status(200).json({ success: true, message: "Event deleted" });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -104,7 +101,7 @@ exports.updateEventStatus = async (req, res) => {
         const event = await eventService.updateEventStatus(req.params.id, status);
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -129,13 +126,10 @@ exports.updateEvent = async (req, res) => {
         }
 
         const event = await eventService.updateEvent(req.params.id, eventData);
-        if (!event) {
-            return res.status(404).json({ success: false, message: "Event not found" });
-        }
 
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 

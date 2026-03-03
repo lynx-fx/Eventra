@@ -6,7 +6,7 @@ exports.getUserTickets = async (req, res) => {
         const tickets = await ticketService.getUserTickets(userId);
         res.status(200).json({ success: true, tickets });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 };
 
@@ -14,11 +14,11 @@ exports.getUserTickets = async (req, res) => {
 exports.buyTicket = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { eventId, ticketType } = req.body;
-        const { paymentData } = await ticketService.buyTicket(userId, eventId, ticketType);
+        const { eventId, ticketType, seatCount } = req.body;
+        const { paymentData } = await ticketService.buyTicket(userId, eventId, ticketType, seatCount);
         res.status(200).json({ success: true, paymentData });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -29,7 +29,7 @@ exports.verifyTicket = async (req, res) => {
         res.status(200).json({ success: true, ticket });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -40,7 +40,7 @@ exports.cancelTicket = async (req, res) => {
         const ticket = await ticketService.cancelTicket(ticketId, userId);
         res.status(200).json({ success: true, message: "Ticket cancelled", ticket });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -51,7 +51,7 @@ exports.completePurchase = async (req, res) => {
         const { paymentData } = await ticketService.completePurchase(ticketId, userId);
         res.status(200).json({ success: true, paymentData });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -61,7 +61,7 @@ exports.getSellerTickets = async (req, res) => {
         const tickets = await ticketService.getTicketsBySeller(sellerId);
         res.status(200).json({ success: true, tickets });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -75,7 +75,7 @@ exports.getTicketById = async (req, res) => {
         }
         res.status(200).json({ success: true, ticket });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
 
@@ -87,6 +87,6 @@ exports.useTicket = async (req, res) => {
         const ticket = await ticketService.useTicket(ticketId, userId, userRole);
         res.status(200).json({ success: true, message: "Ticket used successfully", ticket });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.status || 500).json({ success: false, message: err.message });
     }
 }
