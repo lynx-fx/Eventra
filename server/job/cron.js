@@ -3,6 +3,7 @@ const Ticket = require("../model/Tickets");
 const Event = require("../model/Events");
 const User = require("../model/Users");
 const { eventReminderMail } = require("../util/mailtemplate");
+
 // Run every minute to clean up abandoned pending tickets older than 15 minutes
 cron.schedule('* * * * *', async () => {
     try {
@@ -61,19 +62,25 @@ cron.schedule('01 17 * * *', async () => {
                 status: "active"
             }).populate('userId');
 
-            // Send email to each user
+            // De-duplicate users to avoid sending multiple emails for multiple tickets
+            const uniqueUsers = new Map();
             for (const ticket of tickets) {
                 if (ticket.userId && ticket.userId.email) {
-                    const dateString = new Date(event.startDate).toLocaleString();
-                    const location = event.venue + (event.city ? `, ${event.city}` : '');
-                    await eventReminderMail(
-                        ticket.userId.name,
-                        ticket.userId.email,
-                        event.title,
-                        dateString,
-                        location
-                    );
+                    uniqueUsers.set(ticket.userId.email, ticket.userId);
                 }
+            }
+
+            // Send email to each unique user
+            for (const user of uniqueUsers.values()) {
+                const dateString = new Date(event.startDate).toLocaleString();
+                const location = event.venue + (event.city ? `, ${event.city}` : '');
+                await eventReminderMail(
+                    user.name,
+                    user.email,
+                    event.title,
+                    dateString,
+                    location
+                );
             }
         }
 
