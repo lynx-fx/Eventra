@@ -214,3 +214,18 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { email, token } = req.query;
+    if (!email || !token) {
+      return res.status(400).json({ success: false, message: "Invalid request" });
+    }
+
+    await userService.verifyEmail(email, token);
+    return res.status(200).json({ success: true, message: `${email} verified` })
+
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ success: false, message: err.message})
+  }
+}

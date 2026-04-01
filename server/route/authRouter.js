@@ -7,6 +7,7 @@ const { protect } = require("../middleware/authMiddleware.js");
 
 router.get("/forgot-password", authController.forgotPassword);
 router.get("/validate-token", authController.validateToken);
+router.get("/verify", authController.verifyEmail);
 router.get("/get-me", protect, authController.getCurrentUser);
 router.post("/login", authController.login);
 router.post("/google-login", authController.googleLogin);
