@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import axiosInstance from "../../../service/axiosInstance";
 import { useSearchParams, useRouter } from "next/navigation";
+import NavBar from "@/component/navBar";
 
 export default function VerifyEmail() {
   const [isLoading, setIsLoading] = useState(true);
@@ -50,61 +51,68 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-950 flex items-center justify-center p-4">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-80 h-80 bg-linear-to-br from-blue-500/30 to-cyan-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-linear-to-br from-orange-500/30 to-pink-500/20 rounded-full blur-3xl"></div>
-      </div>
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-linear-to-br from-blue-600 to-cyan-500 rounded-xl mb-4 shadow-lg">
-            <span className="text-2xl font-bold text-white">E</span>
-          </div>
-          <a href="/">
-            <h1 className="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-              Eventra
-            </h1>
-          </a>
-          <p className="text-slate-400 text-lg">Email Verification</p>
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-purple-500/30">
+      <NavBar />
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden mt-24">
+        {/* Background Glow */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-screen
+  bg-linear-to-t from-purple-900/50 from-20% via-transparent to-transparent pointer-events-none"
+        />
 
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+        <div className="w-full max-w-md bg-card rounded-4xl p-10 border border-border shadow-2xl relative z-10 text-center">
+          <div className="space-y-4 mb-8">
+            <h1 className="text-3xl font-serif tracking-tight">Email Verification</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Verifying your account details for Eventra.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center min-h-[160px]">
           {isLoading ? (
-            <div className="flex flex-col items-center space-y-4">
-              <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" />
-              <p className="text-slate-300">Verifying your email...</p>
+            <div className="flex flex-col items-center space-y-4 animate-in fade-in duration-500">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
+              <p className="text-muted-foreground">Verifying your email...</p>
             </div>
           ) : isVerified ? (
-            <div className="flex flex-col items-center space-y-4">
-              <CheckCircle className="w-16 h-16 text-green-400" />
-              <h2 className="text-2xl font-bold text-white">Email Verified!</h2>
-              <p className="text-slate-300">
-                Your email has been successfully verified. You can now log in to your account.
-              </p>
+            <div className="flex flex-col items-center space-y-6 animate-in zoom-in-95 duration-500">
+              <div className="bg-green-500/10 p-4 rounded-full">
+                <CheckCircle className="w-16 h-16 text-green-500" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold">Email Verified!</h2>
+                <p className="text-muted-foreground text-sm">
+                  Your email has been successfully verified. You can now log in to your account.
+                </p>
+              </div>
               <button
                 onClick={handleGoToLogin}
-                className="w-full bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full py-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-serif shadow-lg transition-all active:scale-[0.98] cursor-pointer"
               >
                 Go to Login
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center space-y-4">
-              <AlertCircle className="w-16 h-16 text-red-400" />
-              <h2 className="text-2xl font-bold text-white">Verification Failed</h2>
-              <p className="text-slate-300">{error}</p>
+            <div className="flex flex-col items-center space-y-6 animate-in zoom-in-95 duration-500">
+              <div className="bg-destructive/10 p-4 rounded-full">
+                <AlertCircle className="w-16 h-16 text-destructive" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-destructive">Verification Failed</h2>
+                <p className="text-muted-foreground text-sm">{error}</p>
+              </div>
               <button
                 onClick={handleGoToLogin}
-                className="w-full bg-linear-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full py-4 rounded-xl bg-secondary border border-border hover:bg-secondary/80 text-foreground text-lg font-serif transition-all active:scale-[0.98] cursor-pointer"
               >
                 Back to Login
               </button>
             </div>
           )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
-}
+}
