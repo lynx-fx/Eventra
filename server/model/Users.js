@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     isActive: { type: Boolean, default: true },
+    isEmailVerified: { type: Boolean, default: false },
     userLocation: { type: String },
     profileUrl: { type: String },
     bio: { type: String },
