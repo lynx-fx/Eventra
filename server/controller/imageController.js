@@ -88,6 +88,6 @@ exports.reportImage = async (req, res) => {
         if (err.status) {
             return res.status(err.status).json({ success: false, message: err.message });
         }
-        res.status(err.status).json({ success: false, message: "Error while reporting image" });
+        res.status(500).json({ success: false, message: "Error while reporting image" });
     }
 };

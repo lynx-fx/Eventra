@@ -36,7 +36,11 @@ exports.getAllEvents = async (req, res) => {
         const events = await eventService.getEventsByQuery(query);
         res.status(200).json({ success: true, events });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while fetching events" });
     }
 };
 
@@ -46,7 +50,11 @@ exports.getUpcoming = async (req, res) => {
         const events = await eventService.getUpcomingEvents();
         res.status(200).json({ success: true, events });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while fetching upcomig events" });
     }
 }
 
@@ -55,8 +63,11 @@ exports.getEventById = async (req, res) => {
         const event = await eventService.getEventById(req.params.id);
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
-    }
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while fetching event" });    }
 };
 
 
@@ -82,7 +93,11 @@ exports.createEvent = async (req, res) => {
         const event = await eventService.createEvent({ ...eventData, seller: userId });
         res.status(201).json({ success: true, event });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while creating event" });
     }
 }
 
@@ -91,8 +106,11 @@ exports.deleteEvent = async (req, res) => {
         await eventService.deleteEvent(req.params.id);
         res.status(200).json({ success: true, message: "Event deleted" });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
-    }
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while deleting event" });    }
 }
 
 exports.updateEventStatus = async (req, res) => {
@@ -101,8 +119,11 @@ exports.updateEventStatus = async (req, res) => {
         const event = await eventService.updateEventStatus(req.params.id, status);
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
-    }
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while updating event status" });    }
 }
 
 
@@ -129,7 +150,10 @@ exports.updateEvent = async (req, res) => {
 
         res.status(200).json({ success: true, event });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
-    }
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while updating event status" });    }
 }
 
