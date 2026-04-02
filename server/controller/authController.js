@@ -12,14 +12,10 @@ exports.signup = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    if (err.message.includes("already exists")) {
-      return res
-        .status(400)
-        .json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Error while signing up." });
+    return res.status(500).json({ success: false, message: "Error while signing up" });
   }
 };
 
@@ -36,28 +32,9 @@ exports.login = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    if (err.message.includes("doesn't exists")) {
-      return res.status(404).json({
-        success: false,
-        message: err.message,
-      });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
-    if (err.message.includes("Try google login")) {
-      return res.status(400).json({
-        success: false,
-        message: err.message
-      })
-    }
-    if (err.message.includes("Incorrect username or password")) {
-      return res
-        .status(401)
-        .json({ success: false, message: err.message });
-    }
-
-    if (err.message.includes("Your account has been banned")) {
-      return res.status(403).json({ success: false, message: err.message });
-    }
-
     return res
       .status(500)
       .json({ success: false, message: "Error while logging in." });
@@ -81,14 +58,12 @@ exports.googleLogin = async (req, res) => {
 
   } catch (err) {
     console.log(err.message);
-    if (err.message.includes("Your account has been banned")) {
-      return res.status(403).json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
-
     return res.status(err.status || 500).json({
       success: false,
       message: "Error while logging in",
-      error: err.message,
     });
   }
 };
@@ -104,16 +79,8 @@ exports.forgotPassword = async (req, res) => {
     });
   } catch (err) {
     console.log(err.message);
-    if (err.message.includes("doesn't exists")) {
-      return res.status(404).json({
-        success: false,
-        message: err.message,
-      });
-    }
-    if (err.message.includes("Couldn't sent mail")) {
-      return res
-        .status(500)
-        .json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
     return res
       .status(500)
@@ -128,16 +95,8 @@ exports.validateToken = async (req, res) => {
     return res.status(200).json({ success: true });
   } catch (err) {
     console.log(err.message);
-    if (err.message.includes("doesn't exists")) {
-      return res.status(404).json({
-        success: false,
-        message: err.message,
-      });
-    }
-    if (err.message.includes("Token expired") || err.message.includes("Invalid token")) {
-      return res
-        .status(401)
-        .json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
     return res
       .status(500)
@@ -155,16 +114,8 @@ exports.resetPassword = async (req, res) => {
       .json({ success: true, message: "Password changed successfully.", redirect: "/auth/login" });
   } catch (err) {
     console.log(err.message);
-    if (err.message.includes("doesn't exists")) {
-      return res.status(404).json({
-        success: false,
-        message: err.message,
-      });
-    }
-    if (err.message.includes("Token expired") || err.message.includes("Invalid token")) {
-      return res
-        .status(401)
-        .json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
     }
     return res
       .status(500)
@@ -180,6 +131,9 @@ exports.getCurrentUser = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (err) {
     console.log(err.message);
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
     res.status(err.status || 500).json({ success: false, message: "Error fetching user data" });
   }
 };
@@ -199,6 +153,9 @@ exports.updateProfile = async (req, res) => {
     res.status(200).json({ success: true, message: "Profile updated", user: updatedUser });
   } catch (err) {
     console.log(err.message);
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
     res.status(err.status || 500).json({ success: false, message: "Error updating profile" });
   }
 };
@@ -210,7 +167,10 @@ exports.changePassword = async (req, res) => {
     res.status(200).json({ success: true, message: "Password changed successfully" });
   } catch (err) {
     console.log(err.message);
-    res.status(400).json({ success: false, message: err.message });
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    res.status(500).json({ success: false, message: "Error while changing password" });
   }
 };
 
@@ -226,6 +186,9 @@ exports.verifyEmail = async (req, res) => {
 
   } catch (err) {
     console.log(err.message);
-    return res.status(500).json({ success: false, message: err.message})
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    return res.status(500).json({ success: false, message: "Error while verifying email" })
   }
 }
