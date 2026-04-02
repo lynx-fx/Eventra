@@ -11,11 +11,18 @@ const frontend =
         ? process.env.FRONT_END_HOSTED
         : process.env.FRONT_END_LOCAL;
 
+class ServiceError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.status = status;
+    }
+}
+
 exports.signup = async (name, email, password, userRole) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-        throw new Error(`User already exists with ${email}`);
+        throw new ServiceError(`User already exists with ${email}`, 400);
     }
 
     const hashedPassword = await hash(password, SALT_VALUE);
@@ -40,15 +47,15 @@ exports.signup = async (name, email, password, userRole) => {
 exports.login = async (email, password) => {
     const existingUser = await User.findOne({ email }).select("+password");
     if (!existingUser) {
-        throw new Error(`User with ${email} doesn't exists.`);
+        throw new ServiceErrorError(`User with ${email} doesn't exists.`, 404);
     }
 
     if (!existingUser.password) {
-        throw new Error("Try google login");
+        throw new ServiceError("Try google login", 400);
     }
 
     if (!existingUser.isActive) {
-        throw new Error("Your account has been banned. Please contact support");
+        throw new ServiceError("Your account has been banned. Please contact support", 401);
     }
 
     if (!existingUser.isEmailVerified) {
@@ -62,12 +69,12 @@ exports.login = async (email, password) => {
 
         // send mail
         verifyEmailMail(existingUser.name, existingUser.email, link);
-        throw new Error("Account not verified, check mail");
+        throw new ServiceError("Account not verified, check mail", 403);
     }
 
     const result = await compare(password, existingUser.password);
     if (!result) {
-        throw new Error("Incorrect username or password");
+        throw new ServiceError("Incorrect username or password", 400);
     }
 
     const token = jwt.sign(
@@ -123,7 +130,7 @@ exports.googleLogin = async (code) => {
         return { token, isNewUser: true };
     } else {
         if (!user.isActive) {
-            throw new Error("Your account has been banned. Please contact support.");
+            throw new ServiceError("Your account has been banned. Please contact support.", 401);
         }
 
         // If user exists but has no profileUrl, update it with google picture
@@ -158,7 +165,7 @@ exports.forgotPassword = async (email) => {
     const existingUser = await User.findOne({ email });
 
     if (!existingUser) {
-        throw new Error(`User with ${email} doesn't exists.`);
+        throw new ServiceError(`User with ${email} doesn't exists.`, 404);
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -176,7 +183,7 @@ exports.forgotPassword = async (email) => {
         await existingUser.save();
         return { success: true };
     } else {
-        throw new Error("Couldn't sent mail.");
+        throw new ServiceError("Couldn't sent mail.", 500);
     }
 };
 
@@ -196,7 +203,7 @@ exports.validateToken = async (email, token) => {
     if (isMatch) {
         return { success: true };
     } else {
-        throw new Error("Invalid token.");
+        throw new ServiceError("Invalid token.", 400);
     }
 };
 
@@ -209,12 +216,12 @@ exports.resetPassword = async (email, password, token) => {
         "+password +authCode"
     );
     if (!existingUser) {
-        throw new Error(`User with ${email} doesn't exists.`);
+        throw new ServiceError(`User with ${email} doesn't exists.`, 404);
     }
 
     // Revalidating token and removing it afterwards
     if (new Date() - existingUser.updatedAt > 10 * 60 * 1000) {
-        throw new Error("Token expired, retry.");
+        throw new ServiceError("Token expired, retry.", 401);
     }
 
     // checking token
@@ -225,7 +232,7 @@ exports.resetPassword = async (email, password, token) => {
         await existingUser.save();
         return { success: true };
     } else {
-        throw new Error("Invalid token.");
+        throw new ServiceError("Invalid token.", 401);
     }
 };
 
@@ -236,16 +243,17 @@ exports.updateUser = async (userId, updateData) => {
 exports.changePassword = async (userId, currentPassword, newPassword) => {
     const user = await User.findById(userId).select("+password");
     if (!user) {
-        throw new Error("User not found");
+        throw new ServiceError("User not found", 404);
     }
 
     if (user.isGoogleAuth && !user.password) {
-        throw new Error("Google accounts do not have passwords. Use Google login.");
+        // TODO: Instead let user set the password directly
+        throw new ServiceError("Google accounts do not have passwords. Use Google login.", 403);
     }
 
     const isMatch = await compare(currentPassword, user.password);
     if (!isMatch) {
-        throw new Error("Incorrect current password");
+        throw new ServiceError("Incorrect current password", 400);
     }
 
     const hashedPassword = await hash(newPassword, SALT_VALUE);
@@ -259,21 +267,21 @@ exports.verifyEmail = async (email, token) => {
 
     const existingUser = await User.findOne({ email: email }).select("+authCode");
     if (!existingUser) {
-        throw new Error("User not found");
+        throw new ServiceError("User not found", 404);
     } else if (existingUser.isEmailVerified) {
-        throw new Error("Email already verified");
+        throw new ServiceError("Email already verified", 400);
     }
 
     //comparing result
     const isMatch = await compare(token, existingUser.authCode);
     if (!isMatch) {
-        throw new Error("Incorrect token");
+        throw new ServiceError("Incorrect token", 401);
     } else if (existingUser.updatedAt < new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)) {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const hashedCode = await hash(code, SALT_VALUE);
         existingUser.authCode = hashedCode;
         await existingUser.save();
-        throw new Error("Token expired, new mail sent");
+        throw new ServiceError("Token expired, new mail sent", 401);
     }
 
     existingUser.isEmailVerified = true;
