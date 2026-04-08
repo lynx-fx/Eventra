@@ -12,8 +12,27 @@ import {
     ShieldAlert,
     CheckCircle2,
     MoreHorizontal,
-    Loader2
+    Loader2,
+    PieChart as PieChartIcon,
+    BarChart as BarChartIcon,
+    TrendingUp
 } from "lucide-react"
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
+    Cell,
+    LineChart,
+    Line
+} from "recharts"
 import axiosInstance from "../../../../service/axiosInstance"
 import { toast } from "sonner"
 import Cookies from "js-cookie"
@@ -129,6 +148,163 @@ export default function AdminOverview({ setActiveTab }: Props) {
                     )
                 })}
             </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Revenue & Growth Chart */}
+                <motion.div variants={item} className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[450px] flex flex-col">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-xl font-serif text-white">Revenue Trend</h3>
+                            <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Last 6 Months Income</p>
+                        </div>
+                        <TrendingUp className="text-purple-500" size={24} />
+                    </div>
+                    <div className="flex-1 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                                data={statsData?.monthlyRevenue?.map((m: any) => ({
+                                    name: new Date(m._id.year, m._id.month - 1).toLocaleString('en-US', { month: 'short' }),
+                                    revenue: m.revenue
+                                })) || []}
+                                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                            >
+                                <defs>
+                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#4b5563', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#4b5563', fontSize: 12 }}
+                                    tickFormatter={(value) => `NPR ${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value}`}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#111113',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '12px',
+                                        fontSize: '12px'
+                                    }}
+                                    itemStyle={{ color: '#a855f7' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="revenue"
+                                    stroke="#a855f7"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorRev)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </motion.div>
+
+                {/* Event Categories Chart */}
+                <motion.div variants={item} className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[450px] flex flex-col">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-xl font-serif text-white">Event Distribution</h3>
+                            <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Engagement by Category</p>
+                        </div>
+                        <PieChartIcon className="text-blue-500" size={24} />
+                    </div>
+                    <div className="flex-1 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={statsData?.categoryDistribution?.map((c: any) => ({
+                                        name: c._id || "Uncategorized",
+                                        value: c.count
+                                    })) || []}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {(statsData?.categoryDistribution || []).map((entry: any, index: number) => (
+                                        <Cell key={`cell-${index}`} fill={['#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'][index % 5]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#111113',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '12px',
+                                        fontSize: '12px'
+                                    }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <div className="flex flex-wrap justify-center gap-4 mt-4">
+                            {(statsData?.categoryDistribution || []).map((c: any, index: number) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: ['#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'][index % 5] }} />
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{c._id || "Uncategorized"}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Third Chart: User Growth */}
+            <motion.div variants={item} className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[400px] flex flex-col">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h3 className="text-xl font-serif text-white">User Growth</h3>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Monthly New Registrations</p>
+                    </div>
+                </div>
+                <div className="flex-1 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            data={statsData?.userGrowth?.map((m: any) => ({
+                                name: new Date(m._id.year, m._id.month - 1).toLocaleString('en-US', { month: 'short' }),
+                                count: m.count
+                            })) || []}
+                        >
+                            <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#4b5563', fontSize: 12 }}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#4b5563', fontSize: 12 }}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#111113',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    fontSize: '12px'
+                                }}
+                                itemStyle={{ color: '#3b82f6' }}
+                            />
+                            <Bar
+                                dataKey="count"
+                                fill="#3b82f6"
+                                radius={[6, 6, 0, 0]}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Activity Table */}

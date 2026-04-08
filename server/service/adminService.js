@@ -22,19 +22,77 @@ exports.getAnalytics = async () => {
     const totalUsers = await User.countDocuments();
     const activeUsers = await User.countDocuments({ isActive: true });
 
-    const totalRevenue = await Ticket.aggregate([
-        { $match: { status: "active" } },
+    const totalRevenueResult = await Ticket.aggregate([
+        { $match: { status: { $in: ["active", "used"] } } },
         { $group: { _id: null, total: { $sum: "$price" } } }
     ]);
 
-    const totalRev = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+    const totalRev = totalRevenueResult.length > 0 ? totalRevenueResult[0].total : 0;
+
+    // Monthly Revenue (last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const monthlyRevenue = await Ticket.aggregate([
+        {
+            $match: {
+                status: { $in: ["active", "used"] },
+                createdAt: { $gte: sixMonthsAgo }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    month: { $month: "$createdAt" },
+                    year: { $year: "$createdAt" }
+                },
+                revenue: { $sum: "$price" }
+            }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // User growth (last 6 months)
+    const userGrowth = await User.aggregate([
+        {
+            $match: {
+                createdAt: { $gte: sixMonthsAgo }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    month: { $month: "$createdAt" },
+                    year: { $year: "$createdAt" }
+                },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // Event category distribution
+    const categoryDistribution = await Event.aggregate([
+        {
+            $group: {
+                _id: "$category",
+                count: { $sum: 1 }
+            }
+        }
+    ]);
 
     return {
         totalEvents,
         pendingEvents,
         approvedEvents,
         activeUsers,
-        totalRevenue: totalRev
+        totalUsers,
+        totalRevenue: totalRev,
+        monthlyRevenue,
+        userGrowth,
+        categoryDistribution
     };
 };
 
