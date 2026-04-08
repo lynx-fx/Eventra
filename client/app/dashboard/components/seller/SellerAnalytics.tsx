@@ -1,7 +1,21 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, Users, MapPin, Globe, Loader2 } from "lucide-react";
+import { BarChart3, TrendingUp, Users, MapPin, Globe, Loader2, PieChart as PieChartIcon } from "lucide-react";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Cell,
+    PieChart,
+    Pie,
+    AreaChart,
+    Area
+} from "recharts";
 import axiosInstance from "../../../../service/axiosInstance";
 import Cookies from "js-cookie";
 
@@ -29,16 +43,24 @@ export default function SellerAnalytics() {
     }, []);
 
     // Calculate Monthly Revenue
-    const monthlyRevenue = Array(12).fill(0);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyData = months.map(month => ({ name: month, revenue: 0, sales: 0 }));
+
     transactions.forEach(tx => {
         if (tx.status !== 'cancelled') {
             const date = new Date(tx.createdAt);
-            const month = date.getMonth(); // 0-11
-            monthlyRevenue[month] += tx.price;
+            const monthIndex = date.getMonth();
+            monthlyData[monthIndex].revenue += tx.price;
+            monthlyData[monthIndex].sales += 1;
         }
     });
 
-    const maxRevenue = Math.max(...monthlyRevenue, 1); // Avoid division by zero
+    // Ticket Type Distribution
+    const ticketTypes = [
+        { name: 'Economy', value: transactions.filter(t => t.ticketType === 'economy').length, color: '#10b981' },
+        { name: 'Standard', value: transactions.filter(t => t.ticketType === 'standard').length, color: '#3b82f6' },
+        { name: 'Premium', value: transactions.filter(t => t.ticketType === 'premium').length, color: '#a855f7' },
+    ].filter(t => t.value > 0);
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -49,74 +71,127 @@ export default function SellerAnalytics() {
                     <Loader2 className="animate-spin text-purple-500" size={32} />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Sales Chart */}
-                    <div className="bg-[#1c1c1e] p-8 rounded-3xl border border-white/5 h-[400px] flex flex-col hover:border-purple-500/20 transition-all">
-                        <div className="flex justify-between items-center mb-8">
-                            <div>
-                                <h3 className="text-lg font-medium text-white font-serif">Revenue Overview</h3>
-                                <p className="text-xs text-gray-500">Monthly sales performance (Current Year)</p>
+                <>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Revenue Bar Chart */}
+                        <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[400px] flex flex-col hover:border-purple-500/20 transition-all group">
+                            <div className="flex justify-between items-center mb-8">
+                                <div>
+                                    <h3 className="text-lg font-medium text-white font-serif">Revenue Performance</h3>
+                                    <p className="text-xs text-gray-500">Monthly gross revenue (NPR)</p>
+                                </div>
+                                <TrendingUp className="text-green-500" size={24} />
                             </div>
-                            <TrendingUp className="text-green-500" size={24} />
+                            <div className="flex-1 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={monthlyData}>
+                                        <XAxis
+                                            dataKey="name"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#4b5563', fontSize: 10 }}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#4b5563', fontSize: 10 }}
+                                            tickFormatter={(value) => `NPR ${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value}`}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                            contentStyle={{
+                                                backgroundColor: '#111113',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                fontSize: '12px'
+                                            }}
+                                        />
+                                        <Bar
+                                            dataKey="revenue"
+                                            fill="#a855f7"
+                                            radius={[6, 6, 0, 0]}
+                                            className="transition-all"
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
-                        <div className="flex-1 flex items-end gap-3 justify-between pb-2 border-b border-white/5 relative">
-                            {/* Grid lines could go here */}
-                            {monthlyRevenue.map((rev, i) => {
-                                const heightPct = (rev / maxRevenue) * 100;
-                                return (
-                                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
-                                        <div className="w-full relative flex flex-col justify-end h-full">
-                                            <div
-                                                className="w-full bg-purple-600/20 group-hover:bg-purple-600/40 transition-all rounded-t-lg relative"
-                                                style={{ height: `${heightPct}%` }}
-                                            >
-                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                                    ${rev.toLocaleString()}
-                                                </div>
-                                            </div>
-                                            <div
-                                                className="absolute bottom-0 w-full bg-linear-to-t from-purple-600 to-purple-400 group-hover:from-purple-500 group-hover:to-purple-300 transition-all rounded-t-lg"
-                                                style={{ height: `${Math.min(heightPct, 5)}%` }} // Base highlight
-                                            />
-                                        </div>
-                                        <span className="text-[10px] text-gray-600 group-hover:text-gray-400 font-mono">
-                                            {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}
-                                        </span>
+
+                        {/* Ticket Distribution */}
+                        <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[400px] flex flex-col hover:border-blue-500/20 transition-all">
+                            <div className="flex justify-between items-center mb-8">
+                                <div>
+                                    <h3 className="text-lg font-medium text-white font-serif">Ticket Categories</h3>
+                                    <p className="text-xs text-gray-500">Sales split by seat type</p>
+                                </div>
+                                <PieChartIcon className="text-blue-500" size={24} />
+                            </div>
+                            <div className="flex-1 w-full relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={ticketTypes}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={90}
+                                            paddingAngle={8}
+                                            dataKey="value"
+                                        >
+                                            {ticketTypes.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#111113',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                fontSize: '12px'
+                                            }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                                    <p className="text-2xl font-bold text-white">{transactions.length}</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">Sold</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-center gap-6 mt-4">
+                                {ticketTypes.map((type, i) => (
+                                    <div key={i} className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: type.color }} />
+                                        <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{type.name}</span>
                                     </div>
-                                )
-                            })}
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6">
-                        <div className="bg-[#1c1c1e] p-6 rounded-3xl border border-white/5 flex items-center justify-between hover:border-blue-500/20 transition-all">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400">
-                                    <Users size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white">{transactions.length}</h3>
-                                    <p className="text-xs text-gray-500 uppercase tracking-widest">Total Transactions</p>
-                                </div>
+                    {/* Secondary Insights */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 hover:border-blue-500/20 transition-all flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Total Sales</p>
+                                <h4 className="text-2xl font-bold text-white">{transactions.length}</h4>
                             </div>
-                            <BarChart3 className="text-gray-700" />
+                            <div className="p-4 rounded-2xl bg-blue-500/10 text-blue-400">
+                                <Users size={24} />
+                            </div>
                         </div>
 
-                        <div className="bg-[#1c1c1e] p-6 rounded-3xl border border-white/5 flex items-center justify-between hover:border-red-500/20 transition-all">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-red-500/10 text-red-400">
-                                    <MapPin size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white">Global</h3>
-                                    <p className="text-xs text-gray-500 uppercase tracking-widest">Top Audience Region</p>
-                                </div>
+                        <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 hover:border-green-500/20 transition-all flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Audience Reach</p>
+                                <h4 className="text-2xl font-bold text-white">Global</h4>
                             </div>
-                            <Globe className="text-gray-700" />
+                            <div className="p-4 rounded-2xl bg-green-500/10 text-green-400">
+                                <Globe size={24} />
+                            </div>
                         </div>
 
-                        <div className="bg-[#1c1c1e] p-8 rounded-3xl border border-white/5 flex-1 hover:border-green-500/20 transition-all">
-                            <h3 className="text-sm font-medium text-white mb-6 uppercase tracking-widest text-gray-400">Transaction Status</h3>
+                        <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 flex-1 hover:border-orange-500/20 transition-all">
+                            <h3 className="text-xs font-bold text-gray-500 mb-6 uppercase tracking-widest">Transaction Status</h3>
                             <div className="space-y-4">
                                 {[
                                     { label: "Completed", count: transactions.filter(t => t.status === 'active' || t.status === 'used').length, color: "bg-green-500" },
@@ -125,12 +200,12 @@ export default function SellerAnalytics() {
                                     const pct = transactions.length > 0 ? (d.count / transactions.length) * 100 : 0;
                                     return (
                                         <div key={i} className="space-y-1">
-                                            <div className="flex justify-between text-xs">
-                                                <span className="text-gray-300">{d.label}</span>
-                                                <span className="text-white font-medium">{d.count} ({pct.toFixed(1)}%)</span>
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-gray-400 uppercase font-bold">{d.label}</span>
+                                                <span className="text-white font-bold">{d.count} ({pct.toFixed(0)}%)</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-[#111113] rounded-full overflow-hidden">
-                                                <div className={`h-full ${d.color}`} style={{ width: `${pct}%` }} />
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div className={`h-full ${d.color} transition-all duration-1000`} style={{ width: `${pct}%` }} />
                                             </div>
                                         </div>
                                     )
@@ -138,7 +213,7 @@ export default function SellerAnalytics() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );

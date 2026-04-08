@@ -305,7 +305,7 @@ export default function AdminUsersView() {
                                         onChange={(e) => setNewAdminName(e.target.value)}
                                         required
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50 transition-colors"
-                                        placeholder="John Doe"
+                                        placeholder="Your name"
                                     />
                                 </div>
                                 <div>
@@ -316,7 +316,7 @@ export default function AdminUsersView() {
                                         onChange={(e) => setNewAdminEmail(e.target.value)}
                                         required
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50 transition-colors"
-                                        placeholder="john@example.com"
+                                        placeholder="mail@example.com"
                                     />
                                 </div>
                                 <div>
