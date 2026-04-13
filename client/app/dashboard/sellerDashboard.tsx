@@ -16,6 +16,7 @@ import axiosInstance from "../../service/axiosInstance";
 import CreateEventModal from "./components/seller/CreateEventModal";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Props {
   user: User;
@@ -24,6 +25,7 @@ interface Props {
 
 export default function SellerDashboard({ user, setUser }: Props) {
   const [events, setEvents] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -38,17 +40,20 @@ export default function SellerDashboard({ user, setUser }: Props) {
     setIsLoading(true);
     try {
       const token = Cookies.get("auth");
-      const { data } = await axiosInstance.get("/api/events", {
-        headers: {
-          auth: token
-        }
-      });
-      if (data.success) {
-        setEvents(data.events);
+      const [eventsRes, ticketsRes] = await Promise.all([
+        axiosInstance.get("/api/events", { headers: { auth: token } }),
+        axiosInstance.get("/api/tickets/seller/sales", { headers: { auth: token } })
+      ]);
+
+      if (eventsRes.data.success) {
+        setEvents(eventsRes.data.events);
+      }
+      if (ticketsRes.data.success) {
+        setTickets(ticketsRes.data.tickets);
       }
     } catch (error) {
-      console.error("Error fetching events:", error);
-      toast.error("Failed to load events");
+      console.error("Error fetching dashboard data:", error);
+      toast.error("Failed to load dashboard data");
     } finally {
       setIsLoading(false);
     }
@@ -221,22 +226,64 @@ export default function SellerDashboard({ user, setUser }: Props) {
                     </button>
                   </div>
 
-                  <div className="bg-[#111113] p-8 rounded-4xl border border-white/5">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Quick Insights</h3>
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-1 h-8 bg-green-500 rounded-full" />
-                        <div>
-                          <p className="text-xs text-gray-500">Sales Velocity</p>
-                          <p className="text-sm font-medium text-white">+24% vs last week</p>
-                        </div>
+                  <div className="bg-[#111113] p-8 rounded-4xl border border-white/5 h-[320px] flex flex-col">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Sales Velocity</h3>
+                    <div className="flex-1 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={(() => {
+                            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                              const d = new Date();
+                              d.setDate(d.getDate() - (6 - i));
+                              return d;
+                            });
+                            return last7Days.map(date => {
+                              const dayStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+                              const sales = tickets.filter(t => {
+                                const tDate = new Date(t.createdAt);
+                                return tDate.toDateString() === date.toDateString();
+                              }).length;
+                              return { name: dayStr, sales };
+                            });
+                          })()}
+                        >
+                          <defs>
+                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <XAxis
+                            dataKey="name"
+                            hide
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: '#111113',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '12px',
+                              fontSize: '10px'
+                            }}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="sales"
+                            stroke="#8b5cf6"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorSales)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Total Sales</p>
+                        <p className="text-lg font-bold text-white">{tickets.length}</p>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="w-1 h-8 bg-purple-500 rounded-full" />
-                        <div>
-                          <p className="text-xs text-gray-500">Conversion Rate</p>
-                          <p className="text-sm font-medium text-white">8.2% avg</p>
-                        </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-green-500 uppercase tracking-widest font-bold">+12%</p>
+                        <p className="text-[10px] text-gray-500">this week</p>
                       </div>
                     </div>
                   </div>

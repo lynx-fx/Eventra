@@ -7,7 +7,11 @@ exports.getGallery = async (req, res) => {
         const images = await imageService.getGalleryImages(eventId);
         res.status(200).json({ success: true, images });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while fetching gallery" });
     }
 };
 
@@ -52,7 +56,11 @@ exports.uploadImages = async (req, res) => {
         const images = await Promise.all(uploadPromises);
         res.status(201).json({ success: true, images });
     } catch (err) {
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        console.log(err.message);
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while uploading image" });
     }
 };
 
@@ -77,6 +85,9 @@ exports.reportImage = async (req, res) => {
         res.status(201).json({ success: true, report });
     } catch (err) {
         console.log(err.message);
-        res.status(err.status || 500).json({ success: false, message: err.message });
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(500).json({ success: false, message: "Error while reporting image" });
     }
 };

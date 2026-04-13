@@ -4,7 +4,16 @@ const Event = require("../model/Events.js");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 
-const frontend = process.env.NODE_ENV == "production" ? process.env.FRONT_END_HOSTED : process.env.FRONT_END_LOCAL;
+const frontend = process.env.NODE_ENV == "production"
+    ? process.env.FRONT_END_HOSTED
+    : process.env.FRONT_END_LOCAL;
+
+class ServiceError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.status = status;
+    }
+}
 
 exports.getUserTickets = async (userId) => {
     return await Ticket.find({ userId }).populate('eventId');
@@ -12,21 +21,21 @@ exports.getUserTickets = async (userId) => {
 
 exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount = 1) => {
     const event = await Event.findById(eventId);
-    if (!event) throw new Error("Event not found");
+    if (!event) throw new ServiceError("Event not found", 404);
 
-    if (seatCount < 1) throw new Error("Seat count must be at least 1");
+    if (seatCount < 1) throw new ServiceError("Seat count must be at least 1", 400);
 
     const now = new Date();
 
-    if (now < event.startDate) throw new Error("Ticket sales have not started yet");
-    if (now > event.endDate) throw new Error("Ticket sales have ended for this event");
+    if (now < event.startDate) throw new ServiceError("Ticket sales have not started yet", 400);
+    if (now > event.endDate) throw new ServiceError("Ticket sales have ended for this event", 400);
     if (ticketType !== "standard" && ticketType !== "premium" && ticketType !== "economy") throw new Error("Invalid ticket type");
 
     const capacity = event.capacity[ticketType] || 0;
     const sold = event.soldTickets[ticketType] || 0;
 
     if (sold + seatCount > capacity) {
-        throw new Error(`Not enough ${ticketType} tickets available. Only ${capacity - sold} left.`);
+        throw new ServiceError(`Not enough ${ticketType} tickets available. Only ${capacity - sold} left.`, 400);
     }
 
     // Find all active or pending tickets for this user
@@ -41,7 +50,7 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount =
 
         // Check if it's the exact same event
         if (existingEvent._id.toString() === eventId.toString()) {
-            throw new Error("You have already registered for this event.");
+            throw new ServiceError("You have already registered for this event.", 400);
         }
 
         // Check for time overlap
@@ -50,7 +59,7 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount =
         const minEnd = Math.min(existingEvent.endDate.getTime(), event.endDate.getTime());
 
         if (maxStart < minEnd) {
-            throw new Error(`Time conflict: You are already registered for an overlapping event '${existingEvent.title}'.`);
+            throw new ServiceError(`Time conflict: You are already registered for an overlapping event '${existingEvent.title}'.`, 400);
         }
     }
 
@@ -136,20 +145,20 @@ exports.verifyTicket = async (data) => {
         .digest("base64");
 
     if (decoded.signature !== expectedSignature) {
-        throw new Error("Invalid signature");
+        throw new ServiceError("Invalid signature", 403);
     }
 
     if (decoded.status !== "COMPLETE") throw new Error("Payment not completed");
 
     // handling ticket
     const ticket = await Ticket.findOne({ transaction_uuid: decoded.transaction_uuid });
-    if (!ticket) throw new Error("Ticket not found");
+    if (!ticket) throw new ServiceError("Ticket not found", 404);
 
     if (Number(decoded.total_amount) !== ticket.price)
-        throw new Error("Amount mismatch");
+        throw new ServiceError("Amount mismatch", 400);
 
     if (decoded.product_code !== process.env.ESEWA_PRODUCT_CODE)
-        throw new Error("Invalid product code");
+        throw new ServiceError("Invalid product code", 400);
 
     ticket.status = "active";
     ticket.transaction_code = decoded.transaction_code;
@@ -159,11 +168,11 @@ exports.verifyTicket = async (data) => {
 exports.cancelTicket = async (ticketId, userId) => {
     const ticket = await Ticket.findOne({ _id: ticketId, userId });
     if (!ticket) {
-        throw new Error("Ticket not found or unauthorized");
+        throw new ServiceError("Ticket not found or unauthorized", 404);
     }
 
     if (ticket.status === 'cancelled') {
-        throw new Error("Ticket is already cancelled");
+        throw new ServiceError("Ticket is already cancelled", 400);
     }
 
     const event = await Event.findById(ticket.eventId);
@@ -197,11 +206,11 @@ exports.getTicketsBySeller = async (sellerId) => {
 exports.completePurchase = async (ticketId, userId) => {
     const ticket = await Ticket.findOne({ _id: ticketId, userId });
     if (!ticket) {
-        throw new Error("Ticket not found or unauthorized");
+        throw new ServiceError("Ticket not found or unauthorized", 404);
     }
 
     if (ticket.status !== 'pending') {
-        throw new Error("Only pending tickets can be completed");
+        throw new ServiceError("Only pending tickets can be completed", 400);
     }
 
     // Generate new transaction UUID for the retry attempt
@@ -259,16 +268,16 @@ exports.getTicketById = async (ticketId) => {
 exports.useTicket = async (ticketId, userId, userRole) => {
     const ticket = await Ticket.findById(ticketId).populate('eventId');
     if (!ticket) {
-        throw new Error("Ticket not found");
+        throw new ServiceError("Ticket not found", 404);
     }
 
     if (ticket.status !== 'active') {
-        throw new Error(`Ticket is already ${ticket.status}`);
+        throw new ServiceError(`Ticket is already ${ticket.status}`, 400);
     }
 
     // Check if user is the seller of this event
     if (ticket.eventId.seller.toString() !== userId) {
-        throw new Error("Unauthorized: Only the event seller can mark this ticket as used");
+        throw new ServiceError("Unauthorized: Only the event seller can mark this ticket as used", 403);
     }
 
     const now = new Date();
@@ -279,7 +288,7 @@ exports.useTicket = async (ticketId, userId, userRole) => {
     const normalizedEventDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
     if (currentDate.getTime() !== normalizedEventDate.getTime()) {
-        throw new Error("Cannot use ticket: Event date does not match current date");
+        throw new ServiceError("Cannot use ticket: Event date does not match current date", 400);
     }
 
     ticket.status = 'used';
