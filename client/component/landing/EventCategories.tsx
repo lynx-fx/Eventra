@@ -14,7 +14,7 @@ const categories = [
     },
     {
         title: "Theater & Arts",
-        image: "https://images.unsplash.com/photo-1507676184212-d0370b9df6f0?q=80&w=1000&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1621886292650-520f76c747d6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YXJ0c3xlbnwwfHwwfHx8MA%3D%3D",
         desc: "Plays, musicals & galleries"
     }
 ];

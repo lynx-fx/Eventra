@@ -22,7 +22,7 @@ const Hero = () => {
 
             {/* Content */}
             <div className="relative z-10 container mx-auto px-4 text-center mt-20">
-                <h1 className="text-5xl md:text-7xl lg:text-9xl font-extrabold tracking-tighter text-foreground mb-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 drop-shadow-2xl">
+                <h1 className="text-5xl md:text-7xl lg:text-9xl font-extrabold font-playfair tracking-normal text-foreground mb-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 drop-shadow-2xl">
                     EVENTRA
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10 font-light tracking-wide drop-shadow-md">
