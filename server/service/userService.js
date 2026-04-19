@@ -47,7 +47,7 @@ exports.signup = async (name, email, password, userRole) => {
 exports.login = async (email, password) => {
     const existingUser = await User.findOne({ email }).select("+password");
     if (!existingUser) {
-        throw new ServiceErrorError(`User with ${email} doesn't exists.`, 404);
+        throw new ServiceError(`User with ${email} doesn't exists.`, 404);
     }
 
     if (!existingUser.password) {
