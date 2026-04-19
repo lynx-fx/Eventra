@@ -52,13 +52,9 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount =
             throw new ServiceError("You have already registered for this event.", 400);
         }
 
-        // Check for time overlap
-        // Overlap happens if Max(start1, start2) < Min(end1, end2)
-        const maxStart = Math.max(existingEvent.startDate.getTime(), event.startDate.getTime());
-        const minEnd = Math.min(existingEvent.endDate.getTime(), event.endDate.getTime());
-
-        if (maxStart < minEnd) {
-            throw new ServiceError(`Time conflict: You are already registered for an overlapping event '${existingEvent.title}'.`, 400);
+        // Check for time overlap (exact same start time)
+        if (existingEvent.eventDate.getTime() === event.eventDate.getTime()) {
+            throw new ServiceError(`Time conflict: You are already registered for an event at the same time: '${existingEvent.title}'.`, 400);
         }
     }
 
