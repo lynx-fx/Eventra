@@ -1,5 +1,12 @@
+"use client";
 import React from 'react';
+import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import { toast } from 'sonner';
+
+const handleSubscribe = () => {
+  toast.success("Subscribed to newsletter");
+}
 
 const Footer: React.FC = () => {
   return (
@@ -16,16 +23,13 @@ const Footer: React.FC = () => {
               Your premier destination for securing tickets to the most happening concerts, sports matches, and theater shows.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <a href="https://www.facebook.com/" target='_blank' className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
                 <FaFacebook />
               </a>
-              <a href="#" className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <a href="https://www.instagram.com/" target='_blank' className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
                 <FaInstagram />
               </a>
-              <a href="#" className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
-                <FaTwitter />
-              </a>
-              <a href="#" className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <a href="https://www.youtube.com/" target='_blank' className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
                 <FaYoutube />
               </a>
             </div>
@@ -34,22 +38,22 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-foreground font-bold mb-6">Discover Nepal</h4>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Kathmandu Concerts</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Pokhara Events</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Thamel Nightlife</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Music Festivals</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cultural Shows</a></li>
+              <li><a href="/events" className="text-muted-foreground hover:text-primary transition-colors">Kathmandu Concerts</a></li>
+              <li><a href="/events" className="text-muted-foreground hover:text-primary transition-colors">Pokhara Events</a></li>
+              <li><a href="/events" className="text-muted-foreground hover:text-primary transition-colors">Thamel Nightlife</a></li>
+              <li><a href="/events" className="text-muted-foreground hover:text-primary transition-colors">Music Festivals</a></li>
+              <li><a href="/events" className="text-muted-foreground hover:text-primary transition-colors">Cultural Shows</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-foreground font-bold mb-6">Support</h4>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Help Center</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Sell Tickets</a></li>
+              {/* <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Help Center</a></li> */}
+              <li><Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link href="/legal" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
+              {/* <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Sell Tickets</a></li> */}
             </ul>
           </div>
 
@@ -58,7 +62,7 @@ const Footer: React.FC = () => {
             <p className="text-muted-foreground text-sm mb-4">Subscribe to our newsletter for early access to tickets.</p>
             <div className="flex gap-2">
               <input type="email" placeholder="Email address" className="bg-secondary border border-border rounded-lg px-4 py-2 text-sm text-foreground w-full focus:outline-none focus:border-primary transition-colors" />
-              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-bold transition-colors cursor-pointer">
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-bold transition-colors cursor-pointer" onClick={handleSubscribe}>
                 →
               </button>
             </div>
@@ -66,7 +70,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="pt-8 border-t border-border text-center text-muted-foreground text-xs">
-          <p>&copy; {new Date().getFullYear()} Eventra Inc. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Eventra. All rights reserved.</p>
         </div>
       </div>
     </footer>
