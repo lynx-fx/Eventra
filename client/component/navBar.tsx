@@ -43,12 +43,6 @@ export default function NavBar() {
           <Link href="/#about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             About
           </Link>
-          <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Terms
-          </Link>
-          <Link href="/legal" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Legal
-          </Link>
         </nav>
 
         <div className="flex items-center gap-4">
