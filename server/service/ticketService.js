@@ -2,7 +2,6 @@ const Ticket = require("../model/Tickets.js");
 const Event = require("../model/Events.js");
 
 const crypto = require("crypto");
-const { v4: uuidv4 } = require("uuid");
 
 const frontend = process.env.NODE_ENV == "production"
     ? process.env.FRONT_END_HOSTED
@@ -67,7 +66,7 @@ exports.buyTicket = async (userId, eventId, ticketType = "standard", seatCount =
     const finalPrice = unitPrice * seatCount;
 
     // Generate transaction UUID
-    const transaction_uuid = uuidv4();
+    const transaction_uuid = crypto.randomUUID();
 
     // Create ticket (pending)
     const ticket = new Ticket({
@@ -214,7 +213,7 @@ exports.completePurchase = async (ticketId, userId) => {
     }
 
     // Generate new transaction UUID for the retry attempt
-    const new_transaction_uuid = uuidv4();
+    const new_transaction_uuid = crypto.randomUUID();
     ticket.transaction_uuid = new_transaction_uuid;
     await ticket.save();
 
