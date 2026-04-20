@@ -28,10 +28,9 @@ exports.saveImage = async (imageData) => {
 
 exports.checkExistingReport = async (userId, imageId) => {
     const image = await Report.findOne({ reporterId: userId, imageId });
-    if (!image) {
-        throw new ServiceError("No images available", 404);
+    if (image) {
+        return image;
     }
-    return image;
 };
 
 exports.reportImage = async (reportData) => {
