@@ -1,4 +1,7 @@
 const Event = require("../model/Events.js");
+const mailtemplate = require("../util/mailtemplate.js");
+const Ticket = require("../model/Tickets.js");
+
 
 class ServiceError extends Error {
     constructor(message, status) {
@@ -50,8 +53,34 @@ exports.deleteEvent = async (eventId) => {
 };
 
 exports.updateEventStatus = async (eventId, status) => {
-    const event = await Event.findByIdAndUpdate(eventId, { status }, { new: true });
+    const event = await Event.findByIdAndUpdate(eventId, { status }, { new: true }).populate("seller", "name email");
     if (!event) throw new ServiceError("Event not found", 404);
+
+    if (status === "approved") {
+        try {
+            await mailtemplate.eventApprovedMail(event.seller.name, event.seller.email, event);
+        } catch (err) {
+            console.error("Failed to send approval mail:", err);
+            // We don't necessarily want to fail the whole status update if the mail fails, 
+            // but we should log it.
+        }
+    } else if (status === "rejected") {
+        try {
+            // Notify seller
+            await mailtemplate.eventRejectedMail(event.seller.name, event.seller.email, event.title);
+
+            // Notify all buyers
+            const tickets = await Ticket.find({ eventId, status: "active" }).populate("userId", "name email");
+            for (const ticket of tickets) {
+                if (ticket.userId && ticket.userId.email) {
+                    await mailtemplate.eventCancelledBuyerMail(ticket.userId.name, ticket.userId.email, event.title);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to send cancellation mails:", err);
+        }
+    }
+
     return event;
 };
 
