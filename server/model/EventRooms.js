@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+// unused
 const eventRoomSchema = new mongoose.Schema(
   {
     eventId: {

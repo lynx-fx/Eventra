@@ -3,6 +3,7 @@ const Event = require("../model/Events.js");
 
 exports.getGallery = async (req, res) => {
     try {
+        
         const { eventId } = req.query;
         const images = await imageService.getGalleryImages(eventId);
         res.status(200).json({ success: true, images });

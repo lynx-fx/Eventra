@@ -1,5 +1,7 @@
 const Ticket = require("../model/Tickets.js");
 const Event = require("../model/Events.js");
+const mailtemplate = require("../util/mailtemplate.js");
+
 
 const crypto = require("crypto");
 
@@ -146,7 +148,7 @@ exports.verifyTicket = async (data) => {
     if (decoded.status !== "COMPLETE") throw new Error("Payment not completed");
 
     // handling ticket
-    const ticket = await Ticket.findOne({ transaction_uuid: decoded.transaction_uuid });
+    const ticket = await Ticket.findOne({ transaction_uuid: decoded.transaction_uuid }).populate("eventId").populate("userId", "name email");
     if (!ticket) throw new ServiceError("Ticket not found", 404);
 
     if (Number(decoded.total_amount) !== ticket.price)
@@ -158,6 +160,29 @@ exports.verifyTicket = async (data) => {
     ticket.status = "active";
     ticket.transaction_code = decoded.transaction_code;
     await ticket.save();
+
+    // Send confirmation mail
+    try {
+        const ticketLink = `${frontend}/ticket/${ticket._id}`;
+        await mailtemplate.ticketConfirmationMail(
+            ticket.userId.name,
+            ticket.userId.email,
+            {
+                title: ticket.eventId.title,
+                eventDate: ticket.eventId.eventDate,
+                venue: ticket.eventId.venue,
+                city: ticket.eventId.city,
+                bannerImage: ticket.eventId.bannerImage,
+                ticketLink,
+                ticketId: ticket._id,
+                ticketType: ticket.ticketType,
+                seatCount: ticket.seatCount,
+                price: ticket.price
+            }
+        );
+    } catch (err) {
+        console.error("Failed to send ticket confirmation mail:", err);
+    }
 };
 
 exports.cancelTicket = async (ticketId, userId) => {

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+// unused
 const organizerSchema = new mongoose.Schema(
   {
     userId: {
