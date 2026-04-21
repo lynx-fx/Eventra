@@ -36,7 +36,7 @@ Before you begin, ensure you have the following installed:
 *   **npm**: v9.0.0 or higher.
 *   **MongoDB**: A local instance or a cloud URI (MongoDB Atlas).
 
-## 🔧 Installation & Setupte
+## 🔧 Installation & Setup
 
 ### 1. Clone the Repository
 ```bash
@@ -59,12 +59,25 @@ MONGODB_URI_LOCAL=mongodb://localhost:27017/eventra
 MONGODB_URI_HOSTED=<your-mongodb-atlas-uri>
 JWT_SECRET=<your-long-secret-key>
 JWT_TIMEOUT=30d
-EMAIL=<your-email>
+NODE_ENV=development
+CLIENT_URL=http://localhost:3000
+
+# Email Configuration (Nodemailer)
+EMAIL=<your-email@gmail.com>
 EMAIL_PASSWORD=<your-app-password>
+
+# Google Auth
 GOOGLE_CLIENT_ID=<your-google-client-id>
 GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-FRONT_END_LOCAL=http://localhost:3003
-NODE_ENV=development
+
+# Frontend URLs
+FRONT_END_LOCAL=http://localhost:3000
+FRONT_END_HOSTED=<your-hosted-frontend-url>
+
+# Payment (eSewa)
+ESEWA_SECRET_KEY=<your-esewa-secret-key>
+ESEWA_PRODUCT_CODE=EPAYTEST
+ESEWA_BASE_URL=https://rc-epay.esewa.com.np
 ```
 
 Start the server:
@@ -78,6 +91,20 @@ Navigate to the client directory and install dependencies:
 ```bash
 cd client
 npm install
+```
+
+**Environment Variables (`client/.env`)**:
+Create a `.env` file in the `client` directory:
+```env
+NEXT_PUBLIC_NODE_ENV=development
+NEXT_PUBLIC_BACKEND_LOCAL=http://localhost:8000
+NEXT_PUBLIC_BACKEND_HOSTED=<your-hosted-backend-url>
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<your-google-client-id>
+
+# Payment (eSewa)
+NEXT_PUBLIC_ESEWA_SECRET_KEY=<your-esewa-secret-key>
+NEXT_PUBLIC_ESEWA_MERCHANT_ID=EPAYTEST
+NEXT_PUBLIC_ESEWA_BASE_URL=https://rc-epay.esewa.com.np
 ```
 
 Start the development server:
